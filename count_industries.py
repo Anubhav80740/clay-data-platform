@@ -44,11 +44,9 @@ def main():
 
     for i, ind in enumerate(industries, 1):
         if ind in have and str(have[ind]).isdigit():
-            print(f"PROGRESS:count:{i}:{len(industries)}:{ind}:{have[ind]}", flush=True)
             continue
         c = cl.count({"industries": [ind], "country_names": [country]})
         have[ind] = "" if c is None else c
-        print(f"PROGRESS:count:{i}:{len(industries)}:{ind}:{c}", flush=True)
         print(f"[{i}/{len(industries)}] {ind}: {c}", flush=True)
         if i % 10 == 0:
             write(out, country, industries, have)

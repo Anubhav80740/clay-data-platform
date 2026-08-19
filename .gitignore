@@ -1,10 +1,24 @@
+# Python bytecode and cache
 __pycache__/
-*.pyc
-*.pyo
-.env
-central_data.db
+*.py[cod]
+*$py.class
+
+# Temporary downloads, logs and clicklists
 downloads/
-plans/
 logs/
-.clay_cookie.txt
+plans/
 *.tmp
+*.log
+
+# Generated CSV datasets & delivered folders (keep repository small)
+delivery/
+*.csv
+
+# Sensitive authentication cookies
+.clay_cookie.txt
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

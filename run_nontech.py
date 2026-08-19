@@ -35,27 +35,52 @@ def dedupe_file(in_csv, out_csv):
     seen = set()
     deduped_rows = []
     header = None
+    
+    # 1. Read existing delivered dataset if present (Centralized Data Store)
+    if os.path.exists(out_csv) and os.path.getsize(out_csv) > 0:
+        with open(out_csv, newline="", encoding="utf-8", errors="replace") as f:
+            r = csv.reader(f)
+            header = next(r, None)
+            if header:
+                li = header.index("LinkedIn URL") if "LinkedIn URL" in header else None
+                di = header.index("Domain") if "Domain" in header else None
+                for row in r:
+                    lnk = row[li].strip().lower() if li is not None and li < len(row) else ""
+                    dom = row[di].strip().lower() if di is not None and di < len(row) else ""
+                    key = lnk or ("dom:" + dom)
+                    if key and key not in seen:
+                        seen.add(key)
+                        deduped_rows.append(row)
+
+    # 2. Merge new pull rows, adding only new unmatched companies
+    initial_count = len(deduped_rows)
     with open(in_csv, newline="", encoding="utf-8", errors="replace") as f:
         r = csv.reader(f)
-        header = next(r, None)
-        if not header:
-            return 0
-        li = header.index("LinkedIn URL") if "LinkedIn URL" in header else None
-        di = header.index("Domain") if "Domain" in header else None
-        for row in r:
-            lnk = row[li].strip().lower() if li is not None and li < len(row) else ""
-            dom = row[di].strip().lower() if di is not None and di < len(row) else ""
-            key = lnk or ("dom:" + dom)
-            if key and key in seen:
-                continue
-            if key:
-                seen.add(key)
-            deduped_rows.append(row)
+        in_header = next(r, None)
+        if in_header:
+            if not header:
+                header = in_header
+            li = in_header.index("LinkedIn URL") if "LinkedIn URL" in in_header else None
+            di = in_header.index("Domain") if "Domain" in in_header else None
+            for row in r:
+                lnk = row[li].strip().lower() if li is not None and li < len(row) else ""
+                dom = row[di].strip().lower() if di is not None and di < len(row) else ""
+                key = lnk or ("dom:" + dom)
+                if key and key in seen:
+                    continue
+                if key:
+                    seen.add(key)
+                deduped_rows.append(row)
+                
+    new_added = len(deduped_rows) - initial_count
     os.makedirs(os.path.dirname(out_csv), exist_ok=True)
     with open(out_csv, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
-        w.writerow(header)
+        if header:
+            w.writerow(header)
         w.writerows(deduped_rows)
+        
+    print(f"CENTRALIZED MERGE: Added {new_added} new companies to existing dataset (Total Unique Companies: {len(deduped_rows)})", flush=True)
     return len(deduped_rows)
 
 
@@ -152,13 +177,14 @@ def main():
 
     only = set(a[a.index("--only") + 1].split("|")) if "--only" in a else None
 
+    force_rerun = "--force" in a or "--only" in a
     rows.sort(key=lambda r: -int(r["Count"]))                # largest first
     rows = [r for r in rows if lo <= int(r["Count"]) < hi
             and (only is None or r["Industry"] in only)
-            and not os.path.exists(os.path.join("delivery", delivery_name(country, r["Industry"])))]
+            and (force_rerun or not os.path.exists(os.path.join("delivery", delivery_name(country, r["Industry"]))))]
     rows = rows[si::sn]
-    print(f"{country}: {len(rows)} industries in [{lo:,}, {hi:,}), "
-          f"~{sum(int(r['Count']) for r in rows):,} rows", flush=True)
+    print(f"{country}: {len(rows)} industries selected in [{lo:,}, {hi:,}), "
+          f"~{sum(int(r['Count']) for r in rows):,} target rows", flush=True)
 
     new = not os.path.exists(ledger)
     lf = open(ledger, "a", newline="")
@@ -215,6 +241,9 @@ def main():
         if not os.path.exists(out):
             print(f"NO OUTPUT: {ind}", flush=True); continue
         rows_dl, uniq = tally(out)
+        # Never write a delivery that's obviously broken -- the resume check reads
+        # "file exists" as done, so a bad file sticks forever. Genuine partial
+        # coverage (Construction ~75%) is fine; <10% of Clay's count is not.
         if rows_dl < max(1, 0.1 * expected):
             print(f"BROKEN PULL ({rows_dl:,} rows vs {expected:,} on Clay) -- "
                   f"not delivering, will retry: {ind}", flush=True)
@@ -222,20 +251,7 @@ def main():
         cov = round(100 * uniq / expected, 1) if expected else ""
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         dedupe_file(out, dst)
-        
-        # Central Store Differential Ingestion
-        try:
-            import central_store
-            tot_p, new_c, exist_c, new_df, full_df = central_store.ingest_and_diff(dst, country, ind)
-            if new_df is not None and not new_df.empty:
-                delta_dst = dst.replace(".csv", " [NEW_DELTA].csv")
-                new_df.to_csv(delta_dst, index=False)
-                print(f"CENTRAL STORE: {new_c:,} NEW companies discovered ({exist_c:,} already in master database) -> {delta_dst}", flush=True)
-        except Exception as e:
-            print(f"Central store notice: {e}", flush=True)
-
         lw.writerow([ind, expected, rows_dl, uniq, cov, dst]); lf.flush()
-        print(f"PROGRESS:download:{i}:{len(rows)}:{ind}:{rows_dl}:{uniq}", flush=True)
         print(f"DELIVERED {rows_dl:,} rows / {uniq:,} unique of {expected:,} "
               f"on Clay ({cov}%) -> {dst}", flush=True)
         if cov != "" and cov < ALERT_MIN:

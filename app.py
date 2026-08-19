@@ -8,7 +8,7 @@ import sys
 import pandas as pd
 import streamlit as st
 
-# Safe numeric handlers
+# Helper for safe numeric conversion avoiding IntCastingNaNError
 def safe_int(val, default=0):
     try:
         if pd.isna(val) or val is None or str(val).strip() == "":
@@ -34,71 +34,71 @@ except ImportError:
 
 import clay_geo
 import clay_lib as cl
-import central_store
 
+# Page Configuration
 st.set_page_config(
     page_title="Clay Data Platform",
     layout="wide"
 )
 
-# ----------------------------------------------------
-# SINGLE SHARED TEAM LOGIN AUTHENTICATION
-# ----------------------------------------------------
-TEAM_PASSWORD = os.getenv("CLAY_TEAM_PASSWORD", "clayteam2026")
+# Shared Single-Login Authentication
+TEAM_USER_ID = os.environ.get("CLAY_USER_ID", "team")
+TEAM_PASSWORD = os.environ.get("CLAY_PASSWORD", "clay2026")
 
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
-if not st.session_state["authenticated"]:
-    st.title("Clay Data Platform — Team Access")
-    st.caption("Enter your shared team password to access the platform.")
+def login_screen():
+    st.markdown("### Clay Data Platform - Single Team Login")
+    st.caption("Please enter your team credentials to access the extraction workspace.")
     
-    auth_col1, auth_col2 = st.columns([2, 1])
-    with auth_col1:
-        pwd_input = st.text_input("Team Access Key", type="password")
-        btn_login = st.button("Access Platform", type="primary")
-        
-        if btn_login:
-            if pwd_input == TEAM_PASSWORD:
+    col_login, _ = st.columns([1, 2])
+    with col_login:
+        user_id = st.text_input("User ID")
+        password = st.text_input("Password", type="password")
+        if st.button("Login", type="primary"):
+            if user_id.strip() == TEAM_USER_ID and password.strip() == TEAM_PASSWORD:
                 st.session_state["authenticated"] = True
                 st.rerun()
             else:
-                st.error("Invalid team access key.")
+                st.error("Invalid User ID or Password.")
+
+if not st.session_state["authenticated"]:
+    login_screen()
     st.stop()
 
-# ----------------------------------------------------
-# MAIN PLATFORM INTERFACE (CLEAN & MINIMAL)
-# ----------------------------------------------------
-top_c1, top_c2 = st.columns([4, 1])
-with top_c1:
-    st.title("Clay Data Extraction & Centralization Platform")
-    st.caption("Internal Data Downloader & Central Master Repository")
-
-with top_c2:
-    if st.button("Logout", use_container_width=True):
+# Header
+head_col1, head_col2 = st.columns([4, 1])
+with head_col1:
+    st.title("Clay Data Platform")
+    st.caption("Centralized Company Data Extraction, Deduplication and Portfolio System")
+with head_col2:
+    if st.button("Logout"):
         st.session_state["authenticated"] = False
         st.rerun()
 
-tab_download, tab_geo, tab_portfolio, tab_central, tab_faq = st.tabs([
-    "Data Download & Pipeline",
-    "Geographic Division Settings",
-    "Delivered Datasets",
-    "Central Master Database",
-    "Documentation & Workflow"
+st.divider()
+
+tab_download, tab_geo, tab_portfolio, tab_faq = st.tabs([
+    "Run Data Extraction",
+    "Country Division Settings",
+    "Delivered Portfolio",
+    "Centralized Store & Deduplication FAQ"
 ])
 
 with tab_download:
-    st.subheader("1. Target Country & Industries Selection")
+    st.subheader("Step A: Select Country and Target Industries")
     
     col_c, col_i = st.columns([1, 2])
     
     with col_c:
-        st.markdown("**Country Selection**")
+        st.markdown("**1. Target Country Selection**")
         def_idx = ALL_CLAY_COUNTRIES.index("Spain") if "Spain" in ALL_CLAY_COUNTRIES else 0
         country_select = st.selectbox(
-            "Select Country (218 Available):",
+            "Search and select country (218 countries available):",
             options=ALL_CLAY_COUNTRIES,
-            index=def_idx
+            index=def_idx,
+            help="Type to search any country name"
         )
         
         custom_country_toggle = st.checkbox("Enter custom country name manually")
@@ -116,12 +116,12 @@ with tab_download:
             g_cfg = geo_dict[country_input]
             num_cities = len(g_cfg.get("cities", []))
             num_states = len(g_cfg.get("states", []))
-            st.info(f"Geographic Division: Active for {country_input} ({num_cities} Cities, {num_states} States/Regions).")
+            st.info(f"Geographic Division Active for {country_input}: {num_cities} Cities, {num_states} States/Regions.")
         else:
-            st.warning(f"{country_input} has no custom city list defined. Default size/revenue fallbacks will be used.")
+            st.warning(f"Note: {country_input} has no custom city list defined. Default size/revenue fallbacks will be used. You can add cities under 'Country Division Settings'.")
 
     with col_i:
-        st.markdown("**Industry Selection**")
+        st.markdown("**2. Target Industries Selection**")
         
         if "selected_industries" not in st.session_state:
             st.session_state["selected_industries"] = []
@@ -145,15 +145,15 @@ with tab_download:
                 st.session_state["selected_industries"] = []
 
         selected_industries = st.multiselect(
-            "Search and select industries (no default selected):",
+            "Search and select industries (starts empty; select manually or use category buttons above):",
             options=ALL_CLAY_INDUSTRIES,
             key="selected_industries"
         )
         
-        st.caption(f"Currently Selected: {len(selected_industries)} industries selected out of 458 total.")
+        st.caption(f"Currently selected: {len(selected_industries)} industries out of 458 total Clay industries.")
 
     st.divider()
-    st.subheader("2. Action Pipeline Execution")
+    st.subheader("Step B: 3-Step Execution Workflow")
     
     def slugify(text):
         return re.sub(r'[^a-zA-Z0-9]+', '_', text).strip('_')
@@ -166,160 +166,100 @@ with tab_download:
     step_col1, step_col2, step_col3 = st.columns([1, 1, 1])
 
     # ----------------------------------------------------
-    # STEP 1: COUNT
+    # STEP 1: COUNT WITH PROGRESS BAR
     # ----------------------------------------------------
     with step_col1:
         st.markdown("#### Step 1: Count Target Rows")
-        st.caption("Queries Clay for raw target counts.")
+        st.caption("Free counting query. Estimates raw Clay target counts.")
         btn_count = st.button("Run Step 1: Count", use_container_width=True)
 
+        if btn_count:
+            if not country_input:
+                st.error("Please select a country.")
+            elif not selected_industries:
+                st.error("Please select at least one industry.")
+            else:
+                with open(ind_file, "w", encoding="utf-8") as f:
+                    json.dump(selected_industries, f)
+                if os.path.exists(counts_file):
+                    os.remove(counts_file)
+                
+                count_progress_bar = st.progress(0.0)
+                count_status = st.empty()
+                count_status.text(f"Starting count for {len(selected_industries)} industries in {country_input}...")
+                
+                cmd = [sys.executable, "-u", "count_industries.py", country_input, "--industries-file", ind_file]
+                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+                
+                total_to_count = len(selected_industries)
+                counted_so_far = 0
+                
+                while True:
+                    line = proc.stdout.readline()
+                    if not line and proc.poll() is not None:
+                        break
+                    if line:
+                        m = re.search(r'\[(\d+)/(\d+)\]', line)
+                        if m:
+                            current_i = int(m.group(1))
+                            tot_i = int(m.group(2))
+                            pct = min(1.0, current_i / max(1, tot_i))
+                            count_progress_bar.progress(pct)
+                            count_status.text(f"Counting: {current_i} of {tot_i} industries ({int(pct*100)}%) - {line.strip()}")
+                
+                proc.wait()
+                if proc.returncode == 0:
+                    count_progress_bar.progress(1.0)
+                    count_status.text("Counting complete.")
+                    st.success("Step 1 Count complete.")
+                else:
+                    st.error("Step 1 Count failed.")
+
     # ----------------------------------------------------
-    # STEP 2: PLAN & ESTIMATE
+    # STEP 2: PLAN & ESTIMATE COVERAGE
     # ----------------------------------------------------
     with step_col2:
         st.markdown("#### Step 2: Plan & Estimate Coverage")
-        st.caption("Estimates reachable unique companies & slice partitions.")
+        st.caption("Free planning query. Partitions slices and estimates reachable coverage.")
         btn_plan = st.button("Run Step 2: Generate Plan", use_container_width=True)
 
+        if btn_plan:
+            if not country_input:
+                st.error("Please select a country.")
+            elif not selected_industries:
+                st.error("Please select at least one industry.")
+            else:
+                with open(ind_file, "w", encoding="utf-8") as f:
+                    json.dump(selected_industries, f)
+                    
+                plan_progress_bar = st.progress(0.0)
+                plan_status = st.empty()
+                tot_p = len(selected_industries)
+                
+                for idx, ind in enumerate(selected_industries, 1):
+                    plan_status.text(f"Planning {idx} of {tot_p}: {ind}...")
+                    cmd = [sys.executable, "-u", "generate_clicklist.py", ind, country_input]
+                    subprocess.run(cmd, capture_output=True, text=True)
+                    plan_progress_bar.progress(idx / tot_p)
+                    
+                plan_status.text("Planning complete.")
+                st.success("Step 2 Planning complete. Review estimated coverage below.")
+
     # ----------------------------------------------------
-    # STEP 3: DOWNLOAD & DELIVER
+    # STEP 3: DOWNLOAD & DELIVER WITH PROGRESS BAR
     # ----------------------------------------------------
     with step_col3:
         st.markdown("#### Step 3: Download Data")
-        st.caption("Executes download, deduplication & central ingestion.")
+        st.caption("Executes download, incremental merge, and deduplication.")
+        
         plan_approved = st.checkbox("I approve the plan & estimated coverage", key="plan_approved_check")
         btn_download = st.button("Run Step 3: Download Data", type="primary", use_container_width=True, disabled=not plan_approved)
 
     # ----------------------------------------------------
-    # REAL-TIME PROGRESS BARS & EXECUTION LOGIC
-    # ----------------------------------------------------
-    if btn_count:
-        if not country_input:
-            st.error("Please select a country.")
-        elif not selected_industries:
-            st.error("Please select at least one industry.")
-        else:
-            with open(ind_file, "w", encoding="utf-8") as f:
-                json.dump(selected_industries, f)
-            if os.path.exists(counts_file):
-                os.remove(counts_file)
-                
-            st.markdown(f"**Step 1 Counting Progress for {country_input}**")
-            count_progress_bar = st.progress(0)
-            count_status_text = st.empty()
-            count_log_box = st.empty()
-            
-            cmd = [sys.executable, "-u", "count_industries.py", country_input, "--industries-file", ind_file]
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
-            
-            c_logs = []
-            while True:
-                line = proc.stdout.readline()
-                if not line and proc.poll() is not None:
-                    break
-                if line:
-                    line_str = line.strip()
-                    c_logs.append(line_str)
-                    count_log_box.code("\n".join(c_logs[-10:]))
-                    
-                    if line_str.startswith("PROGRESS:count:"):
-                        parts = line_str.split(":")
-                        if len(parts) >= 6:
-                            curr_i = safe_int(parts[2])
-                            tot_i = safe_int(parts[3])
-                            ind_name = parts[4]
-                            cnt_val = parts[5]
-                            pct = min(1.0, curr_i / max(1, tot_i))
-                            count_progress_bar.progress(pct)
-                            count_status_text.markdown(f"**Counting Progress**: Industry {curr_i} of {tot_i} ({int(pct*100)}%) — *{ind_name}*: {cnt_val} rows")
-                            
-            proc.wait()
-            if proc.returncode == 0:
-                count_progress_bar.progress(1.0)
-                st.success("Count Step Complete!")
-            else:
-                st.error("Count step failed. See log above.")
-
-    if btn_plan:
-        if not country_input:
-            st.error("Please select a country.")
-        elif not selected_industries:
-            st.error("Please select at least one industry.")
-        else:
-            with open(ind_file, "w", encoding="utf-8") as f:
-                json.dump(selected_industries, f)
-                
-            st.markdown(f"**Step 2 Planning Progress for {country_input}**")
-            plan_progress_bar = st.progress(0)
-            plan_status_text = st.empty()
-            plan_log_box = st.empty()
-            
-            tot_p = len(selected_industries)
-            for idx_p, ind in enumerate(selected_industries, 1):
-                pct = min(1.0, idx_p / max(1, tot_p))
-                plan_progress_bar.progress(pct)
-                plan_status_text.markdown(f"**Planning Progress**: Industry {idx_p} of {tot_p} ({int(pct*100)}%) — *{ind}*")
-                
-                cmd = [sys.executable, "-u", "generate_clicklist.py", ind, country_input]
-                res_p = subprocess.run(cmd, capture_output=True, text=True)
-                plan_log_box.code(res_p.stdout[-500:])
-                
-            plan_progress_bar.progress(1.0)
-            st.success("Planning Step Complete! Review estimated coverage below.")
-
-    if btn_download:
-        if not plan_approved:
-            st.warning("Please check the approval box in Step 3 to confirm plan approval before downloading.")
-        else:
-            st.markdown(f"### Executing Live Download Pipeline for `{country_input}`...")
-            
-            with open(ind_file, "w", encoding="utf-8") as f:
-                json.dump(selected_industries, f)
-
-            dl_progress_bar = st.progress(0)
-            dl_status_text = st.empty()
-            dl_log_box = st.empty()
-            
-            cmd_run = [sys.executable, "-u", "run_nontech.py", country_input]
-            only_str = "|".join(selected_industries)
-            cmd_run.extend(["--only", only_str])
-
-            process = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
-            
-            logs = []
-            while True:
-                line = process.stdout.readline()
-                if not line and process.poll() is not None:
-                    break
-                if line:
-                    line_str = line.strip()
-                    logs.append(line_str)
-                    dl_log_box.code("\n".join(logs[-15:]))
-                    
-                    if line_str.startswith("PROGRESS:download:"):
-                        parts = line_str.split(":")
-                        if len(parts) >= 7:
-                            curr_d = safe_int(parts[2])
-                            tot_d = safe_int(parts[3])
-                            ind_d = parts[4]
-                            rows_d = parts[5]
-                            uniq_d = parts[6]
-                            pct_d = min(1.0, curr_d / max(1, tot_d))
-                            dl_progress_bar.progress(pct_d)
-                            dl_status_text.markdown(f"**Download Progress**: Industry {curr_d} of {tot_d} ({int(pct_d*100)}%) — *{ind_d}*: {rows_d} rows pulled ({uniq_d} unique)")
-                            
-            process.wait()
-            if process.returncode == 0:
-                dl_progress_bar.progress(1.0)
-                st.success(f"Step 3 Download complete for {country_input}!")
-            else:
-                st.error("Download finished with errors. See log above.")
-
-    # ----------------------------------------------------
-    # DISPLAY TABLES & METRICS
+    # DISPLAY RESULTS FOR STEP 1 AND STEP 2
     # ----------------------------------------------------
     if os.path.exists(counts_file):
-        st.markdown(f"### Step 1 Count Results (`{country_input}`)")
+        st.markdown(f"### Step 1 Count Results ({country_input})")
         cdf = pd.read_csv(counts_file)
         if selected_industries:
             cdf = cdf[cdf["Industry"].isin(selected_industries)]
@@ -327,7 +267,6 @@ with tab_download:
         tot_c = safe_sum(cdf["Count"]) if "Count" in cdf.columns and not cdf.empty else 0
         st.info(f"Total Clay Target Rows: {tot_c:,} rows across {len(cdf)} selected industries.")
 
-    # Check for plan files
     planned_data = []
     for ind in selected_industries:
         prefix = slugify(f"{ind}_{country_input}")
@@ -353,15 +292,15 @@ with tab_download:
                     "Industry": ind,
                     "Clay Target Count": exp,
                     "Estimated Reachable": reachable,
-                    "Unreachable Gap (blank sz+rev)": gap,
-                    "Est. Coverage %": f"{cov_pct}%",
+                    "Unreachable Gap": gap,
+                    "Est Coverage %": f"{cov_pct}%",
                     "Planned Slices": num_slices
                 })
             except Exception:
                 pass
 
     if planned_data:
-        st.markdown(f"### Step 2 Plan & Coverage Estimate Results (`{country_input}`)")
+        st.markdown(f"### Step 2 Plan & Coverage Estimate Results ({country_input})")
         pdf_plan = pd.DataFrame(planned_data)
         st.dataframe(pdf_plan, use_container_width=True)
         tot_reach = sum(r["Estimated Reachable"] for r in planned_data)
@@ -369,12 +308,63 @@ with tab_download:
         overall_cov = round(100 * tot_reach / max(1, tot_target), 1)
         st.success(f"Plan Summary: Estimated Reachable Unique Companies: {tot_reach:,} / {tot_target:,} ({overall_cov}% Estimated Coverage). Check the approval box in Step 3 above to proceed to download.")
 
+    # Execute Step 3 Download with Progress Bar
+    if btn_download:
+        if not plan_approved:
+            st.warning("Please check the approval box in Step 3 to confirm plan approval before downloading.")
+        else:
+            st.markdown(f"### Executing Live Step 3 Download for {country_input}...")
+            
+            with open(ind_file, "w", encoding="utf-8") as f:
+                json.dump(selected_industries, f)
+
+            log_container = st.empty()
+            dl_progress_bar = st.progress(0.0)
+            dl_status_text = st.empty()
+            
+            cmd_run = [sys.executable, "-u", "run_nontech.py", country_input]
+            only_str = "|".join(selected_industries)
+            cmd_run.extend(["--only", only_str])
+
+            process = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+            
+            logs = []
+            tot_ind = len(selected_industries)
+            
+            while True:
+                line = process.stdout.readline()
+                if not line and process.poll() is not None:
+                    break
+                if line:
+                    logs.append(line.strip())
+                    log_container.code("\n".join(logs[-20:]))
+                    
+                    if os.path.exists(ledger_file):
+                        try:
+                            pdf_prog = pd.read_csv(ledger_file)
+                            pdf_sel = pdf_prog[pdf_prog["industry"].isin(selected_industries)]
+                            done_count = len(pdf_sel)
+                            pct = min(1.0, done_count / max(1, tot_ind))
+                            dl_progress_bar.progress(pct)
+                            dl_status_text.text(f"Downloading: {done_count} of {tot_ind} selected industries complete ({int(pct*100)}%)")
+                        except Exception:
+                            pass
+                            
+            process.wait()
+            if process.returncode == 0:
+                dl_progress_bar.progress(1.0)
+                dl_status_text.text("Step 3 Download complete.")
+                st.success(f"Step 3 Download and Centralized Merge complete for {country_input}.")
+            else:
+                st.error("Download finished with errors. See log above.")
+
     if os.path.exists(ledger_file):
-        st.markdown(f"### Delivered Files & Metrics for `{country_input}`")
+        st.markdown(f"### Delivered Datasets and Metrics ({country_input})")
         ledger_df = pd.read_csv(ledger_file)
         if selected_industries:
             ledger_df = ledger_df[ledger_df["industry"].isin(selected_industries)]
         st.dataframe(ledger_df, use_container_width=True)
+        
         delivered_total = safe_sum(ledger_df["unique_companies"]) if "unique_companies" in ledger_df.columns and not ledger_df.empty else 0
         st.success(f"Total Unique Companies Delivered: {delivered_total:,} Unique Companies")
 
@@ -391,10 +381,10 @@ with tab_geo:
     ex_states = ", ".join(existing_cfg.get("states", []))
     ex_fallback = existing_cfg.get("fallback", ["size", "revenue"])
     
-    st.markdown(f"#### Configure Geographic Division for `{geo_country}`")
+    st.markdown(f"#### Configure Geographic Division for {geo_country}")
     
-    input_cities = st.text_area("Major Cities (comma-separated list):", ex_cities)
-    input_states = st.text_area("States / Provinces / Regions (optional, comma-separated):", ex_states)
+    input_cities = st.text_area("Major Cities (comma-separated list):", ex_cities, help="e.g. Madrid, Barcelona, Valencia, Seville, Zaragoza, Malaga")
+    input_states = st.text_area("States / Provinces / Regions (optional, comma-separated):", ex_states, help="e.g. Ontario, Quebec, British Columbia")
     input_fallback = st.selectbox("Fallback Splitting Strategy:", [["size", "revenue"], ["revenue", "size"]], index=0 if ex_fallback == ["size", "revenue"] else 1)
     
     if st.button(f"Save Geographic Configuration for {geo_country}", type="primary"):
@@ -418,35 +408,43 @@ with tab_geo:
             code = code.rstrip().rstrip("}").rstrip() + "\n" + new_entry
             with open(geo_file, "w", encoding="utf-8") as gf:
                 gf.write(code)
-            st.success(f"Saved new geographic configuration for {geo_country} to `clay_geo.py`!")
+            st.success(f"Saved new geographic configuration for {geo_country} to clay_geo.py")
         else:
-            st.info(f"Configuration for {geo_country} is active.")
+            st.info(f"Configuration for {geo_country} is active. Restart the app if updating existing entries.")
 
 with tab_portfolio:
     st.subheader("Delivered Country Portfolio")
+    
     delivery_dir = "delivery"
     if os.path.exists(delivery_dir):
         countries = [d for d in os.listdir(delivery_dir) if os.path.isdir(os.path.join(delivery_dir, d))]
         if countries:
-            st.write(f"Found {len(countries)} completed country folders in `delivery/`:")
+            st.write(f"Found {len(countries)} completed country folders in delivery/:")
+            
             summary_data = []
             for c in sorted(countries):
                 cdir = os.path.join(delivery_dir, c)
                 files = [f for f in os.listdir(cdir) if f.endswith(".csv")]
-                tot_bytes = sum(os.path.getsize(os.path.join(cdir, f)) for f in files)
+                tot_bytes = 0
+                for f in files:
+                    fp = os.path.join(cdir, f)
+                    tot_bytes += os.path.getsize(fp)
+                
                 summary_data.append({
                     "Country": c,
                     "Delivered CSV Files": len(files),
                     "Total Folder Size": f"{tot_bytes / (1024*1024):.1f} MB",
                     "Folder Path": cdir
                 })
+                
             st.dataframe(pd.DataFrame(summary_data), use_container_width=True)
             
             selected_country_view = st.selectbox("Select a country to view individual delivered files:", sorted(countries))
             if selected_country_view:
-                st.markdown(f"#### Delivered Files in `delivery/{selected_country_view}/`")
+                st.markdown(f"#### Delivered Files in delivery/{selected_country_view}/")
                 cpath = os.path.join(delivery_dir, selected_country_view)
                 cfiles = sorted([f for f in os.listdir(cpath) if f.endswith(".csv")])
+                
                 file_details = []
                 for cf in cfiles:
                     full_p = os.path.join(cpath, cf)
@@ -456,36 +454,27 @@ with tab_portfolio:
                         "Full Local Path": full_p
                     })
                 st.dataframe(pd.DataFrame(file_details), use_container_width=True)
-
-with tab_central:
-    st.subheader("Central Master Database & Differential Ingestion Store")
-    st.write("All downloads executed by any team member are centrally ingested and deduplicated here. If a download is re-run for a country/industry, the central store identifies and delivers ONLY newly discovered companies.")
-    
-    central_store.init_db()
-    conn = sqlite3.connect(central_store.DB_PATH)
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM master_companies")
-    tot_master = cur.fetchone()[0]
-    conn.close()
-    
-    st.metric("Total Unique Companies in Master Central Store", f"{tot_master:,} Companies")
-    
-    st.markdown("#### Master Central Store Metrics by Country & Industry")
-    if tot_master > 0:
-        conn = sqlite3.connect(central_store.DB_PATH)
-        m_df = pd.read_sql_query("SELECT country, industry, COUNT(*) as unique_companies_in_master, MIN(first_seen_at) as earliest_download, MAX(last_seen_at) as latest_download FROM master_companies GROUP BY country, industry ORDER BY COUNT(*) DESC", conn)
-        conn.close()
-        st.dataframe(m_df, use_container_width=True)
+        else:
+            st.info("No country folders found in delivery/ yet.")
+    else:
+        st.info("No delivery directory created yet.")
 
 with tab_faq:
-    st.subheader("Documentation & Workflow Guide")
+    st.subheader("Centralized Store and Deduplication FAQ")
+    
     st.markdown("""
-    ### Workflow Overview:
-    1. **Single Login Authentication**: Enter the shared team password to access the platform.
-    2. **Country & Industry Selection**: Pick from 218 countries. Use category buttons for Tech (48) vs Non-Tech (410) industries.
-    3. **3-Step Execution**:
-       - **Step 1 (Count)**: Free availability count preview with real-time progress bar.
-       - **Step 2 (Plan)**: Free slice partitioning and reachable coverage calculation with real-time progress bar.
-       - **Step 3 (Download)**: Download and deduplication pipeline with real-time progress bar.
-    4. **Data Centralization**: All downloads update the central database. Differential CSVs (`[NEW_DELTA].csv`) contain only new companies discovered since previous runs.
+    ### Data Centralization & Incremental Merging
+
+    1. **Centralized Data Store**:
+       - All downloaded datasets are stored in the centralized `delivery/<Country>/` directory.
+       - Each dataset file (`<Country> Data [Clay] -<Industry>.csv`) acts as the single source of truth for that country and industry.
+
+    2. **Incremental Deduplication on Re-runs**:
+       - When anyone runs a download for an existing country or industry, the engine loads all existing companies into memory.
+       - As new data is pulled from Clay, the engine checks every company against the existing set using **LinkedIn URL** (primary key) and **Domain** (fallback key).
+       - Only **new or unmatched companies** are appended to the centralized file.
+       - Existing companies are preserved without creating duplicate files or duplicate rows.
+
+    3. **Resumability**:
+       - If a pull is stopped halfway, re-running automatically picks up right where it left off, downloading only missing slices.
     """)
