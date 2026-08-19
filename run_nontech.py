@@ -251,6 +251,16 @@ def main():
         cov = round(100 * uniq / expected, 1) if expected else ""
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         dedupe_file(out, dst)
+        
+        # Cloud Storage Auto-Sync
+        try:
+            import cloud_storage
+            ok, cloud_msg = cloud_storage.upload_file_to_cloud(dst)
+            if ok and "http" in cloud_msg:
+                print(f"CLOUD UPLOAD SUCCESS: {cloud_msg}", flush=True)
+        except Exception:
+            pass
+
         lw.writerow([ind, expected, rows_dl, uniq, cov, dst]); lf.flush()
         print(f"DELIVERED {rows_dl:,} rows / {uniq:,} unique of {expected:,} "
               f"on Clay ({cov}%) -> {dst}", flush=True)
