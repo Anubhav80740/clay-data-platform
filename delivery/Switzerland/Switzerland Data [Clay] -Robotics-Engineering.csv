@@ -1,0 +1,420 @@
+Name,Description,Primary Industry,Size,Type,Location,Country,Domain,LinkedIn URL
+Voliro,"Voliro builds advanced aerial robots that don't just fly and see - they touch.
+
+Born out of ETH Zurich's Autonomous Systems Lab, Voliro has pioneered a new category in industrial inspection: contact-based drone inspection. Our patented tiltable-rotor platform, the Voliro T, physically interacts with structures to perform Non-Destructive Testing (NDT), ultrasonic thickness measurements, and Lightning Protection System (LPS) inspections with no scaffolding, no rope access, no shutdowns required.
+
+The Voliro T is equipped with interchangeable sensor payloads and AI-powered flight control, enabling pilots to inspect flare stacks, storage tanks, chimneys, wind turbines, and other critical assets while they remain in service.
+
+With its tiltable rotor system, Voliro expands the abilities of service drones from “fly and see” to “fly, see and touch”. Voliro T, our flying robot, can be equipped with a variety of payloads, such as Non-Destructive Testing (NDT) or Lightning Protection System (LPS) sensors. The unique 360° drone design of Voliro T allows inspection of curved and sloped surfaces. No other flying inspection robot boasts these capabilities.
+
+Voliro aims to provide innovative UAVs with unique capabilities. We promote the concept of an omnidirectional aerial robotic platform, where position and orientation of the flying platform are completely independent. This ability is crucial to achieve robust and reliable interaction with the environment.
+
+Our mission: make the world's critical infrastructure safer, more reliable, and easier to maintain  without putting people at risk.",Robotics Engineering,11-50 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,voliro.com,https://www.linkedin.com/company/voliro-ch
+Aethera OS,,Robotics Engineering,11-50 employees,Privately Held,"Bern, Berne, Switzerland",Switzerland,,https://www.linkedin.com/company/aethera-os
+Dark Cloud  Labs,Swarm Robotics Development,Robotics Engineering,2-10 employees,Public Company,"Zurich, Zurich, Switzerland",Switzerland,darkcloudlabs.ch,https://www.linkedin.com/company/dark-cloud-labs-ch
+Fenyx Art,"Founded in 2005 as a creative design studio, Fenyx Art began with a simple mission: helping individuals and organizations communicate through design, creativity and visual identity. 
+The emergence of Artificial Intelligence in 2022 transformed not only the technological landscape, but also our understanding of creativity, knowledge and human-machine interaction. 
+
+Today, Fenyx Art has evolved beyond traditional branding and design services. Our work focuses on Cognitive Architecture, Human-AI Governance and the design of meaning-oriented intelligent systems. We explore how artificial intelligences perceive reality, interpret information, construct meaning and interact with human beings. 
+
+By combining artistic vision, systems thinking, philosophy, cybersecurity and emerging technologies, we help shape intelligent systems that are not only efficient, but also coherent, relevant and aligned with human values. 
+
+We believe the future is not built with code alone. It is built through purpose, empathy, understanding and meaningful design.",Robotics Engineering,2-10 employees,Self Owned,"Tartessos, Península Ibérica, Switzerland",Switzerland,fenyx.art,https://www.linkedin.com/company/fenyxart
+TrainIt Robotics,"TrainIt Robotics is an Industrial Physical AI company developing adaptive robotic systems for High-Mix, Low-Volume production.
+
+Traditional automation works well when products, positions and process conditions are known in advance. When formats change, objects arrive in random orientations, visual conditions vary or the process requires recovery from uncertainty, deterministic logic alone is no longer enough.
+
+The PLC remains the deterministic backbone of the machine. TrainIt adds the adaptive layer: perception, decision-making, manipulation and recovery.
+
+We design, simulate and deploy robotic applications that combine 6-axis industrial robots, integrated vision systems, digital twins, edge AI and PLC-connected software.
+
+Our pipeline is:
+
+DESIGN — We analyse the industrial task, product variability, cycle time, workspace, robot, camera, end effector and machine interfaces.
+
+SIMULATION — We create a digital twin to validate reachability, collisions, camera positioning, cycle time and manipulation strategies. We evaluate and adapt Vision-Language-Action models, perception pipelines and proprietary trained skills to the customer’s process.
+
+DEPLOYMENT — We integrate the robot, vision system, edge computer, end effector, application software and PLC communication into the real production environment.
+
+Typical applications include bin picking, cap and capsule feeding, bottle and container handling, machine tending, robotic sorting, visual inspection, capping support, crating, nesting, de-nesting, packaging handling and palletizing.
+
+We focus on beverage, food, cosmetics, pharmaceutical packaging and adjacent industrial sectors where variability makes rigid automation expensive or difficult to scale.
+
+Instead of rebuilding every robotic project from scratch, we adapt reusable TrainIt skills to the customer’s objects, formats, equipment and production constraints.
+
+Physical AI for Industrial Robotics.",Robotics Engineering,Self-employed,Privately Held,"Châtel-Saint-Denis, Fribourg, Switzerland",Switzerland,trainit-robotics.com,https://www.linkedin.com/company/trainit-robotics
+RIVR,"RIVR is a robotics company pioneering Physical AI for doorstep delivery. We combine neural networks with innovative wheeled-legged robots to automate the most labor-intensive part of delivery, bringing packages and food directly to consumers’ doorsteps, while mastering real-world challenges like climbing stairs, navigating cluttered spaces, and opening gates and doors. With customers already requiring tens of thousands of robots, RIVR is on track to generate more daily data than YouTube within four years, unlocking a powerful data flywheel for General Physical AI.",Robotics Engineering,51-200 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,rivr.ai,https://www.linkedin.com/company/rivr-technologies
+CynLr,"CynLr is a visual object intelligence platform that enables industrial robotic arms to see, understand and manipulate any object in random unstructured environments.",Robotics Engineering,51-200 employees,Privately Held,"Lausanne, Vaud, Switzerland",Switzerland,cynlr.com,https://www.linkedin.com/company/cyn-lr
+mimic,Physical AI to scale your most tedious tasks from manufacturing to logistics. Our robots intuitively learn new skills from you and operate autonomously in any environment.,Robotics Engineering,11-50 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,mimicrobotics.com,https://www.linkedin.com/company/mimicrobotics
+microagi,"microagi, founded in 2025, is a robotics deployment company. Its platform, Atlas, fine-tunes models on a customer’s own operations, drawing on microagi’s proprietary data corpus, and closes the gap between the robot that impresses in a demo and the robot that does reliable work on the line. Atlas is hardware- and model-agnostic: a neutral layerbetween a customer’s infrastructure and frontier AI models, designed to prevent lock-in to any single vendor. microagi is headquartered in Munich, with a research hub in Zurich and offices in London and New York.",Robotics Engineering,11-50 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,microagi.ai,https://www.linkedin.com/company/microagi
+Flexion,"We are building the autonomy stack for humanoid robots - from command to control, from manipulation to locomotion, across any hardware and task. Leveraging the power of simulation and reinforcement learning, our software scales to the real world with minimal human involvement.",Robotics Engineering,11-50 employees,Self Owned,"Zurich, Zurich, Switzerland",Switzerland,flexion.ai,https://www.linkedin.com/company/flexion-ai
+ETH Robotics Club,"The ETH Robotics Club is a newly founded student organization at ETH Zurich, created by and for students with a shared passion for robotics.
+
+Our goal is to build a community around hands-on learning and real-world systems in areas such as autonomous drones, humanoid robots, and dexterous manipulation. 
+
+In just the first few months since our launch, we’ve made significant progress. We now count over 200 student members across diverse disciplines, reflecting the strong enthusiasm for robotics at ETH. We are proud to have invited renowned professors such as Marco Hutter and Raffaello D'Andrea to join our advisory board. We’ve also forged partnerships with industry leaders such as NVIDIA, OpenAI and Hugging Face, as well as ETH-affiliated robotics startups and global leaders in venture capital, helping us build strong connections with the broader robotics ecosystem.
+
+We aim to offer students opportunities to learn, experiment, and collaborate on robotics challenges that go beyond the classroom. In time, we hope to grow into a hub for technical development, research collaboration, and student-led innovation.
+
+If you’re a student, researcher, alumnus, or sponsor interested in robotics at ETH, we’d love to hear from you.",Robotics Engineering,201-500 employees,Non Profit,"Zurich, Zurich, Switzerland",Switzerland,ethrobotics.ch,https://www.linkedin.com/company/eth-robotics-club
+Hexagon Robotics,"Hexagon Robotics is shaping the future of autonomous robotics for real-world industrial applications. 
+ 
+Our first humanoid product, AEON, combines precision measurement, multimodal sensor fusion, 3D spatial intelligence, high-performing actuators, and AI-based motion control to provide accurate, safe, and reliable solutions to our customers. 
+ 
+Let’s get to work.",Robotics Engineering,51-200 employees,Public Company,"Zurich, Zurich, Switzerland",Switzerland,hexagon.com,https://www.linkedin.com/company/hexagon-robotics
+Jaipur Robotics,Jaipur Robotics is a pioneering technology company revolutionizing the waste management industry by developing deep learning software for material recovery facilities and Waste-to-Energy plants.,Robotics Engineering,2-10 employees,Privately Held,"Manno, Ticino, Switzerland",Switzerland,jaipurrobotics.com,https://www.linkedin.com/company/jaipurrobotics
+Tethys Robotics,"We develop underwater robots to tackle tasks in challenging environments, focusing on modularity and an innovative omnidirectional control. 
+
+ETH Zurich Spin-off",Robotics Engineering,11-50 employees,Self Employed,"Zurich, Zurich, Switzerland",Switzerland,tethys-robotics.ch,https://www.linkedin.com/company/tethys-robotics
+EPFL Robotics,"We’re proud to be ranked as the #1 University in Europe for Robotics, thanks to our research performance measured by citations. Our cutting-edge applied research also places us in the top 15 of technology institutes worldwide, alongside Berkeley, Caltech, Cambridge, Delft, Imperial College, ETH, Harvard, MIT, Oxford, Stanford, NTU, and NUS.  
+
+Our Labs and Centers aim to drive positive social impact by developing the next generation of robotics experts and solutions. We do this through leading-edge research, knowledge exchange, innovative experimentation, industry demos, technology transfer, and through excellence in teaching. Join us!
+
+This page is maintained by Dr. Anca Rusu, EPFL Robotics Community Manager.",Robotics Engineering,51-200 employees,Educational,"Lausanne, Vaud, Switzerland",Switzerland,epfl.ch,https://www.linkedin.com/company/epfl-robotics
+Loki Robotics,We build robots saving people's time.,Robotics Engineering,11-50 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,lokirobotics.co,https://www.linkedin.com/company/loki-robotics
+Sunflower Labs,"Sunflower Labs builds an autonomous security drone system for commercial, industrial and high-end residential properties. The Sunflower Beehive System is a unique drone-in-a-box solution built to be fully autonomous from the ground up. It integrates with existing security cameras and sensors and extends the capabilities of any security installation or team.",Robotics Engineering,11-50 employees,Privately Held,"Stallikon, Zurich, Switzerland",Switzerland,sunflower-labs.com,https://www.linkedin.com/company/sunflower-labs
+Flink Robotics,We're pioneering software intelligence that transforms robots into plug-and-play systems for material handling.,Robotics Engineering,2-10 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,flink.so,https://www.linkedin.com/company/flink-robotics
+Duatic,"An ETH-rooted company, Duatic develops and manufactures the Alpha, a high-performance, wheeled humanoid robot for industrial automation. Our systems, powered by proprietary Quasi-Direct Drive (QDD) technology, solve critical labor shortages by automating complex material handling and intralogistics in environments built for people. We deliver pragmatic, reliable solutions designed for seamless integration into existing workflows.",Robotics Engineering,2-10 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,duatic.com,https://www.linkedin.com/company/duatic
+roboa,"When inspecting confined spaces, existing solutions struggle in winding, sharp, or slippery conditions.
+roboa overcomes these limitations with its cutting-edge, snake-like robot, which uses growing-based locomotion to go where no human or other robot can go!
+
+With exceptional maneuverability, roboa autonomously navigates and senses its environment, gathers vital maintenance data to reduce costly downtime, and improves safety.
+
+Founded by ETH Zurich engineers, roboa is set to revolutionize industries like wastewater, chemicals, power, and oil and gas, making operations safer and more efficient.
+Beyond industry, roboa supports search and rescue missions, where it locates and assists victims trapped under debris.
+
+Contact us to learn more and discuss how we can work together!",Robotics Engineering,11-50 employees,Self Employed,"Zurich, Zurich, Switzerland",Switzerland,roboa.ch,https://www.linkedin.com/company/roboa
+ETH RobotX,"The ETH+ initiative RobotX started in 2019 and has the ambition to position ETH (and Switzerland as a whole) at the top of robotics research institutions worldwide. The goal of this cross-departmental initiative of MAVT, ITET, INFK, USYS, MATL, ARCH, BAUG, and HEST is to develop the strong competences of ETH in robotics into a joint research and educational platform. RobotX will be located in the historical ML hall in the main campus of ETH providing large research and educational facilities. We will organize hands-on robot classes, annual summer schools and symposia, joint research programs with industry, and additional outreach programs to educate and host people from outside the ETH domain.",Robotics Engineering,11-50 employees,Educational,"Zurich, Zurich, Switzerland",Switzerland,ethz.ch,https://www.linkedin.com/company/center-for-robotics
+Bubble Robotics,"Bubble designs and operates fleets of integrated autonomous surface–subsea robotic systems that remain at sea for up to six months, delivering continuous inspection, survey, and underwater monitoring without ever sending vessels or crews to sea.
+
+Our systems generate millimeter-resolution data, processed with AI to transform raw observations into actionable insights for infrastructure owners, operators, and public authorities. Compared to traditional offshore methods, Bubble delivers superior results at a fraction of the cost, with faster deployment and dramatically lower operational constraints.
+
+By making industry-grade underwater data persistent, affordable, and on-demand, Bubble enables safer infrastructure, healthier ecosystems, and more resilient coastlines across the systems that power and protect life on Earth.",Robotics Engineering,11-50 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,bubble-robotics.com,https://www.linkedin.com/company/bubble-robotics
+Nautica Technologies,"Over 80% of world trade moves on vessels. At Nautica Technologies we are building the resilience layer for the world's fleet. Based in Zurich and backed by experienced VCs, we operate at the intersection of physical AI and data to solve critical challenges in the world's logistics backbone.",Robotics Engineering,11-50 employees,Public Company,"Zurich, Zurich, Switzerland",Switzerland,nauticatechnologies.com,https://www.linkedin.com/company/nauticatechnologies
+Computational Robotics Lab - ETH Zürich,"We develop theoretical foundations to shape the way future generations of robots are made, how they operate in complex environments, and how they interact with us. In this quest, we define Computational Robotics as the fusion of simulation, algorithms and data. In brief, we formalize advanced simulation models to provide robots with an innate understanding of the laws of physics. Leveraging these models, we devise practical algorithms for motion planning, motion control and computational design problems. Whenever possible, we exploit data to efficiently learn solution spaces, to create faithful digital twins through real-to-sim methodologies, and to enable humans to teach robots new skills.",Robotics Engineering,11-50 employees,Educational,"Stadtkreis 6, Zurich, Switzerland",Switzerland,ethz.ch,https://www.linkedin.com/company/eth-crl
+Caterra,"Today, the only alternative to herbicides in agriculture is a combination of mechanical hacking, flaming and hand weeding. To make scalable organic farming possible, technologies are needed that greatly reduce the use of manual labour.
+
+Thanks to its laser-based approach Caterra’s robot allows the removal of weeds which are in close proximity to the crop, something mechanical methods are unable to do. Small, lightweight, fully electrical and chemical free!",Robotics Engineering,11-50 employees,Public Company,"Opfikon, Zurich, Switzerland",Switzerland,caterra.org,https://www.linkedin.com/company/caterra
+Swiss Robotics Association,"Swiss Robotics is dedicated to nurturing the Swiss robotics ecosystem by providing opportunities for collaboration, innovation, and knowledge exchange to all the robotics stakeholders.
+
+Our mission is to:
+- Build interactions within the Swiss robotics ecosystem and serve as a networking hub for all robotics stakeholders across Switzerland.
+- Foster collaboration and innovation in the field of robotics in Switzerland.",Robotics Engineering,2-10 employees,Non Profit,"Lausanne, Vaud, Switzerland",Switzerland,swiss-robotics.org,https://www.linkedin.com/company/srassociation
+Aithon Robotics,"Aithon Robotics develops drones for rapid aerial access. Making work safer, more efficient and cost-effective.",Robotics Engineering,2-10 employees,Privately Held,"Dübendorf, Zurich, Switzerland",Switzerland,aithon-robotics.ch,https://www.linkedin.com/company/aithon
+Simulatory,"At Simulatory ~ We Reimagine Surgical Simulation! 
+We develop smart surgical platforms that allow unlimited training for surgeons on real life like anatomy. 
+We aim to make practical training for surgeries interesting and challenging.",Robotics Engineering,2-10 employees,Privately Held,"Schlieren, Zurich, Switzerland",Switzerland,thesimulatory.com,https://www.linkedin.com/company/thesimulatory
+ORBIT,We are a dedicated team of 10 bachelor students developing our own humanoid robot for low- & zero-gravity deployment.,Robotics Engineering,2-10 employees,Privately Held,"Stadtkreis 6, Zurich, Switzerland",Switzerland,orbitrobotics.ch,https://www.linkedin.com/company/orbitrobotics
+Skysec Defence,"Wir entwickeln innovative Technologien zum Schutz kritischer Infrastrukturen und öffentlicher Räume vor unautorisierten Drohnen. Unsere Lösungen kombinieren modernste Sensorik, KI-gestützte Zielerkennung und präzise Abfangsysteme.",Robotics Engineering,11-50 employees,Privately Held,"Aadorf, Thurgau, Switzerland",Switzerland,skysec.careers,https://www.linkedin.com/company/skysec-defence
+RM SOFTWARE SOLUTIONS SAGL,"ROBOT + Paint Systems + Ultrasonic 
+
+RM Software Solutins Sagl è un’azienda che si occupa della realizzazione e integrazione di sistemi Hardware e Software per il mondo dell’automazione industriale. Grazie all’esperienza ventennale nel mondo della programmazione industriale al costante impegno nella ricerca e nello studio delle varie tecnologie, RM Software Solutins Sagl è in grado di risolvere le problematiche relative al controllo e alla gestione di macchine e impianti industriali, utilizzando applicazioni sempre più evolute per soddisfare al meglio le esigenze del cliente. RM Software Solutins Sagl si rivolge a tutte quelle aziende che cercano una collaborazione seria e affidabile per lo studio e lo sviluppo dei loro progetti, la realizzazione di sistemi “chiavi in mano” per le loro automazioni.",Robotics Engineering,2-10 employees,Privately Held,"Mendrisio, Ticino, Switzerland",Switzerland,rmsystems.ch,https://www.linkedin.com/company/rm-software-solutions-sagl
+SWOZI,"SWOZI is a sports technology company with an extensive background in machine automation. We design, develop and manufacture the industry’s most versatile line marking system and applications for sports fields. Our pioneering solutions are based on cutting-edge GPS and robotic technology to simplify workflows for turf fields while meeting sporting code with 100% accuracy. Driven by our passion for sports and high accuracy, we create advanced line marking solutions to significantly improve efficiency. Greenkeepers, line marking businesses and sports field operators all over the world trust our expertise.
+
+Based on our knowledge and broad experience, SWOZI also undertakes engineering consultancy and projects where our core competency contributes to the success of external companies. Our focus here is on workflow optimisation for tasks where machine control can be involved.",Robotics Engineering,11-50 employees,Privately Held,"Diepoldsau, St Gallen, Switzerland",Switzerland,swozi.com,https://www.linkedin.com/company/swozi-ag
+"Multi-Scale Robotics Lab, ETH Zurich","Projects at the Multi-Scale Robotics Lab are highly integrated, multi-disciplinary collaborations that aim to push the boundaries of current knowledge and broaden the scope of micro and nanoscale engineering. Our research examines topical problems in such diverse fields as microrobotically assisted surgery, magnetic actuation and manipulation, micro and nanofabrication, low Reynolds number locomotion, wireless delivery of power, electrostimulation of biological materials and micro and nanostructure characterization.",Robotics Engineering,11-50 employees,Educational,"Zurich, Zurich, Switzerland",Switzerland,ethz.ch,https://www.linkedin.com/company/multi-scale-robotics-lab
+Witty Machines,"Witty Machines is building simple, intelligent machines to power the food industry.",Robotics Engineering,11-50 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,witty-machines.com,https://www.linkedin.com/company/witty-machines
+FireDrone,"The FireDrone addresses the need for safe and efficient tools in extreme temperature environments such as firefighting and industrial inspection. Traditional drones fail in these environments, exposing workers to risks such as toxic smoke, structural collapse, and intense heat. The FireDrone is designed to withstand temperatures up to 200°C, enabling safe and rapid hazard detection and situational awareness. It enables users to increase safety, reduce operational downtime, and minimize environmental impact.",Robotics Engineering,2-10 employees,Privately Held,"Dübendorf, Zurich, Switzerland",Switzerland,firedrone.com,https://www.linkedin.com/company/firedrone
+REHAssist,Rehabilitation and assistive robobotics group at EPFL,Robotics Engineering,11-50 employees,Educational,"Vaud, Switzerland",Switzerland,epfl.ch,https://www.linkedin.com/company/rehassist
+Equilibrio,"Our Team
+Equilibrio consists of 12 bachelor students from ETH Zürich in Mechanical and Electrical Engineering and from ZHAW in Systems Engineering. Supported by Prof. Dr. Marco Hutter and experienced tutors from the Robotic Systems Lab, we work together as an interdisciplinary team to develop an innovative robotic system.
+
+Our Mission
+Our goal is to build a robotic unicycle capable of driving not only on flat ground but also on uneven terrain. The robot will feature a wheel as its base, a actuated closed kinematic chain as a leg that enables it to jump, hip joints for dynamic balancing, and an upper body holding all the sensors and electronics. Equipped with sensors, it will be able to perceive its environment and showcase some autonomous behavior in the future. 
+
+We see this challenge as both a unique learning opportunity and the creation of a novel research platform. By combining efficiency, agility, and compactness, Equilibrio pushes the boundaries of mobile robotics.",Robotics Engineering,11-50 employees,Self Employed,"Zurich, Zurich, Switzerland",Switzerland,ethz.ch,https://www.linkedin.com/company/equilibrio-robotics
+Sebotics,"Unser Ziel ist es, das Leben der Menschen mit Robotertechnik nachhaltig zu erleichtern. So sollen Dienstleister, Servicefachkräfte usw. wieder Zeit für den Kunden haben - der Roboter erledigt den Rest.",Robotics Engineering,2-10 employees,Public Company,"Horw, Lucerne, Switzerland",Switzerland,sebotics.com,https://www.linkedin.com/company/sebotics
+LEVA Robotics,"LEVA is an all-terrain, autonomous legged robot, being developed by our team of 12 engineers and industrial designers from ETH Zürich, ZHAW and ZHdK.
+Our goal is to design a robot that carries standardised containers with heavy payloads in them, over stairs, unpaved land and all kinds of challenging terrain.
+
+We are a focus project at ETH Zürich, supported by the Robotic Systems Lab. Follow us for updates about our project, and don't miss the Focus Rollout on the 28th May 2024, where we will present a fully functional prototype.",Robotics Engineering,11-50 employees,Non Profit,"Stadtkreis 6, Zurich, Switzerland",Switzerland,ethz.ch,https://www.linkedin.com/company/leva-robotics
+Binabik AI,"Binabik is a Generalist Physical AI Agent.
+
+With proactive memory, real adaptation, support for event-based autonomy and out-of-the-box ROS 2 support, Binabik is the brain and interface of tomorrow's robots.",Robotics Engineering,2-10 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,binabik.ai,https://www.linkedin.com/company/binabik
+WayOut,"WayOut designs, builds and maintains end-to-end robotics solutions tailored to everyday business' needs. We assist our clients in reducing operational costs through targeted automation.
+
+We specialize in : 
+- development and manufacturing of mobile robotic platforms 
+- autonomous navigation in extreme indoor and outdoor scenarios (firefighting)
+- low-latency teleoperation interfaces for critical missions 
+
+We are the successor of Rovenso SA - specialized in agile robots for security and safety monitoring on industrial sites",Robotics Engineering,2-10 employees,Privately Held,"Renens, Vaud, Switzerland",Switzerland,wayoutrobotics.com,https://www.linkedin.com/company/wayoutrobotics
+Venture Robot Solutions,"Venture Robot Solutions (VRS) builds a hardware-agnostic, human-aware intelligence layer that enables service robots to behave appropriately around people in real care environments.
+
+Our software focuses on socially acceptable robot behavior, allowing robots to understand social context, navigate shared spaces safely, and interact appropriately with staff, patients, and residents.
+
+VRS solutions are designed to be embedded into existing service robots, improving acceptance, safety, and operational efficiency without changing hardware.
+
+We collaborate with academic and care partners in Switzerland to test and validate our technology in hospitals and elderly care facilities, with a strong focus on measurable impact on workload, safety, and user trust.",Robotics Engineering,2-10 employees,Self Employed,"Zurich, Zurich, Switzerland",Switzerland,venturerobotsolutions.com,https://www.linkedin.com/company/venture-robot-solutions
+Pick Place,"Pick Place | Industrial Robotics & Marketing Solutions
+
+We help industries work smarter, faster, bolder.
+
+Automation & Pick & Place Solutions → turnkey robotization for Swiss and European industries—fast, precise, and built to last.
+
+Robotic Product Development → global innovation, from design to market.
+
+Industrial Marketing & Strategy → connecting technology to results worldwide.
+
+International Project Management → leading robotics projects across borders.
+
+From concept to market, we close the gap between bold ideas and industrial impact. Based in Valais, Switzerland, we cut through the noise to deliver measurable performance without compromise.
+
+ The future won’t wait. Neither do we.
+
+Break the mold.",Robotics Engineering,2-10 employees,Privately Held,"Fully, Valais, Switzerland",Switzerland,pickplace.com,https://www.linkedin.com/company/pickandplace
+Auto-Mate Robotics,"We believe that affordable automation is essential for your SME to stay competitive and keep the production in Switzerland.
+We provide a single smart and flexible robotic solution that can be quickly and easily reprogrammed for your different tasks, reducing the cost of the overall processes.
+Thanks to a smart and flexible robotic cell, it is possible to integrate any piece of hardware into a single and intuitive interface that can be rapidly and easily re-programmed by your workers.",Robotics Engineering,2-10 employees,Self Employed,"Biel/Bienne, Bern, Berne, Switzerland",Switzerland,auto-mate-robotics.ch,https://www.linkedin.com/company/auto-mate-robotics
+AutoBike,"Autobike is a student-driven project at ETH Zurich aiming to design and build a self-driving bicycle that can return to its station autonomously. Our mission is to merge mechanical engineering, robotics, and intelligent control systems to create a sustainable and accessible mobility solution for the cities of tomorrow.
+
+We are a multidisciplinary team of 10 students, combining expertise in mechanical design, electronics, software, and control. Over the next year, we will develop a fully functional prototype capable of autonomous navigation, safe braking, and intelligent steering – bringing new possibilities to urban transport and shared mobility.
+
+Our project is supported by academic guidance and inspired by real-world applications: imagine a bike that drops you off at your destination and rides itself back, reducing clutter and making shared mobility seamless.",Robotics Engineering,11-50 employees,Non Profit,"Zurich, Zurich, Switzerland",Switzerland,ethz.ch,https://www.linkedin.com/company/autobike
+NOCTUA,"We are a team of engineers from ETH Zürich, supported by the Soft Robotics Lab. Our objective is to engineer a silent long-endurance drone that can autonomously monitor vast areas, supporting rangers in preserving wildlife.
+We‘ve successfully completed various test flights and proven our systems airworthiness. 
+
+Currently we are working on making our plane more reliable, modular and efficient. If you would like to contribute, feel free to reach out!",Robotics Engineering,2-10 employees,Educational,"Stadtkreis 6, Zurich, Switzerland",Switzerland,ethz.ch,https://www.linkedin.com/company/noctua-eth
+coprod LLC,Making Hardware Simple,Robotics Engineering,2-10 employees,Privately Held,"Écublens, Vaud, Switzerland",Switzerland,coprod.co,https://www.linkedin.com/company/coprod-llc
+Innovationsprojekt pd|z ETH Zürich,"The innovation project is a compulsory course in the third semester of the bachelor’s program in Mechanical Engineering at ETH Zurich. During the project, students work in small groups to develop an autonomous robot designed to solve a specific challenge. The task changes from year to year but always presents students with challenging technical problems to solve. The aim of the innovation project is to give students hands-on experience with agile product development methodology. In the final week of the semester, students present the systems they have built and pit them against each other in the public finale in the main building of ETH Zurich.",Robotics Engineering,"501-1,000 employees",Educational,"Zurich, Zurich, Switzerland",Switzerland,ethz.ch,https://www.linkedin.com/company/innovationsprojekt-pd-z-eth-zürich
+Demaurex SA,"Our robotic cells orchestrate every piece of equipment across the primary and secondary packaging zones — around a single focus: your product.
+Demaurex SA — Delta robot pioneer since 1988. A Swiss family-owned SME, founded in 1983 in Romanel and now headquartered in Vufflens-la-Ville, Switzerland. We design high-throughput pick & place robotic cells for the food industry (chocolate, biscuits, bakery, pastry, ready meals) and the pharmaceutical sector.
+Our signature: end-to-end mastery, from the Delta robot — patented at EPFL Lausanne in 1988, the very year we acquired it — to Gemini, our proprietary software that drives every line, whatever the equipment brand, from bare product to ready-to-ship carton.
+More than 3,000 robots installed worldwide. 70 team members. Forty years of in-house technical expertise. Our machines are built to run for 20 years — and we keep them running for another 20, with spare parts, retrofits and Gemini updates across every generation we have ever produced.
+Now more independent than ever, we are strengthening our customer proximity: short lead times, parts on the shelf, engineers you can actually reach.
+www.demaurex.com",Robotics Engineering,51-200 employees,Privately Held,"Vufflens-la-Ville, Vaud, Switzerland",Switzerland,demaurex.com,https://www.linkedin.com/company/demaurexsa
+Exclaim Robotics,"We build robots to maintain AI data centers.
+
+Just about everything else in a data center is software-controlled,but when a part fails, someone still has to work directly on the rack. With the new generation of AI data centers moving to 800V DC in the rack, that becomes a question of safety, and we think robots are the answer.
+We focus specifically on dexterous manipulation problems rather than heavy lifting: cleaning and replacing optics, reconnecting copper cabling, and re-seating drives precisely.",Robotics Engineering,2-10 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,exclaimrobotics.com,https://www.linkedin.com/company/exclaim-robotics
+POLARIS - ARIS focus project,"The aim of this project is to develop a modular, scalable, remotely observed swarm of underwater robots capable of performing real-time data collection and coordinated actions across a broad range of environments. Unlike fully autonomous systems, our robots will initially focus on proving practical feasibility within our limited timeframe and resources, while keeping open the possibility for future autonomous functionalities. This will involve building working prototypes and iterating on current research in underwater swarm communication and control.",Robotics Engineering,2-10 employees,Self Employed,"Dübendorf, Zurich, Switzerland",Switzerland,,https://www.linkedin.com/company/aris-polaris
+Serenity Robotics,"Our team
+Serenity consists of ten highly motivated undergraduate students specializing in mechanical and electrical engineering. We are  supported by Prof. Dr. Marco Hutter and experienced tutors from the Robotics Systems Lab. We want to continue the legacy of pioneering space projects such as Spacehopper and  Spacebok which have been greatly supported by the Euorpean Space Agency (ESA). 
+
+Our mission
+We want to develop a versatile platform for future extraterrestrial exploration on the moon.  We envision an easily deployable robotic system capable of withstanding significant impacts and navigating challenging terrains. Our robot will be able to fall from great heights, making deployments cheaper and more successful. The robot adapts to various mission objectives, for example the exploration of lunar caves. These caves are believed to harbor valuable resources like ice and provide protection from radiation, dust, meteorites and temperature fluctuations. If we want to stay at the moon, we first must explore the lunar caves, which could be ideal for future human habitats.",Robotics Engineering,2-10 employees,Non Profit,"Stadtkreis 6, Zurich, Switzerland",Switzerland,ethz.ch,https://www.linkedin.com/company/serenityethz
+H-Robotics Switzerland,"We provide professional robotic solutions that redefine efficiency, consistency, and quality across industries — from hospitality and retail to healthcare, education, and beyond.
+
+Our range of intelligent cleaning and service robots seamlessly integrates into existing operations, helping teams focus on high-value tasks while improving customer satisfaction and ensuring best-in-class service.
+
+Join the automation revolution and discover how our award-winning robots can elevate your business.
+
+Contact us at info@h-robotics.com to learn more or book a demo.",Robotics Engineering,2-10 employees,Privately Held,"Lausanne, Vaud, Switzerland",Switzerland,h-robotics.com,https://www.linkedin.com/company/h-robotics-switzerland
+Maus Robotics,"Maus Robotics builds intelligent, human-centered robots that bring automation into everyday life. Rooted in Swiss precision and creative design, we pioneer fresh food automation, starting with robots that prepare crêpes in under two minutes.",Robotics Engineering,2-10 employees,Public Company,"Basel, Basel-Stadt, Switzerland",Switzerland,mausrobotics.com,https://www.linkedin.com/company/mausrobotics
+ASIRA,"We are a focus project team of 8 ETH Zürich engineers committed to advancing smarter, greener industrial technologies for a more efficient future.
+ASIRA is our next-generation robotic innovation, designed to physically adapt to a variety of tasks while maximizing energy efficiency. Our vision is to transform industrial robots from rigid, task-specific machines into intelligent, adaptive systems. Inspired by nature, ASIRA dynamically adjusts its configuration to meet diverse task demands, from delicate assemblies to rapid operations, all while prioritizing energy efficiency.
+By leveraging AI, ASIRA bridges the gap between hardware and software, enabling quick, autonomous adaptation and optimization. This revolution in automation sets new standards in precision, flexibility, and sustainability.",Robotics Engineering,2-10 employees,Non Profit,"Stadtkreis 5 Industriequartier, Zurich, Switzerland",Switzerland,ethz.ch,https://www.linkedin.com/company/asiraethz
+Zurich Robotics Roundtable,"The Zurich Robotics Roundtable is a new meetup series for robotics founders, operators, researchers, and investors. Our goal is to foster real conversations, share hard-won lessons, and strengthen the robotics community in Zurich.
+
+Want to get involved? Reach out if you're interested in speaking, sponsoring, or helping us organize future events!
+
+Join us on Discord: https://discord.gg/HvY7Svtz",Robotics Engineering,51-200 employees,Non Profit,"Zurich, Zurich, Switzerland",Switzerland,lu.ma,https://www.linkedin.com/company/zurich-robotics-roundtable
+Déploya,"Déploya addresses high safety risks, long installation times, and frequent errors associated with conventional scaffolding systems that rely heavily on manual work.
+
+We developed a fast-deployable vertical grid used primarily for the installation of ventilated façades and cladding systems. The grid is based on origami folding and self-assembling principles, enabling rapid deployment and incorporating integrated rails for mobile robotic tools. This allows the automation of key façade tasks such as marking, drilling, and potentially full panel assembly.",Robotics Engineering,2-10 employees,Privately Held,"Lausanne, Vaud, Switzerland",Switzerland,deploya.ch,https://www.linkedin.com/company/deploya-robotics
+AATB,"AATB – Andrea Anner and Thibault Brevet – is an artist duo investigating human-machine interactions through robotics and industrial automation beyond factory settings. Their practice integrates software programming, electronics, mechanical engineering, and precision machining to critically explore how robotics enters everyday life. Live and work in Zurich and Marseille.
+
+Their work has been exhibited at ZKM (Karlsruhe), V&A Dundee, Ars Electronica (Linz), Chengdu Biennale, New Museum (New York), Venice Architecture Biennale, Zollverein (Essen), Unfold X (Seoul), APS Museum (Shanghai), HEK (Basel), Istanbul Design Biennial, Milan Design Week, and Museum für Gestaltung (Zürich). They have held residencies at CERN and Atelier Luma (Arles) and received the Swiss Design Award in 2021.
+
+AATB has taught at most Swiss art and design universities (ZHDK, ECAL, HEAD, FHNW, HKB, SUPSI) and internationally at Seoul University of the Arts, Design Academy Eindhoven, HFG Karlsruhe, and Iceland University of the Arts. They have lectured at conferences in Tokyo, Prague, The Hague, Seoul, Madrid, Berlin, Cannes, and Turin.",Robotics Engineering,2-10 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,aatb.ch,https://www.linkedin.com/company/aatb
+ReefRanger,Focus Project ReefRanger at ETH Zurich,Robotics Engineering,2-10 employees,Non Profit,"Stadtkreis 6, Zurich, Switzerland",Switzerland,ethz.ch,https://www.linkedin.com/company/reefranger
+Skya,Technology solutions for integrating autonomous aerial services. Startup working on securing and easing drone use.,Robotics Engineering,2-10 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,skya.ai,https://www.linkedin.com/company/skya-ai
+Focus-Technology,"Focus-Technology was founded as a result of research by one of its founders in optical technologies.
+Our mission is to improve existing optical magnifiers available in the market. These include surgical loupes and watchmaker magnifiers known as Micros.
+
+Our first product is Vultus, a variable magnification monocular for watchmaking and precision industries. 
+
+For more info, Check-out our website. Don’t hesitate to reach out !",Robotics Engineering,2-10 employees,Privately Held,"Lausanne, Vaud, Switzerland",Switzerland,focus-technology.ch,https://www.linkedin.com/company/focus-techno
+Henschel-Robotics,"Präzise Kleinantriebe mit intelligenter Steuerung - Swiss Made
+Henschel-Robotics entwickelt und fertigt hochintegrierte Servoantriebe für präzise Automatisierungsaufgaben. Unsere HDrive-Serie verbindet kompakte Bauform mit industrieller Steuerungstechnologie - ideal für Anwendungen, wo Bauraum, Präzision und Energieeffizienz entscheidend sind.
+Ihre Vorteile:
+Vollintegriert: Motor, Encoder, Leistungselektronik & Steuerung in einem kompakten Gehäuse
+Industriestandard-Kommunikation: EtherCAT, Ethernet
+Intelligente Regelung: Field-Oriented Control (FOC) für maximale Effizienz
+Swiss Engineering: Entwicklung und Fertigung in Winterthur
+Typische Anwendungen:
+Automation • Optik & Photonik • Robotik • Dosier- und Ventilsysteme • Verpackungsmaschinen • Textilmaschinen • Laborgeräte
+Gegründet 2015 | Made in Switzerland
+ Kontaktieren Sie uns für technische Daten oder Demos",Robotics Engineering,2-10 employees,Public Company,"Winterthur, Zurich, Switzerland",Switzerland,henschel-robotics.ch,https://www.linkedin.com/company/henschel-robotics
+Avero,ETH x ZHdK Focusproject creating a safe to interact drone,Robotics Engineering,11-50 employees,Partnership,"Zurich, Zurich, Switzerland",Switzerland,ethz.ch,https://www.linkedin.com/company/averodrone
+ROOBSTER,"ROOBSTER excels in delivering exceptional engineering services in the field of mechatronics. Backed by a top-tier education from ETH Switzerland, 20 years of extensive professional experience, a broad network, and meticulously structured approaches, we consistently provide high-quality solutions.",Robotics Engineering,2-10 employees,Privately Held,"Solothurn, Solothurn, Switzerland",Switzerland,roobster.io,https://www.linkedin.com/company/roobster
+Sciquoia AG,"At Sciquoia AG, we revolutionize pharmaceutical quality control by providing cutting-edge automation solutions for GMP-regulated laboratories. Our pre-qualified, off-the-shelf systems enhance precision, reduce human error, and ensure compliance, streamlining QC workflows for faster, more efficient, and scalable drug manufacturing processes.",Robotics Engineering,2-10 employees,Public Company,"Basel, Basel-Stadt, Switzerland",Switzerland,sciquoia.com,https://www.linkedin.com/company/sciquoia
+Raven Intelligent Systems,"Raven Intelligent Systems is building robotic site intelligence for high-risk worksites.
+
+Most construction sites still operate with fragmented visibility: manual inspections, fixed cameras, drone footage, disconnected reports and issues that are often documented too late. The result is costly blind spots around safety, security, materials and site progress.
+
+Raven turns this fragmented visibility into active site evidence.
+
+By combining cameras, drones and AI, Raven helps site teams detect, verify and document what is happening on site — from severe safety risks and after-hours intrusions to exposed materials, theft exposure and changing 3D site status.
+
+Unlike passive camera systems, safety-only AI alerts or hardware-heavy robots, Raven delivers adaptive coverage and decision-ready evidence reports. Fixed and mobile sensing are orchestrated around priority zones, risk areas and changing site conditions, giving teams broader visibility without adding inspection workload.
+
+Our mission is to help construction leaders act earlier, reduce blind spots and prevent critical risks from escalating into accidents, thefts, material losses, delays or disputes.
+
+Raven is defining a new category: robotic site intelligence — from passive site visibility to active site evidence.",Robotics Engineering,2-10 employees,Privately Held,"Lausanne, Vaud, Switzerland",Switzerland,ravenisystems.com,https://www.linkedin.com/company/raven-intelligent-systems
+getdone.ch,"GetDone is the official PUDU Robotics Partner in Switzerland and Liechtenstein and your direct point of contact for state-of-the-art service, cleaning, and transport robots.
+A shortage of skilled workers, increasing cost pressure, and growing operational demands present businesses with new challenges every day. GetDone delivers smart solutions: with PUDU robots, we automate repetitive and time-consuming tasks so that your team can focus on what truly matters.
+Our robotic solutions are deployed in:
+
+Hospitality & Hotels
+Facility Management & Cleaning
+Wholesale & Retail
+Industry & Logistics
+Care Homes & Nursing Facilities
+
+As part of Lehmann Trading AG — a Swiss company with a tradition dating back to 1944 — we combine global technology with local expertise. You benefit from personal consultation, professional installation, and reliable support from Switzerland.
+PUDU Robotics is one of the world's leading manufacturers of commercial service, cleaning, and transport robots — recognised with the Red Dot Award and holder of hundreds of core patents.",Robotics Engineering,2-10 employees,Privately Held,"Trub, Berne, Switzerland",Switzerland,getdone.ch,https://www.linkedin.com/company/getdone-ch
+Sherlock,Automate your visual inspection and assembly with our new collaborative robotics platform. Make your manufacturing more efficient and competitive today!,Robotics Engineering,2-10 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,sherlockrobotics.com,https://www.linkedin.com/company/sherlockrobotics
+NomadZ,Robocup Team Nomadz @ETH Zurich,Robotics Engineering,11-50 employees,Self Employed,"Zurich, Zurich, Switzerland",Switzerland,ethz.ch,https://www.linkedin.com/company/nomadz-ethz
+Aurobots GmbH,"Die Aurobots GmbH ist Ihr Partner für autonome Roboter in der Schweiz. Wir machen Roboter für jedes Unternehmen zugänglich im Bereich Reinigung, Logistik und Service.
+
+Wir entlasten Ihr Personal von monotonen, zeitintensiven Routineaufgaben, damit sich Ihr Team auf das Wesentliche konzentrieren kann. Durch den gezielten Einsatz autonomer Roboter steigern wir Ihre Effizienz mit planbaren Kosten. Wir passen unsere Lösungen immer individuell an Ihr Unternehmen an, entscheiden Sie flexibel, ob Sie mieten oder kaufen wollen.
+
+Sichern Sie sich jetzt Ihre Live-Demo vor Ort.",Robotics Engineering,2-10 employees,Public Company,"Wetzikon, Zurich, Switzerland",Switzerland,aurobots.ch,https://www.linkedin.com/company/aurobots
+Niederberger Engineering AG,"Unser Unternehmen bietet umfassende Konstruktions-, Engineering- und Simulationsdienstleistungen an. Wir sind spezialisiert auf präzise Berechnungen und nutzen fortschrittliche Simulationstechniken, um maßgeschneiderte Lösungen für unsere Kunden zu entwickeln. Unser Service umfasst sowohl die Konstruktion neuer Produkte als auch die Optimierung bestehender Designs. Wir stehen unseren Kunden mit professionellem Know-how zur Seite und garantieren hochwertige Ergebnisse. Unser Ziel ist es, durch unsere Dienstleistungen einen Mehrwert für Unternehmen in verschiedenen Branchen zu schaffen.",Robotics Engineering,2-10 employees,Public Company,"Altdorf, Uri, Switzerland",Switzerland,niederberger-engineering.ch,https://www.linkedin.com/company/niederberger-engineering-ag
+MONKEE ETHZ,Focus Project MONKEE at ETH Zurich,Robotics Engineering,2-10 employees,Self Employed,"Stadtkreis 6, Zurich, Switzerland",Switzerland,ethz.ch,https://www.linkedin.com/company/monkee-ethz
+Learn Robotics with ROS,"Learn Robotics with ROS is a robotics engineering education platform focused on helping students, engineers, technicians, universities and companies build real robotic applications.
+
+We teach practical workflows that go beyond isolated ROS2 tutorials:
+
+Simulation → Motion Planning → Vision → Docker → Real Robot Deployment
+
+Our goal is to help learners move from fragmented examples to complete robotics engineering skills that can be applied to real industrial automation tasks.
+
+Core topics include:
+
+• ROS2 software architecture
+• MoveIt motion planning and robot manipulation
+• Gazebo / simulation-based development
+• Computer vision and camera integration
+• Docker for robotics deployment
+• Real robot applications with 6-axis robots
+• Vision-guided pick-and-place workflows
+• Simulation-to-real deployment strategy
+
+The learning path starts in simulation, so no robot is required to begin. Students can build foundations with a computer running Ubuntu, then gradually move toward cameras, grippers, Jetson platforms and real robot deployment.
+
+Learn Robotics with ROS is designed for:
+
+• Students who want to become robotics engineers
+• Engineers and technicians who want practical robotics skills
+• Companies looking for applied robotics training
+• Universities and professors building modern robotics programs
+• System integrators interested in ROS2, vision and deployment workflows
+• Founders developing robotics and automation products
+
+Typical applications include pick-and-place, vision-guided manipulation, machine tending, bin picking concepts, inspection workflows and industrial robotics software architecture.
+
+We do not teach ROS2 as an isolated tool.
+
+We teach the complete engineering workflow required to design, simulate and deploy real robotic systems.
+
+Website: [www.learn-robotics-with-ros.com]
+Email: [ros.master.ai@gmail.com]",Robotics Engineering,Self-employed,Self Employed,"Châtel-Saint-Denis, Fribourg, Switzerland",Switzerland,learn-robotics-with-ros.com,https://www.linkedin.com/company/learn-robotics-with-ros
+KM-RoBoTa,,Robotics Engineering,2-10 employees,Privately Held,"Renens, Vaud, Switzerland",Switzerland,km-robota.com,https://www.linkedin.com/company/km-robota
+ROLFWEISS.COM,"Wir bieten nicht nur massgeschneiderte Lösungen, sondern auch ein engagiertes Team, das über umfassende Fachkenntnisse verfügt. Unser Fokus liegt darauf, die Effizienz Ihrer Prozesse zu steigern und gleichzeitig höchsten Qualitätsansprüchen gerecht zu werden. Indem wir modernste Technologien integrieren, gewährleisten wir eine reibungslose Abwicklung Ihrer Anliegen und schaffen damit Freiraum für Ihre Kernaktivitäten. Vertrauen Sie auf unsere Expertise, um Ihre Wettbewerbsfähigkeit im dynamischen Marktumfeld nachhaltig zu sichern.
+Service-Roboter finden Einsatz in Gastronomiebetrieben, Gesundheitseinrichtungen und industriellen Anlagen, wo sie den autonomen Transport von Gütern übernehmen.
+In Verkaufsflächen eingesetzt, sorgt ein innovativer Roboter für Präsenz und steigert erheblich die Effizienz der Arbeitsabläufe innerhalb eines Unternehmens. Ermöglichen Sie es Ihren Mitarbeitenden, sich auf andere wesentliche Aufgaben zu fokussieren, während einer unserer Service-Roboter sie im täglichen Betrieb zuverlässig und effektiv unterstützt. 
+Mit einer umfangreichen Auswahl an Modellen bieten wir Ihnen die ideale Lösung für jeden Bedarf und jede Umgebung. Vertrauen Sie auf unser Fachwissen und lassen Sie uns gemeinsam Ihre Betriebsabläufe optimieren.",Robotics Engineering,2-10 employees,Self Owned,"Bubendorf, Basel-Country, Switzerland",Switzerland,rolfweiss.com,https://www.linkedin.com/company/rolfweiss
+MSMD Robotics,"Developing the next generation of autonomous robots, for humans. Increasing productivity at every step and off-loading workers from repetitive tasks.",Robotics Engineering,2-10 employees,Partnership,"Zurich, Zurich, Switzerland",Switzerland,,https://www.linkedin.com/company/msmd-robotics
+Xperbot GmbH,"Where Intelligent Robotics Meets Strategic Implementation.
+
+Xperbot is a robotics specialist dedicated to accelerating automation adoption worldwide. We bridge the gap between innovation and implementation by connecting businesses with premier robotics manufacturers while providing comprehensive market-entry solutions - including regulatory compliance, certification, and localized support.
+
+Services:
+Providing promising robotics manufacturers to the local clients.
+Research and development in robotic manufacturing and software.
+Full-service for localized robotics Market intelligence, Regulatory compliance, Global certification, Supply chain management, Post-implementation support.
+Consulting and Training education in AI&robotics.
+Empowering organizations with cross-industry partnerships through integrated ecosystem resources.
+Facilitating technology transfer and adaptation.",Robotics Engineering,2-10 employees,Privately Held,"Zug, Zug, Switzerland",Switzerland,xperbot.ch,https://www.linkedin.com/company/xperbot2025
+Uzel Tec AG,Robotic Welding Automation for Naval Construction,Robotics Engineering,2-10 employees,Privately Held,"Baar, Zug, Switzerland",Switzerland,uzeltec.com,https://www.linkedin.com/company/uzel-tec-ag
+Pulsed Power Systems,"At Pulsed Power Systems, we design and build highly versatile, customisable robotic platforms for various payloads and applications. Visit our website and discover in interactive 3D how our robotic platform solutions adapt to various application areas.",Robotics Engineering,2-10 employees,Privately Held,"Wallbach, Aargau, Switzerland",Switzerland,pulsed-power.com,https://www.linkedin.com/company/pulsedpower
+microver.ch,A hands-on open-source project built to teach you what it takes to make robots.,Robotics Engineering,2-10 employees,Educational,"Écublens, Vaud, Switzerland",Switzerland,microver.ch,https://www.linkedin.com/company/microver-ch
+Neura,"Neura is an innovative company in the fields of technology, robotics, and artificial intelligence. Founded with a mission to revolutionize the way we interact with technology, Neura integrates expertise in robotic engineering to create solutions that address complex challenges across various industries. With a focus on cutting-edge research and development, Neura designs products that are not only efficient but also enrich everyday life. From intelligent robots supporting industrial automation to artificial intelligence systems that understand and respond to user needs, Neura leads the way toward a smarter and interconnected technological future.",Robotics Engineering,11-50 employees,Partnership,"Geneva, Geneva, Switzerland",Switzerland,,https://www.linkedin.com/company/neurahubid
+smarttechnics.ch,"Beratung, Verkauf und Wartung von Service- und Reinigungsrobotern.",Robotics Engineering,2-10 employees,Public Company,"Spreitenbach, Aargau, Switzerland",Switzerland,smarttechnics.ch,https://www.linkedin.com/company/smarttechnics-ch
+YuRo,"YuRo addresses the global care-giver staffing crisis by deploying autonomous, safe robotic assistants. We free up care-giver time for what matters most - attending personally to their residents and patients.",Robotics Engineering,2-10 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,yurobotics.ai,https://www.linkedin.com/company/yurobotics
+Baseline Robotics,"Our mission is to democratize hardware access for robotic manipulation. Train and evaluate your policies remotely on real stations, while we own, operate, and maintain the hardware.",Robotics Engineering,2-10 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,baseline-robotics.com,https://www.linkedin.com/company/baseline-robotics
+Neurobotix Technologies,Reinventing neuro-endovascular interventions with advanced robotics & artificial intelligence,Robotics Engineering,2-10 employees,Privately Held,"Delémont, Jura, Switzerland",Switzerland,,https://www.linkedin.com/company/neurobotix-technologies
+Theseus Robotics,"Autonomous robots that restock grocery shelves overnight, freeing your team to focus on customers. No capex. No IT integration. No on-site supervision.",Robotics Engineering,2-10 employees,Public Company,"Zurich, Zurich, Switzerland",Switzerland,theseusrobotics.ch,https://www.linkedin.com/company/theseus-robotics-ag
+Kirchenfeldrobotics,,Robotics Engineering,2-10 employees,Non Profit,"Kirchenfeld Quartier, Switzerland",Switzerland,kirchenfeldrobotics.ch,https://www.linkedin.com/company/kirchenfeldrobotics
+streetopia domestic smartness,"Autonome Robotik ist die Zukunft, welche wir energiefreundlich gestalten und zugänglich machen. 
+
+Unser Team entwickelt und implementiert jeweils die besten Robotiklösungen in den verschiedenen Bereichen wie Reinigung, Gesundheitswesen, Logistik und Sicherheit, für KMU und öffentliche Verwaltungen in der Schweiz und im europäischen Markt.  
+
+Dabei ist es uns wichtig, die Automation mit nachhaltiger Energie zu betreiben, hierbei steht unsere Solar-Sonnenschirmreihe ""Solaris"" im Vordergrund. Mehr dazu in unserem Onlineshop www.streetopia.tech",Robotics Engineering,11-50 employees,Public Company,"Teufen, Appenzell Outer-Rhoden, Switzerland",Switzerland,streetopia.ch,https://www.linkedin.com/company/streetopia-smartness
+Quanteon LLC,"Quanteon delivers robotic capability as an embedded operational layer.
+
+We integrate machines, sensors, software, missions, and field expertise into company workflows, so robotics becomes part of how work is planned, executed, documented, reviewed, and improved.
+
+We serve regulated and non-regulated environments. From one-off missions to 24/7/365 availability. From integrated off-the-shelf deployments to systems built around site-specific constraints.
+
+The goal is simple. Robotics should not create another isolated workflow. It should strengthen the workflow already serving the company.
+
+When done right, the robotic layer becomes almost invisible. It is noticed through safer access, better evidence, faster decisions, higher availability, fewer blind spots, and stronger asset knowledge.
+
+Our engineering standard is shaped by many years of operating technology in highly regulated industrial environments. We apply that standard wherever reliable work matters.
+
+Systems, missions, and machines serving company goals.
+
+Reliability is not a feature. It is the requirement.",Robotics Engineering,2-10 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,,https://www.linkedin.com/company/quanteonllc
+IEEE RAS ISI SBC,,Robotics Engineering,2-10 employees,Non Profit,"Geneva, Geneva, Switzerland",Switzerland,,https://www.linkedin.com/company/ieee-ras-isi-sbc
+April Robotics,"April Robotics is pioneering human-to-robot skill transfer for dexterous manipulation. Our foundation models learn dexterity directly from human demonstrations and turn it into deployable robot skill, making intricate manufacturing work both achievable and affordable. We're on a mission to give manufacturers a workforce that scales on demand and takes on the delicate, labor-intensive tasks that have long held production back.",Robotics Engineering,2-10 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,aprilrobotics.ai,https://www.linkedin.com/company/april-robotics
+Aurealium,"Ihr Partner für Robot-as-a-Service in Pflege, Gesundheit und häusliche Betreuung",Robotics Engineering,2-10 employees,Privately Held,Switzerland,Switzerland,aurealium.ch,https://www.linkedin.com/company/aurealium
+VirtuDesk,"VirtuDesk builds practical automation across the back-office systems your team already uses – from ERP, CRM and e-commerce to mailboxes, Excel, documents and reporting. Start with one recurring process, prove the ROI, then scale.",Robotics Engineering,2-10 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,virtudesk-automation.com,https://www.linkedin.com/company/virtudesk-pl
+Kinematics Robot Services GmbH,"Kinematics is a production company specializing in robotics and machine intelligence for the cultural, entertainment, fashion and luxury sectors. From concept through delivery, Kinematics designs innovative experiences, partnering with brands, institutions and individuals to create exceptional projects.
+
+Blending advanced robotics and automation technologies with artistic vision unlocks new possibilities in immersive environments and interactive experiences.
+
+Kinematics was founded by award-winning artists AATB as a spin-off of their internal production expertise, operating as an independent entity.",Robotics Engineering,2-10 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,kinematics.ch,https://www.linkedin.com/company/kinematics-robot-services
+IBASS,"Spinning off from the nuclear power plant sector, CEO Michael Strasser founded the Company in 1992. Today, IBASS [the engineering office for plant engineering, radiation protection and software development] offers an ever growing range of IN-PIPE ROBOTIC SYSTEMS for the inspection and processing of ferritic and austenitic pipes.
+
+We are proud to be the world leader in IN-PIPE penetration testing [PT] technology. Today, we can offer our global customers complete solutions for IN-PIPE grinding, -polishing, -cleaning and testing procedures of pipes and elbow segments. Remotely controlled, partially automated and in compliance with todays’ highest industry standards.
+
+IBASS systems and components meet the strictest industrial requirements and are certified for use in both the nuclear sector and by leading pipe manufacturers.
+
+At the heart of our company culture we value equality, respect, free thinking and continuous development.",Robotics Engineering,11-50 employees,Public Company,"Küssnacht, Schwyz, Switzerland",Switzerland,,https://www.linkedin.com/company/ibass
+IMRobotics,"Pudu Robotics Schweiz (IMRobotics) is a leading provider of innovative robotic solutions, specializing in automating cleaning processes for industrial, hospitality, and other commercial sectors. Based in Zurich, Switzerland, IMRobotics offers advanced technologies such as AI-powered cleaning, SLAM navigation, and multifunctional robots like the Pudu CC1, which combines sweeping, mopping, vacuuming, and scrubbing in a single device.
+
+Our mission is to automate repetitive tasks, enhance efficiency, and improve customer and employee satisfaction. We work closely with our partners to deliver customized solutions tailored to every application.
+
+Our Values:
+
+Innovation: Continuous development of cutting-edge technologies.
+Reliability: High-quality and long-lasting performance.
+Customer Satisfaction: Tailored solutions for unique requirements.
+Contact us to learn how IMRobotics can revolutionize your cleaning operations.
+--DE--
+IMRobotics ist ein führender Anbieter von innovativen Robotiklösungen, spezialisiert auf die Automatisierung von Reinigungsprozessen in der Industrie, Hotellerie und anderen gewerblichen Bereichen. Mit Sitz in Zürich, Schweiz, bietet IMRobotics fortschrittliche Technologien wie KI-gestützte Reinigung, SLAM-Navigation und multifunktionale Roboter wie den Pudu CC1 an, die Kehren, Wischen, Saugen und Schrubben in einem Gerät vereinen.
+
+Unser Ziel ist es, repetitive Aufgaben zu automatisieren, die Effizienz zu steigern und gleichzeitig die Zufriedenheit von Kunden und Mitarbeitern zu verbessern. Wir arbeiten eng mit unseren Partnern zusammen, um maßgeschneiderte Lösungen für jeden Anwendungsfall zu bieten.
+
+Unsere Werte:
+
+Innovation: Stetige Entwicklung moderner Technologien.
+Zuverlässigkeit: Hohe Qualität und dauerhafte Leistung.
+Kundenzufriedenheit: Maßgeschneiderte Lösungen für individuelle Bedürfnisse.
+Kontaktieren Sie uns, um zu erfahren, wie IMRobotics Ihre Reinigungsprozesse revolutionieren kann.",Robotics Engineering,2-10 employees,Privately Held,"Stadtkreis 11, Zurich, Switzerland",Switzerland,imrobotics.ch,https://www.linkedin.com/company/linkedin.comimrobotics
+Convobotics,"Newest Language Model technology, seamlessly integrated into your robots",Robotics Engineering,2-10 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,,https://www.linkedin.com/company/convobotics
+Nexobot,"Nexobot – Roboterlösungen für Reinigung, Service & Logistik
+
+Nexobot ist Ihr Partner für innovative Robotiklösungen in der Schweiz. Wir bieten autonome Reinigungs-, Service- und Lieferroboter, die Unternehmen helfen, Kosten zu senken, Personal zu entlasten und Prozesse zu optimieren.
+
+Unsere Roboter arbeiten zuverlässig, effizient und rund um die Uhr – ob in Gastronomie, Hotellerie, Einzelhandel, Gesundheitswesen oder Industrie. Mit flexiblen Kauf-, Miet- und Leasingmodellen ermöglichen wir jedem KMU einen einfachen Einstieg in die Welt der Automatisierung.",Robotics Engineering,2-10 employees,Privately Held,"St.Gallen, St Gallen, Switzerland",Switzerland,,https://www.linkedin.com/company/nexobot-ch
+PatientCentricCare.AI,"Empowering Patients & Transforming Healthcare
+
+For Patients - Take back control; Create, Update & Share your Personal Health Story with ease. Purchase 'MyHealthCanvas' Current or Complete Plans - and support Cancer Research UK.
+
+For Business Partners - Collaborate on the next generation of AI-driven care, Humanoid Healthcare.AI",Robotics Engineering,Self-employed,Self Employed,"Basel, Basel-Stadt, Switzerland",Switzerland,andysquire.ai,https://www.linkedin.com/company/patientcentriccare-ai
+TAIM AG,"Am Anfang steht der Entscheid.
+und davor das Verlangen nach mehr Zeit. für Schönes. für Wichtiges. für DICH.",Robotics Engineering,2-10 employees,Public Company,"Matzingen, Thurgau, Switzerland",Switzerland,taim.ch,https://www.linkedin.com/company/taim-ag
+native sentience,"native sentience builds embedded AI systems that allow humans to communicate with machines using natural language. Our technology translates human intent into safe, real-time, executable machine actions directly on-device, enabling reliable, private, and fully offline operation. We focus on intelligence at the point of execution, where sensing, reasoning, and control come together.
+
+native sentience - making machines understand.",Robotics Engineering,2-10 employees,Self Employed,"Zurich, Zurich, Switzerland",Switzerland,na-se.com,https://www.linkedin.com/company/native-sentience
+SkyGuard Intelligence,"SkyGuard is a drone-powered security company providing advanced aerial surveillance and rapid response support.
+By combining intelligent drone technology with real-time monitoring, SkyGuard delivers wider visibility, faster detection, and a stronger level of protection than traditional security methods alone.
+
+Our services are designed to help safeguard what matters most, SkyGuard brings security to a higher perspective helping prevent risks, respond quickly, and protect people, assets and operations with confidence.",Robotics Engineering,2-10 employees,Privately Held,"Zurich, Zurich, Switzerland",Switzerland,skyguardintelligence.com,https://www.linkedin.com/company/skyguardintelligence
+AllMoTechs,Engineering the Future Through Software and Hardware Harmony,Robotics Engineering,2-10 employees,Self Employed,"Zurich, Zurich, Switzerland",Switzerland,allmotechs.ch,https://www.linkedin.com/company/allmotechs
+DQZ Systems,DQZ systems provides affordable all-in-one servo actuators solutions with advanced control and sensing. Ideal for robotic researchers and hobbyist.,Robotics Engineering,Self-employed,Self Owned,"Geneva, Geneva, Switzerland",Switzerland,,https://www.linkedin.com/company/dqz-systems
+3Ztech,,Robotics Engineering,2-10 employees,Self Employed,"Le Séchey, Vaud, Switzerland",Switzerland,3ztech.ch,https://www.linkedin.com/company/3ztech

@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+central_data.db
+downloads/
+plans/
+logs/
+.clay_cookie.txt
+*.tmp

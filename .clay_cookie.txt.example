@@ -1,0 +1,4 @@
+PASTE_YOUR_CLAY_SESSION_COOKIE_HERE_ON_ONE_LINE
+# See README section 1: copy the -b '...' cookie string from a Clay
+# api.clay.com request (DevTools > Network > Copy as cURL), paste it here as a
+# single line, then rename this file to `.clay_cookie.txt`.
