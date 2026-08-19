@@ -342,11 +342,13 @@ with tab_download:
                     if os.path.exists(ledger_file):
                         try:
                             pdf_prog = pd.read_csv(ledger_file)
-                            pdf_sel = pdf_prog[pdf_prog["industry"].isin(selected_industries)]
-                            done_count = len(pdf_sel)
-                            pct = min(1.0, done_count / max(1, tot_ind))
-                            dl_progress_bar.progress(pct)
-                            dl_status_text.text(f"Downloading: {done_count} of {tot_ind} selected industries complete ({int(pct*100)}%)")
+                            col_i = "industry" if "industry" in pdf_prog.columns else ("Industry" if "Industry" in pdf_prog.columns else None)
+                            if col_i:
+                                pdf_sel = pdf_prog[pdf_prog[col_i].isin(selected_industries)]
+                                done_count = len(pdf_sel)
+                                pct = min(1.0, done_count / max(1, tot_ind))
+                                dl_progress_bar.progress(pct)
+                                dl_status_text.text(f"Downloading: {done_count} of {tot_ind} selected industries complete ({int(pct*100)}%)")
                         except Exception:
                             pass
                             
@@ -360,13 +362,18 @@ with tab_download:
 
     if os.path.exists(ledger_file):
         st.markdown(f"### Delivered Datasets and Metrics ({country_input})")
-        ledger_df = pd.read_csv(ledger_file)
-        if selected_industries:
-            ledger_df = ledger_df[ledger_df["industry"].isin(selected_industries)]
-        st.dataframe(ledger_df, use_container_width=True)
-        
-        delivered_total = safe_sum(ledger_df["unique_companies"]) if "unique_companies" in ledger_df.columns and not ledger_df.empty else 0
-        st.success(f"Total Unique Companies Delivered: {delivered_total:,} Unique Companies")
+        try:
+            ledger_df = pd.read_csv(ledger_file)
+            col_ind = "industry" if "industry" in ledger_df.columns else ("Industry" if "Industry" in ledger_df.columns else None)
+            if selected_industries and col_ind:
+                ledger_df = ledger_df[ledger_df[col_ind].isin(selected_industries)]
+            st.dataframe(ledger_df, use_container_width=True)
+            
+            col_uniq = "unique_companies" if "unique_companies" in ledger_df.columns else ("Count" if "Count" in ledger_df.columns else None)
+            delivered_total = safe_sum(ledger_df[col_uniq]) if col_uniq and not ledger_df.empty else 0
+            st.success(f"Total Unique Companies Delivered: {delivered_total:,} Unique Companies")
+        except Exception as ex:
+            st.warning(f"Unable to display ledger metrics: {ex}")
 
 with tab_geo:
     st.subheader("Country Geographic Division Settings")

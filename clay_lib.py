@@ -113,8 +113,21 @@ BASIC_FIELDS = [
 
 
 def _cookie():
-    with open(COOKIE_FILE) as f:
-        return f.read().strip()
+    if os.environ.get("CLAY_COOKIE"):
+        return os.environ.get("CLAY_COOKIE").strip()
+    if os.path.exists(COOKIE_FILE):
+        try:
+            with open(COOKIE_FILE, encoding="utf-8", errors="replace") as f:
+                return f.read().strip()
+        except Exception:
+            pass
+    try:
+        import streamlit as st
+        if "CLAY_COOKIE" in st.secrets:
+            return str(st.secrets["CLAY_COOKIE"]).strip()
+    except Exception:
+        pass
+    return ""
 
 
 def _post(url, body, retries=3, timeout=30):
