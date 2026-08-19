@@ -41,22 +41,58 @@ st.set_page_config(
     layout="wide"
 )
 
+# Custom CSS to hide Streamlit header clutter (Share, GitHub, Star, Edit, Cycle) and style top navbar
+st.markdown("""
+    <style>
+    header[data-testid="stHeader"] { display: none !important; }
+    footer { display: none !important; }
+    #MainMenu { visibility: hidden !important; }
+    .stApp { margin-top: -40px; }
+    
+    .top-nav {
+        background-color: #1e293b;
+        padding: 16px 24px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #334155;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .metric-card {
+        background-color: #0f172a;
+        padding: 14px 18px;
+        border-radius: 8px;
+        border: 1px solid #1e293b;
+        text-align: center;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # Shared Single-Login Authentication
 TEAM_USER_ID = os.environ.get("CLAY_USER_ID", "team")
 TEAM_PASSWORD = os.environ.get("CLAY_PASSWORD", "clay2026")
+
+try:
+    if "CLAY_USER_ID" in st.secrets:
+        TEAM_USER_ID = str(st.secrets["CLAY_USER_ID"]).strip()
+    if "CLAY_PASSWORD" in st.secrets:
+        TEAM_PASSWORD = str(st.secrets["CLAY_PASSWORD"]).strip()
+except Exception:
+    pass
 
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
 def login_screen():
-    st.markdown("### Clay Data Platform - Single Team Login")
+    st.markdown("### Clay Data Platform - Team Login")
     st.caption("Please enter your team credentials to access the extraction workspace.")
     
     col_login, _ = st.columns([1, 2])
     with col_login:
         user_id = st.text_input("User ID")
         password = st.text_input("Password", type="password")
-        if st.button("Login", type="primary"):
+        if st.button("Login", type="primary", use_container_width=True):
             if user_id.strip() == TEAM_USER_ID and password.strip() == TEAM_PASSWORD:
                 st.session_state["authenticated"] = True
                 st.rerun()
@@ -67,13 +103,14 @@ if not st.session_state["authenticated"]:
     login_screen()
     st.stop()
 
-# Header
-head_col1, head_col2 = st.columns([4, 1])
+# Fixed Top Header with aligned Logout button
+head_col1, head_col2 = st.columns([5, 1])
 with head_col1:
     st.title("Clay Data Platform")
-    st.caption("Centralized Company Data Extraction, Deduplication and Portfolio System")
+    st.caption("Centralized Company Data Extraction, Deduplication and Portfolio Engine")
 with head_col2:
-    if st.button("Logout"):
+    st.write("") # Alignment spacing
+    if st.button("Logout", type="secondary", use_container_width=True):
         st.session_state["authenticated"] = False
         st.rerun()
 
@@ -109,7 +146,6 @@ with tab_download:
             
         country_input = country_input.strip()
         
-        # Check Geo Division Status for selected country
         geo_dict = getattr(clay_geo, "GEO", {})
         has_geo = country_input in geo_dict
         if has_geo:
@@ -192,7 +228,6 @@ with tab_download:
                 proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
                 
                 total_to_count = len(selected_industries)
-                counted_so_far = 0
                 
                 while True:
                     line = proc.stdout.readline()
@@ -205,7 +240,7 @@ with tab_download:
                             tot_i = int(m.group(2))
                             pct = min(1.0, current_i / max(1, tot_i))
                             count_progress_bar.progress(pct)
-                            count_status.text(f"Counting: {current_i} of {tot_i} industries ({int(pct*100)}%) - {line.strip()}")
+                            count_status.text(f"Counting: {current_i} of {tot_i} industries ({int(pct*100)}%)")
                 
                 proc.wait()
                 if proc.returncode == 0:
@@ -256,7 +291,7 @@ with tab_download:
         btn_download = st.button("Run Step 3: Download Data", type="primary", use_container_width=True, disabled=not plan_approved)
 
     # ----------------------------------------------------
-    # DISPLAY RESULTS FOR STEP 1 AND STEP 2
+    # DISPLAY RESULTS FOR STEP 1 AND STEP 2 (ALL SELECTED INDUSTRIES INCLUDED)
     # ----------------------------------------------------
     if os.path.exists(counts_file):
         st.markdown(f"### Step 1 Count Results ({country_input})")
@@ -268,45 +303,98 @@ with tab_download:
         st.info(f"Total Clay Target Rows: {tot_c:,} rows across {len(cdf)} selected industries.")
 
     planned_data = []
-    for ind in selected_industries:
-        prefix = slugify(f"{ind}_{country_input}")
-        pj = f"plans/clicklist_{prefix}.json"
-        if os.path.exists(pj):
+    if selected_industries:
+        counts_lookup = {}
+        if os.path.exists(counts_file):
             try:
-                p_slices = json.load(open(pj))
-                num_slices = len(p_slices)
-                unc_csv = f"plans/clicklist_{prefix}_uncovered.csv"
-                gap = 0
-                if os.path.exists(unc_csv):
-                    with open(unc_csv) as uf:
-                        gap = sum(safe_int(r.get("count")) for r in csv.DictReader(uf))
-                exp = 0
-                if os.path.exists(counts_file):
-                    cdf = pd.read_csv(counts_file)
-                    row_c = cdf[cdf["Industry"] == ind]
-                    if not row_c.empty:
-                        exp = safe_int(row_c.iloc[0]["Count"])
-                reachable = max(0, exp - gap) if exp else sum(safe_int(s.get("count")) for s in p_slices)
-                cov_pct = round(100 * reachable / exp, 1) if exp else 100.0
-                planned_data.append({
-                    "Industry": ind,
-                    "Clay Target Count": exp,
-                    "Estimated Reachable": reachable,
-                    "Unreachable Gap": gap,
-                    "Est Coverage %": f"{cov_pct}%",
-                    "Planned Slices": num_slices
-                })
+                cdf_lk = pd.read_csv(counts_file)
+                for _, r in cdf_lk.iterrows():
+                    counts_lookup[str(r.get("Industry")).strip()] = safe_int(r.get("Count"))
             except Exception:
                 pass
+
+        for ind in selected_industries:
+            prefix = slugify(f"{ind}_{country_input}")
+            pj = f"plans/clicklist_{prefix}.json"
+            exp = counts_lookup.get(ind, 0)
+            
+            num_slices = 0
+            gap = 0
+            reachable = exp
+            status_str = "Planned" if os.path.exists(pj) else "Not Planned Yet"
+
+            if os.path.exists(pj):
+                try:
+                    p_slices = json.load(open(pj))
+                    num_slices = len(p_slices)
+                    unc_csv = f"plans/clicklist_{prefix}_uncovered.csv"
+                    if os.path.exists(unc_csv):
+                        with open(unc_csv) as uf:
+                            gap = sum(safe_int(r.get("count")) for r in csv.DictReader(uf))
+                    reachable = max(0, exp - gap) if exp else sum(safe_int(s.get("count")) for s in p_slices)
+                except Exception:
+                    pass
+
+            cov_pct = round(100 * reachable / exp, 1) if exp else 100.0
+
+            planned_data.append({
+                "Industry": ind,
+                "Clay Target Count": exp,
+                "Estimated Reachable": reachable,
+                "Unreachable Gap": gap,
+                "Est Coverage %": f"{cov_pct}%",
+                "Planned Slices": num_slices,
+                "Status": status_str
+            })
 
     if planned_data:
         st.markdown(f"### Step 2 Plan & Coverage Estimate Results ({country_input})")
         pdf_plan = pd.DataFrame(planned_data)
         st.dataframe(pdf_plan, use_container_width=True)
+        
         tot_reach = sum(r["Estimated Reachable"] for r in planned_data)
         tot_target = sum(r["Clay Target Count"] for r in planned_data)
-        overall_cov = round(100 * tot_reach / max(1, tot_target), 1)
-        st.success(f"Plan Summary: Estimated Reachable Unique Companies: {tot_reach:,} / {tot_target:,} ({overall_cov}% Estimated Coverage). Check the approval box in Step 3 above to proceed to download.")
+        overall_cov = round(100 * tot_reach / max(1, tot_target), 1) if tot_target else 100.0
+        st.success(f"Plan Summary: Estimated Reachable Unique Companies: {tot_reach:,} / {tot_target:,} ({overall_cov}% Estimated Coverage). All {len(planned_data)} selected industries included.")
+
+        # ----------------------------------------------------
+        # PER-INDUSTRY RE-PLANNING & INDIVIDUAL EXECUTION
+        # ----------------------------------------------------
+        st.divider()
+        st.markdown("#### Individual Industry Re-Planning & Single-Industry Execution")
+        st.caption("If you want to re-plan or download a single specific industry without altering or re-running the rest of your plan, select it below:")
+        
+        col_single_ind, col_single_replan, col_single_dl = st.columns([2, 1, 1])
+        
+        with col_single_ind:
+            single_ind_choice = st.selectbox("Select Industry to Manage:", options=selected_industries)
+            
+        with col_single_replan:
+            btn_single_replan = st.button(f"Re-Plan '{single_ind_choice[:20]}...'", use_container_width=True)
+            if btn_single_replan:
+                with st.spinner(f"Re-generating partition plan for '{single_ind_choice}'..."):
+                    cmd = [sys.executable, "-u", "generate_clicklist.py", single_ind_choice, country_input]
+                    subprocess.run(cmd, capture_output=True, text=True)
+                    st.success(f"Re-plan complete for '{single_ind_choice}'!")
+                    st.rerun()
+
+        with col_single_dl:
+            btn_single_dl = st.button(f"Download '{single_ind_choice[:20]}...'", type="primary", use_container_width=True)
+            if btn_single_dl:
+                st.markdown(f"Executing single-industry download for `{single_ind_choice}`...")
+                cmd_run = [sys.executable, "-u", "run_nontech.py", country_input, "--only", single_ind_choice]
+                proc = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+                log_box = st.empty()
+                logs_single = []
+                while True:
+                    l = proc.stdout.readline()
+                    if not l and proc.poll() is not None:
+                        break
+                    if l:
+                        logs_single.append(l.strip())
+                        log_box.code("\n".join(logs_single[-15:]))
+                proc.wait()
+                st.success(f"Download complete for '{single_ind_choice}'!")
 
     # Execute Step 3 Download with Progress Bar
     if btn_download:
