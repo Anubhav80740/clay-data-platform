@@ -5,6 +5,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 import pandas as pd
 import streamlit as st
 
@@ -41,33 +42,72 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS to hide Streamlit header clutter (Share, GitHub, Star, Edit, Cycle) and style top navbar
-st.markdown("""
-    <style>
-    header[data-testid="stHeader"] { display: none !important; }
-    footer { display: none !important; }
-    #MainMenu { visibility: hidden !important; }
-    .stApp { margin-top: -40px; }
-    
-    .top-nav {
-        background-color: #1e293b;
-        padding: 16px 24px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        border: 1px solid #334155;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .metric-card {
-        background-color: #0f172a;
-        padding: 14px 18px;
-        border-radius: 8px;
-        border: 1px solid #1e293b;
-        text-align: center;
-    }
-    </style>
-""", unsafe_allow_html=True)
+# Theme State Handling (Light vs Dark Mode)
+if "theme_mode" not in st.session_state:
+    st.session_state["theme_mode"] = "dark"
+
+if "current_process" not in st.session_state:
+    st.session_state["current_process"] = None
+
+# Inject Clean Responsive CSS with Dark/Light Theme Support & Hidden Headers
+if st.session_state["theme_mode"] == "dark":
+    theme_css = """
+        <style>
+        header[data-testid="stHeader"] { display: none !important; }
+        footer { display: none !important; }
+        #MainMenu { visibility: hidden !important; }
+        .stApp { margin-top: -30px; background-color: #0b0f19; color: #f1f5f9; }
+        
+        .top-navbar {
+            background-color: #111827;
+            padding: 16px 24px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            border: 1px solid #1f2937;
+        }
+        .metric-box {
+            background-color: #111827;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #1f2937;
+            text-align: center;
+        }
+        .badge-green { background-color: #065f46; color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+        .badge-orange { background-color: #92400e; color: #fbbf24; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+        .badge-blue { background-color: #1e40af; color: #60a5fa; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+        </style>
+    """
+else:
+    theme_css = """
+        <style>
+        header[data-testid="stHeader"] { display: none !important; }
+        footer { display: none !important; }
+        #MainMenu { visibility: hidden !important; }
+        .stApp { margin-top: -30px; background-color: #f8fafc; color: #0f172a; }
+        
+        .top-navbar {
+            background-color: #ffffff;
+            padding: 16px 24px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .metric-box {
+            background-color: #ffffff;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .badge-green { background-color: #d1fae5; color: #065f46; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+        .badge-orange { background-color: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+        .badge-blue { background-color: #dbeafe; color: #1e40af; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+        </style>
+    """
+
+st.markdown(theme_css, unsafe_allow_html=True)
 
 # Shared Single-Login Authentication
 TEAM_USER_ID = os.environ.get("CLAY_USER_ID", "team")
@@ -103,13 +143,33 @@ if not st.session_state["authenticated"]:
     login_screen()
     st.stop()
 
-# Fixed Top Header with aligned Logout button
-head_col1, head_col2 = st.columns([5, 1])
-with head_col1:
+# Fixed Top Navigation Bar (Logo, Theme Toggle, Stop Button, Logout)
+nav_col1, nav_col2, nav_col3, nav_col4 = st.columns([4, 1.2, 1.2, 1])
+
+with nav_col1:
     st.title("Clay Data Platform")
     st.caption("Centralized Company Data Extraction, Deduplication and Portfolio Engine")
-with head_col2:
-    st.write("") # Alignment spacing
+
+with nav_col2:
+    st.write("")
+    theme_btn_label = "☀️ Light Mode" if st.session_state["theme_mode"] == "dark" else "🌙 Dark Mode"
+    if st.button(theme_btn_label, use_container_width=True):
+        st.session_state["theme_mode"] = "light" if st.session_state["theme_mode"] == "dark" else "dark"
+        st.rerun()
+
+with nav_col3:
+    st.write("")
+    if st.button("Stop Process", type="secondary", use_container_width=True):
+        proc = st.session_state.get("current_process")
+        if proc and proc.poll() is None:
+            proc.terminate()
+            st.session_state["current_process"] = None
+            st.warning("Active process stopped by user.")
+        else:
+            st.info("No active process running.")
+
+with nav_col4:
+    st.write("")
     if st.button("Logout", type="secondary", use_container_width=True):
         st.session_state["authenticated"] = False
         st.rerun()
@@ -130,31 +190,36 @@ with tab_download:
     
     with col_c:
         st.markdown("**1. Target Country Selection**")
-        def_idx = ALL_CLAY_COUNTRIES.index("Spain") if "Spain" in ALL_CLAY_COUNTRIES else 0
-        country_select = st.selectbox(
+        
+        # Country dropdown - STARTS EMPTY (No default Spain)
+        country_options = ["-- Select Target Country --"] + ALL_CLAY_COUNTRIES
+        selected_country_raw = st.selectbox(
             "Search and select country (218 countries available):",
-            options=ALL_CLAY_COUNTRIES,
-            index=def_idx,
-            help="Type to search any country name"
+            options=country_options,
+            index=0,
+            help="Select any country from the dropdown"
         )
         
         custom_country_toggle = st.checkbox("Enter custom country name manually")
         if custom_country_toggle:
-            country_input = st.text_input("Manual Country Name", country_select)
+            country_input = st.text_input("Manual Country Name", "")
         else:
-            country_input = country_select
+            country_input = "" if selected_country_raw == "-- Select Target Country --" else selected_country_raw
             
         country_input = country_input.strip()
         
-        geo_dict = getattr(clay_geo, "GEO", {})
-        has_geo = country_input in geo_dict
-        if has_geo:
-            g_cfg = geo_dict[country_input]
-            num_cities = len(g_cfg.get("cities", []))
-            num_states = len(g_cfg.get("states", []))
-            st.info(f"Geographic Division Active for {country_input}: {num_cities} Cities, {num_states} States/Regions.")
+        if country_input:
+            geo_dict = getattr(clay_geo, "GEO", {})
+            has_geo = country_input in geo_dict
+            if has_geo:
+                g_cfg = geo_dict[country_input]
+                num_cities = len(g_cfg.get("cities", []))
+                num_states = len(g_cfg.get("states", []))
+                st.info(f"Geographic Division Active for {country_input}: {num_cities} Cities, {num_states} States/Regions.")
+            else:
+                st.warning(f"Note: {country_input} has no custom city list defined. Default size/revenue fallbacks will be used.")
         else:
-            st.warning(f"Note: {country_input} has no custom city list defined. Default size/revenue fallbacks will be used. You can add cities under 'Country Division Settings'.")
+            st.caption("Please select a target country above to get started.")
 
     with col_i:
         st.markdown("**2. Target Industries Selection**")
@@ -195,8 +260,8 @@ with tab_download:
         return re.sub(r'[^a-zA-Z0-9]+', '_', text).strip('_')
 
     country_slug = slugify(country_input) if country_input else ""
-    counts_file = f"{country_slug}_nontech_counts.csv"
-    ledger_file = f"{country_slug}_nontech_progress.csv"
+    counts_file = f"{country_slug}_nontech_counts.csv" if country_slug else ""
+    ledger_file = f"{country_slug}_nontech_progress.csv" if country_slug else ""
     ind_file = "selected_industries.json"
 
     step_col1, step_col2, step_col3 = st.columns([1, 1, 1])
@@ -207,48 +272,45 @@ with tab_download:
     with step_col1:
         st.markdown("#### Step 1: Count Target Rows")
         st.caption("Free counting query. Estimates raw Clay target counts.")
-        btn_count = st.button("Run Step 1: Count", use_container_width=True)
+        btn_count = st.button("Run Step 1: Count", use_container_width=True, disabled=not country_input or not selected_industries)
 
         if btn_count:
-            if not country_input:
-                st.error("Please select a country.")
-            elif not selected_industries:
-                st.error("Please select at least one industry.")
+            with open(ind_file, "w", encoding="utf-8") as f:
+                json.dump(selected_industries, f)
+            if os.path.exists(counts_file):
+                os.remove(counts_file)
+            
+            count_progress_bar = st.progress(0.0)
+            count_status = st.empty()
+            count_status.text(f"Starting count for {len(selected_industries)} industries in {country_input}...")
+            
+            cmd = [sys.executable, "-u", "count_industries.py", country_input, "--industries-file", ind_file]
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+            st.session_state["current_process"] = proc
+            
+            total_to_count = len(selected_industries)
+            
+            while True:
+                line = proc.stdout.readline()
+                if not line and proc.poll() is not None:
+                    break
+                if line:
+                    m = re.search(r'\[(\d+)/(\d+)\]', line)
+                    if m:
+                        current_i = int(m.group(1))
+                        tot_i = int(m.group(2))
+                        pct = min(1.0, current_i / max(1, tot_i))
+                        count_progress_bar.progress(pct)
+                        count_status.text(f"Counting: {current_i} of {tot_i} industries ({int(pct*100)}%)")
+            
+            proc.wait()
+            st.session_state["current_process"] = None
+            if proc.returncode == 0:
+                count_progress_bar.progress(1.0)
+                count_status.text("Counting complete.")
+                st.success("Step 1 Count complete.")
             else:
-                with open(ind_file, "w", encoding="utf-8") as f:
-                    json.dump(selected_industries, f)
-                if os.path.exists(counts_file):
-                    os.remove(counts_file)
-                
-                count_progress_bar = st.progress(0.0)
-                count_status = st.empty()
-                count_status.text(f"Starting count for {len(selected_industries)} industries in {country_input}...")
-                
-                cmd = [sys.executable, "-u", "count_industries.py", country_input, "--industries-file", ind_file]
-                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
-                
-                total_to_count = len(selected_industries)
-                
-                while True:
-                    line = proc.stdout.readline()
-                    if not line and proc.poll() is not None:
-                        break
-                    if line:
-                        m = re.search(r'\[(\d+)/(\d+)\]', line)
-                        if m:
-                            current_i = int(m.group(1))
-                            tot_i = int(m.group(2))
-                            pct = min(1.0, current_i / max(1, tot_i))
-                            count_progress_bar.progress(pct)
-                            count_status.text(f"Counting: {current_i} of {tot_i} industries ({int(pct*100)}%)")
-                
-                proc.wait()
-                if proc.returncode == 0:
-                    count_progress_bar.progress(1.0)
-                    count_status.text("Counting complete.")
-                    st.success("Step 1 Count complete.")
-                else:
-                    st.error("Step 1 Count failed.")
+                st.error("Step 1 Count failed or stopped.")
 
     # ----------------------------------------------------
     # STEP 2: PLAN & ESTIMATE COVERAGE
@@ -256,29 +318,27 @@ with tab_download:
     with step_col2:
         st.markdown("#### Step 2: Plan & Estimate Coverage")
         st.caption("Free planning query. Partitions slices and estimates reachable coverage.")
-        btn_plan = st.button("Run Step 2: Generate Plan", use_container_width=True)
+        btn_plan = st.button("Run Step 2: Generate Plan", use_container_width=True, disabled=not country_input or not selected_industries)
 
         if btn_plan:
-            if not country_input:
-                st.error("Please select a country.")
-            elif not selected_industries:
-                st.error("Please select at least one industry.")
-            else:
-                with open(ind_file, "w", encoding="utf-8") as f:
-                    json.dump(selected_industries, f)
-                    
-                plan_progress_bar = st.progress(0.0)
-                plan_status = st.empty()
-                tot_p = len(selected_industries)
+            with open(ind_file, "w", encoding="utf-8") as f:
+                json.dump(selected_industries, f)
                 
-                for idx, ind in enumerate(selected_industries, 1):
-                    plan_status.text(f"Planning {idx} of {tot_p}: {ind}...")
-                    cmd = [sys.executable, "-u", "generate_clicklist.py", ind, country_input]
-                    subprocess.run(cmd, capture_output=True, text=True)
-                    plan_progress_bar.progress(idx / tot_p)
-                    
-                plan_status.text("Planning complete.")
-                st.success("Step 2 Planning complete. Review estimated coverage below.")
+            plan_progress_bar = st.progress(0.0)
+            plan_status = st.empty()
+            tot_p = len(selected_industries)
+            
+            for idx, ind in enumerate(selected_industries, 1):
+                plan_status.text(f"Planning {idx} of {tot_p}: {ind}...")
+                cmd = [sys.executable, "-u", "generate_clicklist.py", ind, country_input]
+                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+                st.session_state["current_process"] = proc
+                proc.wait()
+                plan_progress_bar.progress(idx / tot_p)
+                
+            st.session_state["current_process"] = None
+            plan_status.text("Planning complete.")
+            st.success("Step 2 Planning complete. Review estimated coverage below.")
 
     # ----------------------------------------------------
     # STEP 3: DOWNLOAD & DELIVER WITH PROGRESS BAR
@@ -288,22 +348,33 @@ with tab_download:
         st.caption("Executes download, incremental merge, and deduplication.")
         
         plan_approved = st.checkbox("I approve the plan & estimated coverage", key="plan_approved_check")
-        btn_download = st.button("Run Step 3: Download Data", type="primary", use_container_width=True, disabled=not plan_approved)
+        btn_download = st.button("Run Step 3: Download Data", type="primary", use_container_width=True, disabled=not plan_approved or not country_input or not selected_industries)
 
     # ----------------------------------------------------
-    # DISPLAY RESULTS FOR STEP 1 AND STEP 2 (ALL SELECTED INDUSTRIES INCLUDED)
+    # PERSISTENT COUNTS LOAD & DISPLAY FOR SELECTED COUNTRY
     # ----------------------------------------------------
-    if os.path.exists(counts_file):
-        st.markdown(f"### Step 1 Count Results ({country_input})")
-        cdf = pd.read_csv(counts_file)
-        if selected_industries:
-            cdf = cdf[cdf["Industry"].isin(selected_industries)]
-        st.dataframe(cdf, use_container_width=True)
-        tot_c = safe_sum(cdf["Count"]) if "Count" in cdf.columns and not cdf.empty else 0
-        st.info(f"Total Clay Target Rows: {tot_c:,} rows across {len(cdf)} selected industries.")
+    if country_input and os.path.exists(counts_file):
+        try:
+            cdf = pd.read_csv(counts_file)
+            if selected_industries:
+                cdf_sel = cdf[cdf["Industry"].isin(selected_industries)]
+            else:
+                cdf_sel = cdf
+                
+            if not cdf_sel.empty:
+                st.markdown(f"### Step 1 Count Results ({country_input})")
+                st.caption("Cached counts loaded. Click 'Run Step 1: Count' anytime to refresh counts from Clay.")
+                st.dataframe(cdf_sel, use_container_width=True)
+                tot_c = safe_sum(cdf_sel["Count"]) if "Count" in cdf_sel.columns else 0
+                st.info(f"Total Clay Target Rows: {tot_c:,} rows across {len(cdf_sel)} selected industries.")
+        except Exception:
+            pass
 
+    # ----------------------------------------------------
+    # STEP 2 PLAN RESULTS & IN-TABLE PER-INDUSTRY RE-PLANNING
+    # ----------------------------------------------------
     planned_data = []
-    if selected_industries:
+    if country_input and selected_industries:
         counts_lookup = {}
         if os.path.exists(counts_file):
             try:
@@ -342,7 +413,7 @@ with tab_download:
                 "Clay Target Count": exp,
                 "Estimated Reachable": reachable,
                 "Unreachable Gap": gap,
-                "Est Coverage %": f"{cov_pct}%",
+                "Est Coverage %": cov_pct,
                 "Planned Slices": num_slices,
                 "Status": status_str
             })
@@ -350,51 +421,70 @@ with tab_download:
     if planned_data:
         st.markdown(f"### Step 2 Plan & Coverage Estimate Results ({country_input})")
         pdf_plan = pd.DataFrame(planned_data)
-        st.dataframe(pdf_plan, use_container_width=True)
         
+        # Display Overview Metric Cards
         tot_reach = sum(r["Estimated Reachable"] for r in planned_data)
         tot_target = sum(r["Clay Target Count"] for r in planned_data)
         overall_cov = round(100 * tot_reach / max(1, tot_target), 1) if tot_target else 100.0
-        st.success(f"Plan Summary: Estimated Reachable Unique Companies: {tot_reach:,} / {tot_target:,} ({overall_cov}% Estimated Coverage). All {len(planned_data)} selected industries included.")
+        
+        m_col1, m_col2, m_col3 = st.columns(3)
+        with m_col1:
+            st.metric("Total Target Rows", f"{tot_target:,}")
+        with m_col2:
+            st.metric("Estimated Reachable Companies", f"{tot_reach:,}")
+        with m_col3:
+            st.metric("Overall Estimated Coverage", f"{overall_cov}%")
+
+        st.dataframe(pdf_plan, use_container_width=True)
 
         # ----------------------------------------------------
-        # PER-INDUSTRY RE-PLANNING & INDIVIDUAL EXECUTION
+        # IN-TABLE PER-INDUSTRY RE-PLANNING ACTIONS
         # ----------------------------------------------------
-        st.divider()
-        st.markdown("#### Individual Industry Re-Planning & Single-Industry Execution")
-        st.caption("If you want to re-plan or download a single specific industry without altering or re-running the rest of your plan, select it below:")
+        st.markdown("#### In-Table Per-Industry Re-Planning & Fine-Tuning")
+        st.caption("If any industry coverage is not sufficient, re-plan that specific industry below without changing your selected industries:")
         
-        col_single_ind, col_single_replan, col_single_dl = st.columns([2, 1, 1])
-        
-        with col_single_ind:
-            single_ind_choice = st.selectbox("Select Industry to Manage:", options=selected_industries)
+        for p_row in planned_data:
+            ind_name = p_row["Industry"]
+            cov_val = p_row["Est Coverage %"]
+            c_target = p_row["Clay Target Count"]
+            c_reach = p_row["Estimated Reachable"]
+            c_status = p_row["Status"]
+
+            badge = "🟢 High Coverage" if cov_val >= 95.0 else ("🟡 Partial Coverage" if cov_val >= 80.0 else "🔴 Gaps Identified")
             
-        with col_single_replan:
-            btn_single_replan = st.button(f"Re-Plan '{single_ind_choice[:20]}...'", use_container_width=True)
-            if btn_single_replan:
-                with st.spinner(f"Re-generating partition plan for '{single_ind_choice}'..."):
-                    cmd = [sys.executable, "-u", "generate_clicklist.py", single_ind_choice, country_input]
-                    subprocess.run(cmd, capture_output=True, text=True)
-                    st.success(f"Re-plan complete for '{single_ind_choice}'!")
-                    st.rerun()
-
-        with col_single_dl:
-            btn_single_dl = st.button(f"Download '{single_ind_choice[:20]}...'", type="primary", use_container_width=True)
-            if btn_single_dl:
-                st.markdown(f"Executing single-industry download for `{single_ind_choice}`...")
-                cmd_run = [sys.executable, "-u", "run_nontech.py", country_input, "--only", single_ind_choice]
-                proc = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
-                log_box = st.empty()
-                logs_single = []
-                while True:
-                    l = proc.stdout.readline()
-                    if not l and proc.poll() is not None:
-                        break
-                    if l:
-                        logs_single.append(l.strip())
-                        log_box.code("\n".join(logs_single[-15:]))
-                proc.wait()
-                st.success(f"Download complete for '{single_ind_choice}'!")
+            with st.expander(f"{ind_name} | {cov_val}% Coverage ({c_reach:,}/{c_target:,}) | {badge}"):
+                exp_c1, exp_c2, exp_c3 = st.columns([2, 1, 1])
+                with exp_c1:
+                    st.write(f"**Target Rows**: {c_target:,} | **Reachable**: {c_reach:,} | **Gap**: {p_row['Unreachable Gap']:,} | **Slices**: {p_row['Planned Slices']}")
+                    st.write(f"**Current Status**: `{c_status}`")
+                with exp_c2:
+                    if st.button(f"Re-Plan '{ind_name[:15]}...'", key=f"replan_{slugify(ind_name)}", use_container_width=True):
+                        with st.spinner(f"Re-generating partition plan for '{ind_name}'..."):
+                            cmd = [sys.executable, "-u", "generate_clicklist.py", ind_name, country_input]
+                            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+                            st.session_state["current_process"] = proc
+                            proc.wait()
+                            st.session_state["current_process"] = None
+                            st.success(f"Re-plan complete for '{ind_name}'!")
+                            st.rerun()
+                with exp_c3:
+                    if st.button(f"Download '{ind_name[:15]}...'", key=f"dl_{slugify(ind_name)}", type="primary", use_container_width=True):
+                        st.markdown(f"Executing single-industry download for `{ind_name}`...")
+                        cmd_run = [sys.executable, "-u", "run_nontech.py", country_input, "--only", ind_name]
+                        proc = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+                        st.session_state["current_process"] = proc
+                        log_box = st.empty()
+                        logs_single = []
+                        while True:
+                            l = proc.stdout.readline()
+                            if not l and proc.poll() is not None:
+                                break
+                            if l:
+                                logs_single.append(l.strip())
+                                log_box.code("\n".join(logs_single[-15:]))
+                        proc.wait()
+                        st.session_state["current_process"] = None
+                        st.success(f"Download complete for '{ind_name}'!")
 
     # Execute Step 3 Download with Progress Bar
     if btn_download:
@@ -415,6 +505,7 @@ with tab_download:
             cmd_run.extend(["--only", only_str])
 
             process = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+            st.session_state["current_process"] = process
             
             logs = []
             tot_ind = len(selected_industries)
@@ -441,14 +532,15 @@ with tab_download:
                             pass
                             
             process.wait()
+            st.session_state["current_process"] = None
             if process.returncode == 0:
                 dl_progress_bar.progress(1.0)
                 dl_status_text.text("Step 3 Download complete.")
                 st.success(f"Step 3 Download and Centralized Merge complete for {country_input}.")
             else:
-                st.error("Download finished with errors. See log above.")
+                st.error("Download finished with errors or stopped.")
 
-    if os.path.exists(ledger_file):
+    if country_input and os.path.exists(ledger_file):
         st.markdown(f"### Delivered Datasets and Metrics ({country_input})")
         try:
             ledger_df = pd.read_csv(ledger_file)
@@ -467,7 +559,7 @@ with tab_geo:
     st.subheader("Country Geographic Division Settings")
     st.write("When adding a new country, you can define its major cities, states/provinces, and fallback rules here so the partitioning engine splits large industries cleanly without code intervention.")
     
-    geo_country = st.selectbox("Select Country to Configure:", ALL_CLAY_COUNTRIES, index=def_idx)
+    geo_country = st.selectbox("Select Country to Configure:", ALL_CLAY_COUNTRIES, index=0)
     
     geo_dict = getattr(clay_geo, "GEO", {})
     existing_cfg = geo_dict.get(geo_country, {})
