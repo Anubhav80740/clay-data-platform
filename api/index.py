@@ -4,7 +4,6 @@ import os
 import re
 import sqlite3
 import sys
-import os
 
 # Add root directory to sys.path for Vercel imports
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -15,7 +14,6 @@ if os.getcwd() not in sys.path:
 
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
-import pandas as pd
 
 # Import local modules
 try:
@@ -73,9 +71,9 @@ async def run_count(request: Request):
     
     counts_data = []
     if os.path.exists(counts_file):
-        cdf = pd.read_csv(counts_file)
-        cdf_sel = cdf[cdf["Industry"].isin(industries)]
-        counts_data = cdf_sel.to_dict(orient="records")
+        with open(counts_file, encoding="utf-8", errors="replace") as cf:
+            reader = csv.DictReader(cf)
+            counts_data = [row for row in reader if row.get("Industry") in industries]
         
     return {
         "status": "success",
@@ -129,18 +127,29 @@ def get_central_store():
     cur.execute("SELECT COUNT(*) FROM master_companies")
     tot_master = cur.fetchone()[0]
     
-    m_df = pd.read_sql_query("""
+    cur.execute("""
         SELECT country, industry, COUNT(*) as unique_companies_in_master, 
                MIN(first_seen_at) as earliest_download, MAX(last_seen_at) as latest_download 
         FROM master_companies 
         GROUP BY country, industry 
         ORDER BY COUNT(*) DESC
-    """, conn)
+    """)
+    rows = cur.fetchall()
     conn.close()
+    
+    breakdown = []
+    for r in rows:
+        breakdown.append({
+            "country": r[0],
+            "industry": r[1],
+            "unique_companies_in_master": r[2],
+            "earliest_download": r[3],
+            "latest_download": r[4]
+        })
     
     return {
         "total_unique_companies": tot_master,
-        "breakdown": m_df.to_dict(orient="records")
+        "breakdown": breakdown
     }
 
 @app.get("/", response_class=HTMLResponse)
