@@ -8,6 +8,41 @@ import sys
 import time
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
+import posthog
+
+# PostHog Product Analytics Configuration
+POSTHOG_KEY = os.environ.get("POSTHOG_PROJECT_API_KEY", "phc_C9kRXc4cEpL5SrF8yb6kpBdJazYy85WmjNTm4Gh2oi5a")
+try:
+    if "POSTHOG_PROJECT_API_KEY" in st.secrets:
+        POSTHOG_KEY = str(st.secrets["POSTHOG_PROJECT_API_KEY"]).strip()
+except Exception:
+    pass
+
+POSTHOG_HOST = os.environ.get("POSTHOG_HOST", "https://us.i.posthog.com")
+
+if POSTHOG_KEY:
+    try:
+        posthog.api_key = POSTHOG_KEY
+        posthog.host = POSTHOG_HOST
+    except Exception:
+        pass
+
+def track_event(distinct_id, event_name, properties=None):
+    if POSTHOG_KEY:
+        try:
+            posthog.capture(distinct_id, event_name, properties or {})
+        except Exception:
+            pass
+
+# Inject PostHog JS snippet for session recordings & browser heatmaps
+if POSTHOG_KEY:
+    components.html(f"""
+        <script>
+            !function(t,e){{var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){{function g(t,e){{var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){{t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}}}var u=e;for("undefined"!=typeof a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){{var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}},u.people.toString=function(){{return u.toString(1)+".people (stub)"}},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])}},e.__SV=1)}})(document,window.posthog||[]);
+            posthog.init('{POSTHOG_KEY}', {{api_host:'{POSTHOG_HOST}', person_profiles: 'identified_only'}});
+        </script>
+    """, height=0)
 
 # Helper for safe numeric conversion avoiding IntCastingNaNError
 def safe_int(val, default=0):
@@ -135,6 +170,8 @@ def login_screen():
         if st.button("Login", type="primary", use_container_width=True):
             if user_id.strip() == TEAM_USER_ID and password.strip() == TEAM_PASSWORD:
                 st.session_state["authenticated"] = True
+                st.session_state["active_user"] = user_id.strip()
+                track_event(user_id.strip(), "user_login", {"platform": "streamlit_cloud"})
                 st.rerun()
             else:
                 st.error("Invalid User ID or Password.")
@@ -142,6 +179,8 @@ def login_screen():
 if not st.session_state["authenticated"]:
     login_screen()
     st.stop()
+
+active_user = st.session_state.get("active_user", "team_member")
 
 # Fixed Top Navigation Bar (Logo, Theme Toggle, Stop Button, Logout)
 nav_col1, nav_col2, nav_col3, nav_col4 = st.columns([4, 1.2, 1.2, 1])
@@ -155,6 +194,7 @@ with nav_col2:
     theme_btn_label = "☀️ Light Mode" if st.session_state["theme_mode"] == "dark" else "🌙 Dark Mode"
     if st.button(theme_btn_label, use_container_width=True):
         st.session_state["theme_mode"] = "light" if st.session_state["theme_mode"] == "dark" else "dark"
+        track_event(active_user, "theme_changed", {"mode": st.session_state["theme_mode"]})
         st.rerun()
 
 with nav_col3:
@@ -164,6 +204,7 @@ with nav_col3:
         if proc and proc.poll() is None:
             proc.terminate()
             st.session_state["current_process"] = None
+            track_event(active_user, "process_stopped_by_user")
             st.warning("Active process stopped by user.")
         else:
             st.info("No active process running.")
@@ -171,6 +212,7 @@ with nav_col3:
 with nav_col4:
     st.write("")
     if st.button("Logout", type="secondary", use_container_width=True):
+        track_event(active_user, "user_logout")
         st.session_state["authenticated"] = False
         st.rerun()
 
@@ -191,7 +233,6 @@ with tab_download:
     with col_c:
         st.markdown("**1. Target Country Selection**")
         
-        # Country dropdown - STARTS EMPTY (No default Spain)
         country_options = ["-- Select Target Country --"] + ALL_CLAY_COUNTRIES
         selected_country_raw = st.selectbox(
             "Search and select country (218 countries available):",
@@ -232,18 +273,22 @@ with tab_download:
         with b_col1:
             if st.button("Select Tech Industries", use_container_width=True):
                 st.session_state["selected_industries"] = TECH_INDUSTRIES
+                track_event(active_user, "preset_selected", {"type": "tech", "count": len(TECH_INDUSTRIES)})
                 
         with b_col2:
             if st.button("Select Non-Tech Industries", use_container_width=True):
                 st.session_state["selected_industries"] = NON_TECH_INDUSTRIES
+                track_event(active_user, "preset_selected", {"type": "non_tech", "count": len(NON_TECH_INDUSTRIES)})
                 
         with b_col3:
             if st.button("Select All 458 Industries", use_container_width=True):
                 st.session_state["selected_industries"] = ALL_CLAY_INDUSTRIES
+                track_event(active_user, "preset_selected", {"type": "all_458", "count": len(ALL_CLAY_INDUSTRIES)})
                 
         with b_col4:
             if st.button("Clear Selection", use_container_width=True):
                 st.session_state["selected_industries"] = []
+                track_event(active_user, "preset_selected", {"type": "clear"})
 
         selected_industries = st.multiselect(
             "Search and select industries (starts empty; select manually or use category buttons above):",
@@ -275,6 +320,7 @@ with tab_download:
         btn_count = st.button("Run Step 1: Count", use_container_width=True, disabled=not country_input or not selected_industries)
 
         if btn_count:
+            track_event(active_user, "step1_count_started", {"country": country_input, "industries_count": len(selected_industries)})
             with open(ind_file, "w", encoding="utf-8") as f:
                 json.dump(selected_industries, f)
             if os.path.exists(counts_file):
@@ -308,8 +354,10 @@ with tab_download:
             if proc.returncode == 0:
                 count_progress_bar.progress(1.0)
                 count_status.text("Counting complete.")
+                track_event(active_user, "step1_count_completed", {"country": country_input, "industries_count": len(selected_industries)})
                 st.success("Step 1 Count complete.")
             else:
+                track_event(active_user, "step1_count_failed", {"country": country_input})
                 st.error("Step 1 Count failed or stopped.")
 
     # ----------------------------------------------------
@@ -321,6 +369,7 @@ with tab_download:
         btn_plan = st.button("Run Step 2: Generate Plan", use_container_width=True, disabled=not country_input or not selected_industries)
 
         if btn_plan:
+            track_event(active_user, "step2_plan_started", {"country": country_input, "industries_count": len(selected_industries)})
             with open(ind_file, "w", encoding="utf-8") as f:
                 json.dump(selected_industries, f)
                 
@@ -338,6 +387,7 @@ with tab_download:
                 
             st.session_state["current_process"] = None
             plan_status.text("Planning complete.")
+            track_event(active_user, "step2_plan_completed", {"country": country_input, "industries_count": len(selected_industries)})
             st.success("Step 2 Planning complete. Review estimated coverage below.")
 
     # ----------------------------------------------------
@@ -422,7 +472,6 @@ with tab_download:
         st.markdown(f"### Step 2 Plan & Coverage Estimate Results ({country_input})")
         pdf_plan = pd.DataFrame(planned_data)
         
-        # Display Overview Metric Cards
         tot_reach = sum(r["Estimated Reachable"] for r in planned_data)
         tot_target = sum(r["Clay Target Count"] for r in planned_data)
         overall_cov = round(100 * tot_reach / max(1, tot_target), 1) if tot_target else 100.0
@@ -437,9 +486,6 @@ with tab_download:
 
         st.dataframe(pdf_plan, use_container_width=True)
 
-        # ----------------------------------------------------
-        # IN-TABLE PER-INDUSTRY RE-PLANNING ACTIONS
-        # ----------------------------------------------------
         st.markdown("#### In-Table Per-Industry Re-Planning & Fine-Tuning")
         st.caption("If any industry coverage is not sufficient, re-plan that specific industry below without changing your selected industries:")
         
@@ -459,6 +505,7 @@ with tab_download:
                     st.write(f"**Current Status**: `{c_status}`")
                 with exp_c2:
                     if st.button(f"Re-Plan '{ind_name[:15]}...'", key=f"replan_{slugify(ind_name)}", use_container_width=True):
+                        track_event(active_user, "single_industry_replanned", {"industry": ind_name, "country": country_input})
                         with st.spinner(f"Re-generating partition plan for '{ind_name}'..."):
                             cmd = [sys.executable, "-u", "generate_clicklist.py", ind_name, country_input]
                             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
@@ -469,6 +516,7 @@ with tab_download:
                             st.rerun()
                 with exp_c3:
                     if st.button(f"Download '{ind_name[:15]}...'", key=f"dl_{slugify(ind_name)}", type="primary", use_container_width=True):
+                        track_event(active_user, "single_industry_download_started", {"industry": ind_name, "country": country_input})
                         st.markdown(f"Executing single-industry download for `{ind_name}`...")
                         cmd_run = [sys.executable, "-u", "run_nontech.py", country_input, "--only", ind_name]
                         proc = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
@@ -484,6 +532,7 @@ with tab_download:
                                 log_box.code("\n".join(logs_single[-15:]))
                         proc.wait()
                         st.session_state["current_process"] = None
+                        track_event(active_user, "single_industry_download_completed", {"industry": ind_name, "country": country_input})
                         st.success(f"Download complete for '{ind_name}'!")
 
     # Execute Step 3 Download with Progress Bar
@@ -491,6 +540,7 @@ with tab_download:
         if not plan_approved:
             st.warning("Please check the approval box in Step 3 to confirm plan approval before downloading.")
         else:
+            track_event(active_user, "step3_download_started", {"country": country_input, "industries_count": len(selected_industries)})
             st.markdown(f"### Executing Live Step 3 Download for {country_input}...")
             
             with open(ind_file, "w", encoding="utf-8") as f:
@@ -536,8 +586,10 @@ with tab_download:
             if process.returncode == 0:
                 dl_progress_bar.progress(1.0)
                 dl_status_text.text("Step 3 Download complete.")
+                track_event(active_user, "step3_download_completed", {"country": country_input, "industries_count": len(selected_industries)})
                 st.success(f"Step 3 Download and Centralized Merge complete for {country_input}.")
             else:
+                track_event(active_user, "step3_download_failed", {"country": country_input})
                 st.error("Download finished with errors or stopped.")
 
     if country_input and os.path.exists(ledger_file):
@@ -595,6 +647,7 @@ with tab_geo:
             code = code.rstrip().rstrip("}").rstrip() + "\n" + new_entry
             with open(geo_file, "w", encoding="utf-8") as gf:
                 gf.write(code)
+            track_event(active_user, "geo_config_saved", {"country": geo_country, "num_cities": len(c_list)})
             st.success(f"Saved new geographic configuration for {geo_country} to clay_geo.py")
         else:
             st.info(f"Configuration for {geo_country} is active. Restart the app if updating existing entries.")

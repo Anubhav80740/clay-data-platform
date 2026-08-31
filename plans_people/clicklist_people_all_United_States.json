@@ -1,0 +1,974 @@
+[
+  {
+    "slug": "sen_C_Suite_dept_Engineering",
+    "count": 299143778,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Engineering"
+      ]
+    }
+  },
+  {
+    "slug": "sen_C_Suite_dept_Sales",
+    "count": 299143772,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Sales"
+      ]
+    }
+  },
+  {
+    "slug": "sen_C_Suite_dept_Marketing",
+    "count": 299143767,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Marketing"
+      ]
+    }
+  },
+  {
+    "slug": "sen_C_Suite_dept_Finance",
+    "count": 299143756,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Finance"
+      ]
+    }
+  },
+  {
+    "slug": "sen_C_Suite_dept_Human_Resources",
+    "count": 299143748,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Human Resources"
+      ]
+    }
+  },
+  {
+    "slug": "sen_C_Suite_dept_Operations",
+    "count": 299143740,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Operations"
+      ]
+    }
+  },
+  {
+    "slug": "sen_C_Suite_dept_Product",
+    "count": 299143738,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Product"
+      ]
+    }
+  },
+  {
+    "slug": "sen_C_Suite_dept_Information_Technology",
+    "count": 299143733,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Information Technology"
+      ]
+    }
+  },
+  {
+    "slug": "sen_C_Suite_dept_Business_Development",
+    "count": 299143728,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Business Development"
+      ]
+    }
+  },
+  {
+    "slug": "sen_VP_dept_Engineering",
+    "count": 299143720,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Engineering"
+      ]
+    }
+  },
+  {
+    "slug": "sen_VP_dept_Sales",
+    "count": 299143719,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Sales"
+      ]
+    }
+  },
+  {
+    "slug": "sen_VP_dept_Marketing",
+    "count": 299143716,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Marketing"
+      ]
+    }
+  },
+  {
+    "slug": "sen_VP_dept_Finance",
+    "count": 299143716,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Finance"
+      ]
+    }
+  },
+  {
+    "slug": "sen_VP_dept_Human_Resources",
+    "count": 299143716,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Human Resources"
+      ]
+    }
+  },
+  {
+    "slug": "sen_VP_dept_Operations",
+    "count": 299143715,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Operations"
+      ]
+    }
+  },
+  {
+    "slug": "sen_VP_dept_Product",
+    "count": 299143715,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Product"
+      ]
+    }
+  },
+  {
+    "slug": "sen_VP_dept_Information_Technology",
+    "count": 299143715,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Information Technology"
+      ]
+    }
+  },
+  {
+    "slug": "sen_VP_dept_Business_Development",
+    "count": 299143715,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Business Development"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Director_dept_Engineering",
+    "count": 299143709,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Engineering"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Director_dept_Sales",
+    "count": 299143706,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Sales"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Director_dept_Marketing",
+    "count": 299143704,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Marketing"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Director_dept_Finance",
+    "count": 299143697,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Finance"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Director_dept_Human_Resources",
+    "count": 299143697,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Human Resources"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Director_dept_Operations",
+    "count": 299143697,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Operations"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Director_dept_Product",
+    "count": 299143697,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Product"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Director_dept_Information_Technology",
+    "count": 299143696,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Information Technology"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Director_dept_Business_Development",
+    "count": 299143695,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Business Development"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Manager_dept_Engineering",
+    "count": 299143691,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Engineering"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Manager_dept_Sales",
+    "count": 299143687,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Sales"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Manager_dept_Marketing",
+    "count": 299143681,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Marketing"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Manager_dept_Finance",
+    "count": 299143678,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Finance"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Manager_dept_Human_Resources",
+    "count": 299143673,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Human Resources"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Manager_dept_Operations",
+    "count": 299143667,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Operations"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Manager_dept_Product",
+    "count": 299143663,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Product"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Manager_dept_Information_Technology",
+    "count": 299143659,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Information Technology"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Manager_dept_Business_Development",
+    "count": 299143656,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Business Development"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Owner_dept_Engineering",
+    "count": 299143656,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Owner"
+      ],
+      "departments": [
+        "Engineering"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Owner_dept_Sales",
+    "count": 299143656,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Owner"
+      ],
+      "departments": [
+        "Sales"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Owner_dept_Marketing",
+    "count": 299143656,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Owner"
+      ],
+      "departments": [
+        "Marketing"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Owner_dept_Finance",
+    "count": 299143655,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Owner"
+      ],
+      "departments": [
+        "Finance"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Owner_dept_Human_Resources",
+    "count": 299143653,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Owner"
+      ],
+      "departments": [
+        "Human Resources"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Owner_dept_Operations",
+    "count": 299143649,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Owner"
+      ],
+      "departments": [
+        "Operations"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Owner_dept_Product",
+    "count": 299143639,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Owner"
+      ],
+      "departments": [
+        "Product"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Owner_dept_Information_Technology",
+    "count": 299143632,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Owner"
+      ],
+      "departments": [
+        "Information Technology"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Owner_dept_Business_Development",
+    "count": 299143626,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Owner"
+      ],
+      "departments": [
+        "Business Development"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Partner_dept_Engineering",
+    "count": 299143611,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Partner"
+      ],
+      "departments": [
+        "Engineering"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Partner_dept_Sales",
+    "count": 299143611,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Partner"
+      ],
+      "departments": [
+        "Sales"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Partner_dept_Marketing",
+    "count": 299143611,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Partner"
+      ],
+      "departments": [
+        "Marketing"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Partner_dept_Finance",
+    "count": 299143611,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Partner"
+      ],
+      "departments": [
+        "Finance"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Partner_dept_Human_Resources",
+    "count": 299143611,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Partner"
+      ],
+      "departments": [
+        "Human Resources"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Partner_dept_Operations",
+    "count": 299143610,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Partner"
+      ],
+      "departments": [
+        "Operations"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Partner_dept_Product",
+    "count": 299143610,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Partner"
+      ],
+      "departments": [
+        "Product"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Partner_dept_Information_Technology",
+    "count": 299143608,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Partner"
+      ],
+      "departments": [
+        "Information Technology"
+      ]
+    }
+  },
+  {
+    "slug": "sen_Partner_dept_Business_Development",
+    "count": 299143603,
+    "filters": {
+      "country_names": [
+        "United States"
+      ],
+      "industries": [
+        "Blockchain Services"
+      ],
+      "management_levels": [
+        "Partner"
+      ],
+      "departments": [
+        "Business Development"
+      ]
+    }
+  }
+]

@@ -1,0 +1,47 @@
+[
+  {
+    "Industry": "Appliances, Electrical, and Electronics Manufacturing",
+    "Country": "United States",
+    "Total Target People": 299144342,
+    "C-Suite": 299144338,
+    "VP": 299144333,
+    "Director": 299144329,
+    "Manager": 299144315
+  },
+  {
+    "Industry": "Automation Machinery Manufacturing",
+    "Country": "United States",
+    "Total Target People": 0,
+    "C-Suite": 299144312,
+    "VP": 299144308,
+    "Director": 299144303,
+    "Manager": 299144300
+  },
+  {
+    "Industry": "Biotechnology",
+    "Country": "United States",
+    "Total Target People": 299144341,
+    "C-Suite": 299144333,
+    "VP": 299144330,
+    "Director": 299144329,
+    "Manager": 299144320
+  },
+  {
+    "Industry": "Biotechnology Research",
+    "Country": "United States",
+    "Total Target People": 299144333,
+    "C-Suite": 299144329,
+    "VP": 299144328,
+    "Director": 299144316,
+    "Manager": 299144312
+  },
+  {
+    "Industry": "Blockchain Services",
+    "Country": "United States",
+    "Total Target People": 299144341,
+    "C-Suite": 299144333,
+    "VP": 299144330,
+    "Director": 299144329,
+    "Manager": 299144315
+  }
+]

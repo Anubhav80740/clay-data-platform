@@ -1,0 +1,722 @@
+[
+  {
+    "slug": "Biotechnology_sen_C_Suite_dept_Engineering",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Engineering"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_C_Suite_dept_Sales",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Sales"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_C_Suite_dept_Marketing",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Marketing"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_C_Suite_dept_Finance",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Finance"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_C_Suite_dept_Human_Resources",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Human Resources"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_C_Suite_dept_Operations",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Operations"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_C_Suite_dept_Product",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Product"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_C_Suite_dept_Information_Technology",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Information Technology"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_C_Suite_dept_Business_Development",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "C-Suite"
+      ],
+      "departments": [
+        "Business Development"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_VP_dept_Engineering",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Engineering"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_VP_dept_Sales",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Sales"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_VP_dept_Marketing",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Marketing"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_VP_dept_Finance",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Finance"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_VP_dept_Human_Resources",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Human Resources"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_VP_dept_Operations",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Operations"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_VP_dept_Product",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Product"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_VP_dept_Information_Technology",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Information Technology"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_VP_dept_Business_Development",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "VP"
+      ],
+      "departments": [
+        "Business Development"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Director_dept_Engineering",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Engineering"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Director_dept_Sales",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Sales"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Director_dept_Marketing",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Marketing"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Director_dept_Finance",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Finance"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Director_dept_Human_Resources",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Human Resources"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Director_dept_Operations",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Operations"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Director_dept_Product",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Product"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Director_dept_Information_Technology",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Information Technology"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Director_dept_Business_Development",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Director"
+      ],
+      "departments": [
+        "Business Development"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Manager_dept_Engineering",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Engineering"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Manager_dept_Sales",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Sales"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Manager_dept_Marketing",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Marketing"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Manager_dept_Finance",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Finance"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Manager_dept_Human_Resources",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Human Resources"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Manager_dept_Operations",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Operations"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Manager_dept_Product",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Product"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Manager_dept_Information_Technology",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Information Technology"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Manager_dept_Business_Development",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Manager"
+      ],
+      "departments": [
+        "Business Development"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Owner_Founder_dept_Engineering",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Owner/Founder"
+      ],
+      "departments": [
+        "Engineering"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Owner_Founder_dept_Sales",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Owner/Founder"
+      ],
+      "departments": [
+        "Sales"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Owner_Founder_dept_Marketing",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Owner/Founder"
+      ],
+      "departments": [
+        "Marketing"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Owner_Founder_dept_Finance",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Owner/Founder"
+      ],
+      "departments": [
+        "Finance"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Owner_Founder_dept_Human_Resources",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Owner/Founder"
+      ],
+      "departments": [
+        "Human Resources"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Owner_Founder_dept_Operations",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Owner/Founder"
+      ],
+      "departments": [
+        "Operations"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Owner_Founder_dept_Product",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Owner/Founder"
+      ],
+      "departments": [
+        "Product"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Owner_Founder_dept_Information_Technology",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Owner/Founder"
+      ],
+      "departments": [
+        "Information Technology"
+      ]
+    }
+  },
+  {
+    "slug": "Biotechnology_sen_Owner_Founder_dept_Business_Development",
+    "count": 982,
+    "filters": {
+      "company_industry": "Biotechnology",
+      "country_names": [
+        "United States"
+      ],
+      "management_levels": [
+        "Owner/Founder"
+      ],
+      "departments": [
+        "Business Development"
+      ]
+    }
+  }
+]
