@@ -154,10 +154,7 @@ with nav_col_cookie:
     st.write("")
     try:
         from auto_cookie_fetcher import verify_cookie, fetch_cookie, COOKIE_FILE
-        active_c = ""
-        if os.path.exists(COOKIE_FILE):
-            with open(COOKIE_FILE, "r", encoding="utf-8") as cf:
-                active_c = cf.read().strip()
+        active_c = cl._cookie()
         is_cookie_valid = verify_cookie(active_c)
         if is_cookie_valid:
             st.markdown("<span class='badge-green'>🟢 Cookie: Active</span>", unsafe_allow_html=True)
@@ -165,15 +162,15 @@ with nav_col_cookie:
             st.markdown("<span class='badge-orange'>🔴 Cookie: Expired</span>", unsafe_allow_html=True)
         
         if st.button("🍪 Refresh Cookie (Auto)", use_container_width=True, help="Launches automated browser to refresh Clay session cookie"):
-            with st.spinner("Launching Playwright automated login..."):
-                new_c = fetch_cookie(headless=False, timeout_seconds=120)
+            with st.spinner("Refreshing Clay cookie..."):
+                new_c = fetch_cookie(timeout_seconds=90)
                 if new_c:
-                    st.success("Cookie successfully refreshed!")
+                    st.success("Cookie successfully verified & updated!")
                     st.rerun()
                 else:
-                    st.error("Failed to capture valid cookie. Please complete login in browser window.")
+                    st.error("Failed to capture new cookie. Using default active session.")
     except Exception as e:
-        st.caption(f"Cookie check: {e}")
+        st.caption(f"Cookie status: {e}")
 
 with nav_col2:
     st.write("")
