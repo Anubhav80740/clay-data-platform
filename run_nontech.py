@@ -80,8 +80,8 @@ def dedupe_file(in_csv, out_csv):
             w.writerow(header)
         w.writerows(deduped_rows)
         
-    print(f"CENTRALIZED MERGE: Added {new_added} new companies to existing dataset (Total Unique Companies: {len(deduped_rows)})", flush=True)
-    return len(deduped_rows)
+    print(f"[CENTRALIZED MERGE] Existing in Master: {initial_count:,} | Newly Added: +{new_added:,} | Total Master Unique: {len(deduped_rows):,}", flush=True)
+    return len(deduped_rows), initial_count, new_added
 
 
 def sh(*args):
@@ -187,11 +187,11 @@ def main():
           f"~{sum(int(r['Count']) for r in rows):,} target rows", flush=True)
 
     new = not os.path.exists(ledger)
-    lf = open(ledger, "a", newline="")
+    lf = open(ledger, "a", newline="", encoding="utf-8")
     lw = csv.writer(lf)
     if new:
         lw.writerow(["industry", "clay_count", "rows_downloaded",
-                     "unique_companies", "coverage_pct", "file"])
+                     "unique_companies", "coverage_pct", "existing_in_file", "new_added", "file"])
 
     ahead = start_plan(country, rows[0]["Industry"]) if rows else None
 
@@ -250,7 +250,7 @@ def main():
             continue
         cov = round(100 * uniq / expected, 1) if expected else ""
         os.makedirs(os.path.dirname(dst), exist_ok=True)
-        dedupe_file(out, dst)
+        total_unique, existing_cnt, new_added_cnt = dedupe_file(out, dst)
         
         # Cloud Storage Auto-Sync
         try:
@@ -261,9 +261,8 @@ def main():
         except Exception:
             pass
 
-        lw.writerow([ind, expected, rows_dl, uniq, cov, dst]); lf.flush()
-        print(f"DELIVERED {rows_dl:,} rows / {uniq:,} unique of {expected:,} "
-              f"on Clay ({cov}%) -> {dst}", flush=True)
+        lw.writerow([ind, expected, rows_dl, total_unique, cov, existing_cnt, new_added_cnt, dst]); lf.flush()
+        print(f"DELIVERED {rows_dl:,} rows | Existing: {existing_cnt:,} | Added: +{new_added_cnt:,} | Total Master: {total_unique:,} -> {dst}", flush=True)
         if cov != "" and cov < ALERT_MIN:
             alert(country, "downloaded", ind, cov,
                   f"{uniq:,} unique of {expected:,} on Clay")
