@@ -1,6 +1,7 @@
 # Netlify Deployment Configuration Manifest for Clay Data Platform
 
 [build]
+  publish = "public"
   command = "pip install -r requirements.txt"
   functions = "netlify/functions"
 
@@ -14,6 +15,11 @@
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
   status = 200
 
 [[headers]]
