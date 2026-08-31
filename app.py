@@ -326,8 +326,9 @@ with tab_download:
     # ----------------------------------------------------
     with step_col1:
         st.markdown("#### Step 1: Count Target Rows")
-        st.caption("Free counting query. Estimates raw Clay target counts.")
-        btn_count = st.button("Run Step 1: Count", use_container_width=True, disabled=not country_input or not selected        if btn_count:
+        btn_count = st.button("Run Step 1: Count", use_container_width=True, disabled=not country_input or not selected_industries)
+
+        if btn_count:
             track_event("count_started", {"country": country_input, "industries_count": len(selected_industries)})
             with open(ind_file, "w", encoding="utf-8") as f:
                 json.dump(selected_industries, f)
@@ -394,8 +395,8 @@ with tab_download:
                 
             st.session_state["current_process"] = None
             plan_status.text("Planning complete.")
-            st.success("Step 2 Planning complete.")
-            track_event("plan_completed", {"country": country_input, "industries_count": len(selected_industries)})anning complete. Review estimated coverage below.")
+            st.success("Step 2 Planning complete. Review estimated coverage below.")
+            track_event("plan_completed", {"country": country_input, "industries_count": len(selected_industries)})
 
     # ----------------------------------------------------
     # STEP 3: DOWNLOAD & DELIVER WITH PROGRESS BAR
