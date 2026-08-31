@@ -25,6 +25,7 @@ if POSTHOG_KEY:
     try:
         posthog.api_key = POSTHOG_KEY
         posthog.host = POSTHOG_HOST
+        posthog.disabled = False
     except Exception:
         pass
 
@@ -32,8 +33,14 @@ def track_event(distinct_id, event_name, properties=None):
     if POSTHOG_KEY:
         try:
             posthog.capture(distinct_id, event_name, properties or {})
+            posthog.flush() # Force immediate transmission to PostHog API
         except Exception:
             pass
+
+# Automatic pageview trigger on page load
+if "page_view_sent" not in st.session_state:
+    st.session_state["page_view_sent"] = True
+    track_event("anonymous_user", "$pageview", {"page": "Clay Data Platform"})
 
 # Inject PostHog JS snippet for session recordings & browser heatmaps
 if POSTHOG_KEY:
@@ -41,6 +48,7 @@ if POSTHOG_KEY:
         <script>
             !function(t,e){{var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){{function g(t,e){{var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){{t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}}}var u=e;for("undefined"!=typeof a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){{var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}},u.people.toString=function(){{return u.toString(1)+".people (stub)"}},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])}},e.__SV=1)}})(document,window.posthog||[]);
             posthog.init('{POSTHOG_KEY}', {{api_host:'{POSTHOG_HOST}', person_profiles: 'identified_only'}});
+            posthog.capture('$pageview');
         </script>
     """, height=0)
 
