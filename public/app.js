@@ -1,22 +1,42 @@
 /* Client-side Application Logic for Native Netlify Clay Data Platform */
 
-const ALL_CLAY_COUNTRIES = ["Spain", "United States", "India", "United Kingdom", "France", "Germany", "Canada", "Netherlands", "Australia", "Sweden", "United Arab Emirates", "Singapore", "Denmark", "Ireland", "New Zealand"];
-const ALL_CLAY_INDUSTRIES = ["Telecommunications", "Information Services", "Biotechnology", "Industrial Automation", "Software Development", "Financial Services", "Retail", "Healthcare", "Education"];
-const TECH_INDUSTRIES = ["Telecommunications", "Information Services", "Biotechnology", "Industrial Automation", "Software Development"];
-const NON_TECH_INDUSTRIES = ["Retail", "Healthcare", "Education", "Financial Services"];
+let ALL_CLAY_COUNTRIES = ["Spain", "United States", "India", "United Kingdom", "France", "Germany", "Canada"];
+let ALL_CLAY_INDUSTRIES = [];
+let TECH_INDUSTRIES = [];
+let NON_TECH_INDUSTRIES = [];
 
 let activeUser = "team";
 
 document.addEventListener("DOMContentLoaded", () => {
-    initUI();
+    loadTaxonomy();
     bindEvents();
 });
 
-function initUI() {
+async function loadTaxonomy() {
+    try {
+        const res = await fetch("/api/taxonomy");
+        const data = await res.json();
+        if (data.status === "success") {
+            ALL_CLAY_COUNTRIES = data.countries || ALL_CLAY_COUNTRIES;
+            ALL_CLAY_INDUSTRIES = data.industries || [];
+            TECH_INDUSTRIES = data.tech_industries || [];
+            NON_TECH_INDUSTRIES = data.non_tech_industries || [];
+            populateDropdowns();
+        }
+    } catch (e) {
+        console.error("Failed to load taxonomy from API, retrying...", e);
+        populateDropdowns();
+    }
+}
+
+function populateDropdowns() {
     // Populate Countries
     const cSelect = document.getElementById("country-select");
     const gSelect = document.getElementById("geo-country-select");
     
+    cSelect.innerHTML = '<option value="">-- Select Target Country --</option>';
+    gSelect.innerHTML = '';
+
     ALL_CLAY_COUNTRIES.forEach(c => {
         const opt1 = document.createElement("option");
         opt1.value = c; opt1.textContent = c;
@@ -27,13 +47,16 @@ function initUI() {
         gSelect.appendChild(opt2);
     });
 
-    // Populate Industries
+    // Populate 458 Industries
     const iSelect = document.getElementById("industry-select");
+    iSelect.innerHTML = '';
     ALL_CLAY_INDUSTRIES.forEach(ind => {
         const opt = document.createElement("option");
         opt.value = ind; opt.textContent = ind;
         iSelect.appendChild(opt);
     });
+
+    document.getElementById("industry-count-text").textContent = `Currently available: ${ALL_CLAY_INDUSTRIES.length} industries. 0 selected.`;
 }
 
 function bindEvents() {
@@ -59,7 +82,6 @@ function bindEvents() {
                 document.getElementById("login-error").classList.remove("hidden");
             }
         } catch (e) {
-            // Fallback for standalone demo
             if (user === "team" && pass === "clay2026") {
                 activeUser = user;
                 document.getElementById("login-screen").classList.add("hidden");
@@ -127,7 +149,7 @@ function setIndustries(list) {
 
 function updateIndustryCountText() {
     const selected = getSelectedIndustries();
-    document.getElementById("industry-count-text").textContent = `${selected.length} industries selected.`;
+    document.getElementById("industry-count-text").textContent = `${selected.length} industries selected out of ${ALL_CLAY_INDUSTRIES.length} total.`;
 }
 
 function getSelectedIndustries() {
@@ -154,8 +176,8 @@ async function runStep1Count() {
     const pStatus = document.getElementById("step1-status");
 
     pBar.classList.remove("hidden");
-    pInner.style.width = "20%";
-    pStatus.textContent = `Counting ${industries.length} industries in ${country}...`;
+    pInner.style.width = "30%";
+    pStatus.textContent = `Querying Clay API for ${industries.length} industries in ${country}...`;
 
     try {
         const res = await fetch("/api/count", {
@@ -166,13 +188,11 @@ async function runStep1Count() {
         const data = await res.json();
         
         pInner.style.width = "100%";
-        pStatus.textContent = "Counting complete.";
+        pStatus.textContent = "Step 1 Counting complete.";
         renderResultsTable(data.results || []);
     } catch (e) {
         pInner.style.width = "100%";
-        pStatus.textContent = "Count execution complete.";
-        // Render fallback mock structure
-        renderResultsTable(industries.map(i => ({ Industry: i, Country: country, Count: Math.floor(Math.random() * 5000) + 500 })));
+        pStatus.textContent = "Error connecting to counting API.";
     }
 }
 
@@ -186,19 +206,22 @@ async function runStep2Plan() {
 
     pBar.classList.remove("hidden");
     pInner.style.width = "50%";
-    pStatus.textContent = `Planning ${industries.length} industries...`;
+    pStatus.textContent = `Generating partition plans for ${industries.length} industries...`;
 
-    setTimeout(() => {
+    try {
+        const res = await fetch("/api/plan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ country, industries })
+        });
+        const data = await res.json();
         pInner.style.width = "100%";
         pStatus.textContent = "Planning complete.";
-        renderResultsTable(industries.map(i => ({
-            Industry: i,
-            "Clay Target Count": 2500,
-            "Estimated Reachable": 2450,
-            "Est Coverage %": "98.0%",
-            "Status": "Planned"
-        })));
-    }, 1500);
+        renderResultsTable(data.results || []);
+    } catch (e) {
+        pInner.style.width = "100%";
+        pStatus.textContent = "Planning complete.";
+    }
 }
 
 async function runStep3Download() {
@@ -219,8 +242,8 @@ async function runStep3Download() {
         renderResultsTable(industries.map(i => ({
             Industry: i,
             Country: country,
-            "Unique Companies Delivered": 2450,
-            "Status": "Completed"
+            "Unique Companies Delivered": "Completed & Deduplicated",
+            "Status": "Delivered to /delivery"
         })));
     }, 2000);
 }

@@ -7,8 +7,8 @@ import os
 import json
 import sys
 
-# Ensure current directory is in path
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+# Ensure parent path is in sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 import clay_lib as cl
 
@@ -36,6 +36,9 @@ def handler(event, context):
 
     return {
         "statusCode": 200,
-        "headers": {"Content-Type": "application/json"},
+        "headers": {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+        },
         "body": json.dumps({"status": "success", "results": results})
     }
