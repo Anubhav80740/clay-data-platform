@@ -1,0 +1,23 @@
+# Netlify Deployment Configuration Manifest for Clay Data Platform
+
+[build]
+  command = "pip install -r requirements.txt"
+  functions = "netlify/functions"
+
+[build.environment]
+  PYTHON_VERSION = "3.11"
+  POSTHOG_HOST = "https://us.i.posthog.com"
+
+[functions."cookie_refresh"]
+  schedule = "@daily"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
