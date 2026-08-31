@@ -45,17 +45,29 @@ try:
     import posthog
     posthog.api_key = POSTHOG_API_KEY
     posthog.host = POSTHOG_HOST
+    posthog.sync_mode = True
     POSTHOG_ENABLED = True
 except Exception:
     POSTHOG_ENABLED = False
 
 def track_event(event_name, properties=None):
+    uid = st.session_state.get("user_id", "team_user")
+    props = properties or {}
     if POSTHOG_ENABLED:
         try:
-            uid = st.session_state.get("user_id", "team")
-            posthog.capture(uid, event_name, properties or {})
+            posthog.capture(uid, event_name, props)
         except Exception:
             pass
+    # Direct HTTP fallback for instant delivery
+    try:
+        import requests
+        requests.post(
+            f"{POSTHOG_HOST}/capture/",
+            json={"api_key": POSTHOG_API_KEY, "event": event_name, "distinct_id": uid, "properties": props},
+            timeout=3
+        )
+    except Exception:
+        pass
 
 # Page Configuration
 st.set_page_config(
@@ -79,6 +91,10 @@ if "theme_mode" not in st.session_state:
 
 if "current_process" not in st.session_state:
     st.session_state["current_process"] = None
+
+if "posthog_init" not in st.session_state:
+    st.session_state["posthog_init"] = True
+    track_event("app_loaded", {"platform": "Streamlit Cloud", "theme": st.session_state["theme_mode"]})
 
 # Inject Clean Responsive CSS with Dark/Light Theme Support & Hidden Headers
 if st.session_state["theme_mode"] == "dark":
