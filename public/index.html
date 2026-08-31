@@ -129,10 +129,34 @@
                 </div>
             </div>
 
-            <!-- Results Output Area -->
-            <div id="results-area" class="card hidden">
-                <h3 id="results-title">Execution Results</h3>
-                <div id="results-content" class="table-responsive"></div>
+            <!-- STEP 1 RESULTS CONTAINER -->
+            <div id="step1-results-card" class="card hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>📊 Step 1: Raw Target Count Results</h3>
+                    <button id="btn-step1-csv" class="btn btn-outline" style="font-size: 12px;">📥 Export Step 1 CSV</button>
+                </div>
+                <div id="step1-metrics" class="metrics-grid"></div>
+                <div id="step1-table-container" class="table-responsive"></div>
+            </div>
+
+            <!-- STEP 2 RESULTS CONTAINER -->
+            <div id="step2-results-card" class="card hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>🧭 Step 2: Partition Planning & Reachable Coverage</h3>
+                    <button id="btn-step2-csv" class="btn btn-outline" style="font-size: 12px;">📥 Export Step 2 CSV</button>
+                </div>
+                <div id="step2-metrics" class="metrics-grid"></div>
+                <div id="step2-table-container" class="table-responsive"></div>
+            </div>
+
+            <!-- STEP 3 RESULTS CONTAINER -->
+            <div id="step3-results-card" class="card hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>🚀 Step 3: Download & Delivery Status</h3>
+                    <button id="btn-step3-csv" class="btn btn-outline" style="font-size: 12px;">📥 Export Delivery Manifest</button>
+                </div>
+                <div id="step3-metrics" class="metrics-grid"></div>
+                <div id="step3-table-container" class="table-responsive"></div>
             </div>
         </section>
 
@@ -147,7 +171,7 @@
                 </div>
                 <div class="form-group">
                     <label>Major Cities (comma-separated)</label>
-                    <textarea id="geo-cities-input" class="form-input" style="height: 80px;" placeholder="e.g. Madrid, Barcelona, Valencia, Seville"></textarea>
+                    <textarea id="geo-cities-input" class="form-input" style="height: 80px;" placeholder="e.g. Tokyo, Osaka, Kyoto, Yokohama, Nagoya"></textarea>
                 </div>
                 <button id="btn-save-geo" class="btn btn-primary">Save Geographic Configuration</button>
             </div>
@@ -174,6 +198,33 @@
                 </div>
             </div>
         </section>
+    </div>
+
+    <!-- In-Table Re-Planning Modal -->
+    <div id="replan-modal" class="modal-backdrop hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+        <div class="login-card" style="max-width: 650px; width: 90%; margin: 0; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 id="replan-modal-title">🔧 Re-Plan Industry Partition</h3>
+                <button id="replan-modal-close" class="btn btn-outline" style="padding: 4px 8px;">✕</button>
+            </div>
+            <p id="replan-modal-desc" style="font-size: 13px; color: var(--subtext-dark); margin-bottom: 16px;"></p>
+            
+            <div class="form-group">
+                <label>Partition Slicing Strategy</label>
+                <select id="replan-strategy-select" class="form-input">
+                    <option value="size" selected>Company Size-First (Recommended for high coverage)</option>
+                    <option value="geo">Geographic Major Cities & Regional Fallbacks</option>
+                    <option value="revenue">Annual Revenue Tiers</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Generated Slice Previews:</label>
+                <div id="replan-slices-list" style="background: #1e293b; padding: 12px; border-radius: 6px; font-size: 13px; max-height: 180px; overflow-y: auto;"></div>
+            </div>
+
+            <button id="btn-apply-replan" class="btn btn-primary" style="width: 100%;">Apply Custom Partition Plan</button>
+        </div>
     </div>
 
     <!-- Scripts -->
