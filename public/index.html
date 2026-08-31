@@ -4,17 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clay Data Platform</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: #0b0f19; color: #f1f5f9; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; text-align: center; }
-        .card { background-color: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 40px; max-width: 600px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        h1 { font-size: 28px; margin-bottom: 8px; color: #ffffff; }
-        p { font-size: 15px; color: #94a3b8; margin-bottom: 24px; line-height: 1.5; }
-        .status-badge { display: inline-block; background-color: #065f46; color: #34d399; padding: 6px 14px; border-radius: 20px; font-size: 14px; font-weight: 600; margin-bottom: 24px; }
-        .btn { display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; text-decoration: none; transition: background 0.2s; border: none; cursor: pointer; }
-        .btn:hover { background-color: #1d4ed8; }
-        .info-box { background-color: #1e293b; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 6px; text-align: left; margin-top: 24px; font-size: 13px; color: #cbd5e1; }
-    </style>
+    <link rel="stylesheet" href="styles.css">
     <!-- PostHog Analytics -->
     <script>
         !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}var u=e;for("undefined"!=typeof a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
@@ -22,18 +12,160 @@
         posthog.capture('$pageview');
     </script>
 </head>
-<body>
-    <div class="card">
-        <div class="status-badge">🟢 Netlify Deployment Active</div>
-        <h1>Clay Data Platform</h1>
-        <p>Centralized Company & People Data Extraction, Deduplication, and Portfolio Engine</p>
-        
-        <div class="info-box">
-            <strong>Netlify API Functions:</strong><br>
-            • Cookie Refresh API: <code>/api/cookie_refresh</code><br>
-            • Scheduled Cron: Active (Daily @ 00:00 UTC)<br>
-            • Analytics: PostHog Integrated
+<body class="dark">
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-card">
+        <h2>Clay Data Platform</h2>
+        <p style="margin-bottom: 24px; color: #94a3b8; font-size: 14px;">Team Login</p>
+        <div class="form-group">
+            <label>User ID</label>
+            <input type="text" id="login-user" class="form-input" placeholder="User ID">
         </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="login-pass" class="form-input" placeholder="Password">
+        </div>
+        <button id="login-btn" class="btn btn-primary" style="width: 100%;">Login</button>
+        <div id="login-error" style="color: #ef4444; margin-top: 12px; font-size: 13px;" class="hidden">Invalid credentials.</div>
     </div>
+
+    <!-- App Workspace -->
+    <div id="app-workspace" class="container hidden">
+        <!-- Top Navbar -->
+        <header class="top-navbar">
+            <div>
+                <h2>Clay Data Platform</h2>
+                <p style="font-size: 12px; color: var(--subtext-dark);">Centralized Company Data Extraction, Deduplication and Portfolio Engine</p>
+            </div>
+            <div class="nav-actions">
+                <button id="theme-toggle" class="btn btn-outline">☀️ Light Mode</button>
+                <button id="stop-process-btn" class="btn btn-secondary">Stop Process</button>
+                <button id="logout-btn" class="btn btn-secondary">Logout</button>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="tabs-nav">
+            <button class="tab-btn active" data-tab="tab-extraction">Run Data Extraction</button>
+            <button class="tab-btn" data-tab="tab-geo">Country Division Settings</button>
+            <button class="tab-btn" data-tab="tab-portfolio">Delivered Portfolio</button>
+            <button class="tab-btn" data-tab="tab-faq">Centralized Store & FAQ</button>
+        </nav>
+
+        <!-- Tab 1: Run Data Extraction -->
+        <section id="tab-extraction" class="tab-content active">
+            <div class="card">
+                <h3>Step A: Select Country and Target Industries</h3>
+                <div class="grid-2" style="margin-top: 16px;">
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 8px;">1. Target Country Selection</label>
+                        <select id="country-select" class="form-input">
+                            <option value="">-- Select Target Country --</option>
+                        </select>
+                        <div style="margin-top: 12px;">
+                            <label style="font-size: 13px;"><input type="checkbox" id="manual-country-toggle"> Enter country manually</label>
+                            <input type="text" id="manual-country-input" class="form-input hidden" style="margin-top: 6px;" placeholder="Manual Country Name">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 8px;">2. Target Industries Selection</label>
+                        <div class="preset-bar">
+                            <button id="btn-preset-tech" class="btn btn-outline">Select Tech</button>
+                            <button id="btn-preset-nontech" class="btn btn-outline">Select Non-Tech</button>
+                            <button id="btn-preset-all" class="btn btn-outline">Select All 458</button>
+                            <button id="btn-preset-clear" class="btn btn-outline">Clear Selection</button>
+                        </div>
+                        <select id="industry-select" class="form-input" multiple style="height: 120px;">
+                        </select>
+                        <p id="industry-count-text" style="font-size: 12px; color: var(--subtext-dark); margin-top: 6px;">0 industries selected.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step B: 3-Step Execution Workflow -->
+            <div class="card">
+                <h3>Step B: 3-Step Execution Workflow</h3>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px;">
+                    <div style="padding: 16px; border: 1px solid var(--border-dark); border-radius: 8px;">
+                        <h4>Step 1: Count Target Rows</h4>
+                        <p style="font-size: 12px; color: var(--subtext-dark); margin: 6px 0 12px 0;">Free counting query. Estimates raw Clay target counts.</p>
+                        <button id="btn-step1-count" class="btn btn-primary" style="width: 100%;">Run Step 1: Count</button>
+                        <div id="step1-progress" class="progress-container hidden">
+                            <div class="progress-bar-outer"><div id="step1-bar" class="progress-bar-inner"></div></div>
+                            <div id="step1-status" class="progress-status">Starting count...</div>
+                        </div>
+                    </div>
+
+                    <div style="padding: 16px; border: 1px solid var(--border-dark); border-radius: 8px;">
+                        <h4>Step 2: Plan & Estimate Coverage</h4>
+                        <p style="font-size: 12px; color: var(--subtext-dark); margin: 6px 0 12px 0;">Free planning query. Partitions slices and estimates reachable coverage.</p>
+                        <button id="btn-step2-plan" class="btn btn-primary" style="width: 100%;">Run Step 2: Generate Plan</button>
+                        <div id="step2-progress" class="progress-container hidden">
+                            <div class="progress-bar-outer"><div id="step2-bar" class="progress-bar-inner"></div></div>
+                            <div id="step2-status" class="progress-status">Starting plan...</div>
+                        </div>
+                    </div>
+
+                    <div style="padding: 16px; border: 1px solid var(--border-dark); border-radius: 8px;">
+                        <h4>Step 3: Download Data</h4>
+                        <p style="font-size: 12px; color: var(--subtext-dark); margin: 6px 0 12px 0;">Executes download, incremental merge, and deduplication.</p>
+                        <label style="font-size: 12px; display: block; margin-bottom: 12px;"><input type="checkbox" id="approve-plan-check"> I approve the plan & estimated coverage</label>
+                        <button id="btn-step3-download" class="btn btn-primary" style="width: 100%;" disabled>Run Step 3: Download</button>
+                        <div id="step3-progress" class="progress-container hidden">
+                            <div class="progress-bar-outer"><div id="step3-bar" class="progress-bar-inner"></div></div>
+                            <div id="step3-status" class="progress-status">Downloading...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Output Area -->
+            <div id="results-area" class="card hidden">
+                <h3>Execution Results</h3>
+                <div id="results-content" class="table-responsive"></div>
+            </div>
+        </section>
+
+        <!-- Tab 2: Country Division Settings -->
+        <section id="tab-geo" class="tab-content">
+            <div class="card">
+                <h3>Country Geographic Division Settings</h3>
+                <p style="font-size: 13px; color: var(--subtext-dark); margin-bottom: 16px;">Define major cities and regional fallbacks for automatic slice partitioning.</p>
+                <div class="form-group">
+                    <label>Select Country to Configure</label>
+                    <select id="geo-country-select" class="form-input"></select>
+                </div>
+                <div class="form-group">
+                    <label>Major Cities (comma-separated)</label>
+                    <textarea id="geo-cities-input" class="form-input" style="height: 80px;"></textarea>
+                </div>
+                <button id="btn-save-geo" class="btn btn-primary">Save Geographic Configuration</button>
+            </div>
+        </section>
+
+        <!-- Tab 3: Delivered Portfolio -->
+        <section id="tab-portfolio" class="tab-content">
+            <div class="card">
+                <h3>Delivered Country Portfolio</h3>
+                <p style="font-size: 13px; color: var(--subtext-dark); margin-bottom: 16px;">Overview of completed country data extractions.</p>
+                <div id="portfolio-list" class="table-responsive">
+                    <p style="font-size: 13px; color: var(--subtext-dark);">Loading delivery portfolio...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 4: FAQ -->
+        <section id="tab-faq" class="tab-content">
+            <div class="card">
+                <h3>Centralized Store & Deduplication FAQ</h3>
+                <div style="font-size: 14px; line-height: 1.6; color: var(--subtext-dark); margin-top: 16px;">
+                    <p><strong>1. Centralized Data Store:</strong> All downloaded datasets are stored in the centralized <code>delivery/</code> folder and deduplicated on LinkedIn URL and Domain.</p>
+                    <p style="margin-top: 12px;"><strong>2. Incremental Merging:</strong> Running additional pulls for existing countries or industries automatically merges new records into existing datasets.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 </html>
