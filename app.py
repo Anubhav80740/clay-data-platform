@@ -9,45 +9,50 @@ import time
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
-import posthog
 
-# PostHog Product Analytics Configuration
-POSTHOG_KEY = os.environ.get("POSTHOG_PROJECT_API_KEY", "phc_C9kRXc4cEpL5SrF8yb6kpBdJazYy85WmjNTm4Gh2oi5a")
-try:
-    if "POSTHOG_PROJECT_API_KEY" in st.secrets:
-        POSTHOG_KEY = str(st.secrets["POSTHOG_PROJECT_API_KEY"]).strip()
-except Exception:
-    pass
+# Import Centralized PostHog Product Analytics Engine
+import analytics as analytics_engine
+from analytics import (
+    init_posthog,
+    track_event,
+    identify_user,
+    reset_user,
+    start_timer,
+    stop_timer,
+    EVENT_APP_OPENED,
+    EVENT_PAGE_VIEWED,
+    EVENT_USER_LOGIN,
+    EVENT_USER_LOGOUT,
+    EVENT_SEARCH_STARTED,
+    EVENT_SEARCH_COMPLETED,
+    EVENT_SEARCH_FAILED,
+    EVENT_FILTER_APPLIED,
+    EVENT_FILTER_REMOVED,
+    EVENT_DATA_PROCESSING_STARTED,
+    EVENT_DATA_PROCESSING_COMPLETED,
+    EVENT_DATA_PROCESSING_FAILED,
+    EVENT_DOWNLOAD_STARTED,
+    EVENT_DOWNLOAD_COMPLETED,
+    EVENT_DOWNLOAD_FAILED,
+    EVENT_EXPORT_COMPLETED,
+    EVENT_GEO_CONFIG_UPDATED
+)
 
-POSTHOG_HOST = os.environ.get("POSTHOG_HOST", "https://us.i.posthog.com")
+# Initialize PostHog safely (non-blocking, environment-variable aware)
+posthog_active = init_posthog()
+posthog_key = analytics_engine.get_posthog_key()
 
-if POSTHOG_KEY:
-    try:
-        posthog.api_key = POSTHOG_KEY
-        posthog.host = POSTHOG_HOST
-        posthog.disabled = False
-    except Exception:
-        pass
+# Automatic app_opened event on initial session load
+if "app_opened_sent" not in st.session_state:
+    st.session_state["app_opened_sent"] = True
+    track_event(EVENT_APP_OPENED, {"page_path": "/", "framework": "streamlit"})
 
-def track_event(distinct_id, event_name, properties=None):
-    if POSTHOG_KEY:
-        try:
-            posthog.capture(distinct_id, event_name, properties or {})
-            posthog.flush() # Force immediate transmission to PostHog API
-        except Exception:
-            pass
-
-# Automatic pageview trigger on page load
-if "page_view_sent" not in st.session_state:
-    st.session_state["page_view_sent"] = True
-    track_event("anonymous_user", "$pageview", {"page": "Clay Data Platform"})
-
-# Inject PostHog JS snippet for session recordings & browser heatmaps
-if POSTHOG_KEY:
+# Inject PostHog JS snippet for session recordings & browser heatmaps if API key is configured
+if posthog_key:
     components.html(f"""
         <script>
             !function(t,e){{var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){{function g(t,e){{var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){{t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}}}var u=e;for("undefined"!=typeof a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){{var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}},u.people.toString=function(){{return u.toString(1)+".people (stub)"}},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])}},e.__SV=1)}})(document,window.posthog||[]);
-            posthog.init('{POSTHOG_KEY}', {{api_host:'{POSTHOG_HOST}', person_profiles: 'identified_only'}});
+            posthog.init('{posthog_key}', {{api_host:'{analytics_engine.POSTHOG_HOST}', person_profiles: 'identified_only'}});
             posthog.capture('$pageview');
         </script>
     """, height=0)
@@ -179,7 +184,8 @@ def login_screen():
             if user_id.strip() == TEAM_USER_ID and password.strip() == TEAM_PASSWORD:
                 st.session_state["authenticated"] = True
                 st.session_state["active_user"] = user_id.strip()
-                track_event(user_id.strip(), "user_login", {"platform": "streamlit_cloud"})
+                identify_user(user_id.strip(), {"auth_method": "single_login", "role": "team_member"})
+                track_event(EVENT_USER_LOGIN, {"user_id": user_id.strip(), "platform": "streamlit"}, distinct_id=user_id.strip())
                 st.rerun()
             else:
                 st.error("Invalid User ID or Password.")
@@ -202,7 +208,7 @@ with nav_col2:
     theme_btn_label = "☀️ Light Mode" if st.session_state["theme_mode"] == "dark" else "🌙 Dark Mode"
     if st.button(theme_btn_label, use_container_width=True):
         st.session_state["theme_mode"] = "light" if st.session_state["theme_mode"] == "dark" else "dark"
-        track_event(active_user, "theme_changed", {"mode": st.session_state["theme_mode"]})
+        track_event("theme_changed", {"mode": st.session_state["theme_mode"]}, distinct_id=active_user)
         st.rerun()
 
 with nav_col3:
@@ -212,7 +218,7 @@ with nav_col3:
         if proc and proc.poll() is None:
             proc.terminate()
             st.session_state["current_process"] = None
-            track_event(active_user, "process_stopped_by_user")
+            track_event("process_stopped_by_user", distinct_id=active_user)
             st.warning("Active process stopped by user.")
         else:
             st.info("No active process running.")
@@ -220,7 +226,8 @@ with nav_col3:
 with nav_col4:
     st.write("")
     if st.button("Logout", type="secondary", use_container_width=True):
-        track_event(active_user, "user_logout")
+        track_event(EVENT_USER_LOGOUT, distinct_id=active_user)
+        reset_user()
         st.session_state["authenticated"] = False
         st.rerun()
 
@@ -232,6 +239,8 @@ tab_download, tab_geo, tab_portfolio, tab_faq = st.tabs([
     "Delivered Portfolio",
     "Centralized Store & Deduplication FAQ"
 ])
+
+track_event(EVENT_PAGE_VIEWED, {"page_name": "extraction_tab"}, distinct_id=active_user)
 
 with tab_download:
     st.subheader("Step A: Select Country and Target Industries")
@@ -281,22 +290,22 @@ with tab_download:
         with b_col1:
             if st.button("Select Tech Industries", use_container_width=True):
                 st.session_state["selected_industries"] = TECH_INDUSTRIES
-                track_event(active_user, "preset_selected", {"type": "tech", "count": len(TECH_INDUSTRIES)})
+                track_event(EVENT_FILTER_APPLIED, {"filter_type": "industry_preset", "preset_name": "tech", "filter_count": len(TECH_INDUSTRIES)}, distinct_id=active_user)
                 
         with b_col2:
             if st.button("Select Non-Tech Industries", use_container_width=True):
                 st.session_state["selected_industries"] = NON_TECH_INDUSTRIES
-                track_event(active_user, "preset_selected", {"type": "non_tech", "count": len(NON_TECH_INDUSTRIES)})
+                track_event(EVENT_FILTER_APPLIED, {"filter_type": "industry_preset", "preset_name": "non_tech", "filter_count": len(NON_TECH_INDUSTRIES)}, distinct_id=active_user)
                 
         with b_col3:
             if st.button("Select All 458 Industries", use_container_width=True):
                 st.session_state["selected_industries"] = ALL_CLAY_INDUSTRIES
-                track_event(active_user, "preset_selected", {"type": "all_458", "count": len(ALL_CLAY_INDUSTRIES)})
+                track_event(EVENT_FILTER_APPLIED, {"filter_type": "industry_preset", "preset_name": "all_458", "filter_count": len(ALL_CLAY_INDUSTRIES)}, distinct_id=active_user)
                 
         with b_col4:
             if st.button("Clear Selection", use_container_width=True):
                 st.session_state["selected_industries"] = []
-                track_event(active_user, "preset_selected", {"type": "clear"})
+                track_event(EVENT_FILTER_REMOVED, {"filter_type": "industry_preset", "action": "clear_all"}, distinct_id=active_user)
 
         selected_industries = st.multiselect(
             "Search and select industries (starts empty; select manually or use category buttons above):",
@@ -328,7 +337,9 @@ with tab_download:
         btn_count = st.button("Run Step 1: Count", use_container_width=True, disabled=not country_input or not selected_industries)
 
         if btn_count:
-            track_event(active_user, "step1_count_started", {"country": country_input, "industries_count": len(selected_industries)})
+            start_timer("step1_search")
+            track_event(EVENT_SEARCH_STARTED, {"country": country_input, "filter_count": len(selected_industries)}, distinct_id=active_user)
+            
             with open(ind_file, "w", encoding="utf-8") as f:
                 json.dump(selected_industries, f)
             if os.path.exists(counts_file):
@@ -359,13 +370,34 @@ with tab_download:
             
             proc.wait()
             st.session_state["current_process"] = None
+            duration_ms = stop_timer("step1_search")
+            
             if proc.returncode == 0:
                 count_progress_bar.progress(1.0)
                 count_status.text("Counting complete.")
-                track_event(active_user, "step1_count_completed", {"country": country_input, "industries_count": len(selected_industries)})
+                
+                res_count = 0
+                if os.path.exists(counts_file):
+                    try:
+                        cdf_res = pd.read_csv(counts_file)
+                        res_count = safe_sum(cdf_res["Count"])
+                    except Exception:
+                        pass
+
+                track_event(EVENT_SEARCH_COMPLETED, {
+                    "country": country_input,
+                    "filter_count": len(selected_industries),
+                    "result_count": res_count,
+                    "duration_ms": duration_ms
+                }, distinct_id=active_user)
                 st.success("Step 1 Count complete.")
             else:
-                track_event(active_user, "step1_count_failed", {"country": country_input})
+                track_event(EVENT_SEARCH_FAILED, {
+                    "country": country_input,
+                    "filter_count": len(selected_industries),
+                    "duration_ms": duration_ms,
+                    "error_type": "process_exit_code_nonzero"
+                }, distinct_id=active_user)
                 st.error("Step 1 Count failed or stopped.")
 
     # ----------------------------------------------------
@@ -377,7 +409,9 @@ with tab_download:
         btn_plan = st.button("Run Step 2: Generate Plan", use_container_width=True, disabled=not country_input or not selected_industries)
 
         if btn_plan:
-            track_event(active_user, "step2_plan_started", {"country": country_input, "industries_count": len(selected_industries)})
+            start_timer("step2_plan")
+            track_event(EVENT_DATA_PROCESSING_STARTED, {"country": country_input, "industries_count": len(selected_industries)}, distinct_id=active_user)
+            
             with open(ind_file, "w", encoding="utf-8") as f:
                 json.dump(selected_industries, f)
                 
@@ -394,8 +428,14 @@ with tab_download:
                 plan_progress_bar.progress(idx / tot_p)
                 
             st.session_state["current_process"] = None
+            duration_ms = stop_timer("step2_plan")
             plan_status.text("Planning complete.")
-            track_event(active_user, "step2_plan_completed", {"country": country_input, "industries_count": len(selected_industries)})
+            
+            track_event(EVENT_DATA_PROCESSING_COMPLETED, {
+                "country": country_input,
+                "industries_count": len(selected_industries),
+                "duration_ms": duration_ms
+            }, distinct_id=active_user)
             st.success("Step 2 Planning complete. Review estimated coverage below.")
 
     # ----------------------------------------------------
@@ -513,18 +553,20 @@ with tab_download:
                     st.write(f"**Current Status**: `{c_status}`")
                 with exp_c2:
                     if st.button(f"Re-Plan '{ind_name[:15]}...'", key=f"replan_{slugify(ind_name)}", use_container_width=True):
-                        track_event(active_user, "single_industry_replanned", {"industry": ind_name, "country": country_input})
+                        track_event(EVENT_DATA_PROCESSING_STARTED, {"industry": ind_name, "country": country_input, "scope": "single_industry"}, distinct_id=active_user)
                         with st.spinner(f"Re-generating partition plan for '{ind_name}'..."):
                             cmd = [sys.executable, "-u", "generate_clicklist.py", ind_name, country_input]
                             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
                             st.session_state["current_process"] = proc
                             proc.wait()
                             st.session_state["current_process"] = None
+                            track_event(EVENT_DATA_PROCESSING_COMPLETED, {"industry": ind_name, "country": country_input, "scope": "single_industry"}, distinct_id=active_user)
                             st.success(f"Re-plan complete for '{ind_name}'!")
                             st.rerun()
                 with exp_c3:
                     if st.button(f"Download '{ind_name[:15]}...'", key=f"dl_{slugify(ind_name)}", type="primary", use_container_width=True):
-                        track_event(active_user, "single_industry_download_started", {"industry": ind_name, "country": country_input})
+                        start_timer(f"dl_single_{ind_name}")
+                        track_event(EVENT_DOWNLOAD_STARTED, {"industry": ind_name, "country": country_input, "scope": "single_industry", "file_format": "csv"}, distinct_id=active_user)
                         st.markdown(f"Executing single-industry download for `{ind_name}`...")
                         cmd_run = [sys.executable, "-u", "run_nontech.py", country_input, "--only", ind_name]
                         proc = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
@@ -540,15 +582,22 @@ with tab_download:
                                 log_box.code("\n".join(logs_single[-15:]))
                         proc.wait()
                         st.session_state["current_process"] = None
-                        track_event(active_user, "single_industry_download_completed", {"industry": ind_name, "country": country_input})
-                        st.success(f"Download complete for '{ind_name}'!")
+                        duration_ms = stop_timer(f"dl_single_{ind_name}")
+                        
+                        if proc.returncode == 0:
+                            track_event(EVENT_DOWNLOAD_COMPLETED, {"industry": ind_name, "country": country_input, "duration_ms": duration_ms, "file_format": "csv"}, distinct_id=active_user)
+                            track_event(EVENT_EXPORT_COMPLETED, {"industry": ind_name, "country": country_input, "file_format": "csv"}, distinct_id=active_user)
+                            st.success(f"Download complete for '{ind_name}'!")
+                        else:
+                            track_event(EVENT_DOWNLOAD_FAILED, {"industry": ind_name, "country": country_input, "duration_ms": duration_ms, "error_type": "single_download_failed"}, distinct_id=active_user)
 
     # Execute Step 3 Download with Progress Bar
     if btn_download:
         if not plan_approved:
             st.warning("Please check the approval box in Step 3 to confirm plan approval before downloading.")
         else:
-            track_event(active_user, "step3_download_started", {"country": country_input, "industries_count": len(selected_industries)})
+            start_timer("step3_download_batch")
+            track_event(EVENT_DOWNLOAD_STARTED, {"country": country_input, "industries_count": len(selected_industries), "file_format": "csv"}, distinct_id=active_user)
             st.markdown(f"### Executing Live Step 3 Download for {country_input}...")
             
             with open(ind_file, "w", encoding="utf-8") as f:
@@ -591,13 +640,44 @@ with tab_download:
                             
             process.wait()
             st.session_state["current_process"] = None
+            duration_ms = stop_timer("step3_download_batch")
+            
             if process.returncode == 0:
                 dl_progress_bar.progress(1.0)
                 dl_status_text.text("Step 3 Download complete.")
-                track_event(active_user, "step3_download_completed", {"country": country_input, "industries_count": len(selected_industries)})
+                
+                delivered_total = 0
+                if os.path.exists(ledger_file):
+                    try:
+                        ledger_df = pd.read_csv(ledger_file)
+                        col_u = "unique_companies" if "unique_companies" in ledger_df.columns else ("Count" if "Count" in ledger_df.columns else None)
+                        if col_u:
+                            delivered_total = safe_sum(ledger_df[col_u])
+                    except Exception:
+                        pass
+
+                track_event(EVENT_DOWNLOAD_COMPLETED, {
+                    "country": country_input,
+                    "industries_count": len(selected_industries),
+                    "row_count": delivered_total,
+                    "unique_companies_count": delivered_total,
+                    "duration_ms": duration_ms,
+                    "file_format": "csv"
+                }, distinct_id=active_user)
+                track_event(EVENT_EXPORT_COMPLETED, {
+                    "country": country_input,
+                    "industries_count": len(selected_industries),
+                    "row_count": delivered_total,
+                    "file_format": "csv"
+                }, distinct_id=active_user)
                 st.success(f"Step 3 Download and Centralized Merge complete for {country_input}.")
             else:
-                track_event(active_user, "step3_download_failed", {"country": country_input})
+                track_event(EVENT_DOWNLOAD_FAILED, {
+                    "country": country_input,
+                    "industries_count": len(selected_industries),
+                    "duration_ms": duration_ms,
+                    "error_type": "download_exit_code_nonzero"
+                }, distinct_id=active_user)
                 st.error("Download finished with errors or stopped.")
 
     if country_input and os.path.exists(ledger_file):
@@ -655,7 +735,7 @@ with tab_geo:
             code = code.rstrip().rstrip("}").rstrip() + "\n" + new_entry
             with open(geo_file, "w", encoding="utf-8") as gf:
                 gf.write(code)
-            track_event(active_user, "geo_config_saved", {"country": geo_country, "num_cities": len(c_list)})
+            track_event(EVENT_GEO_CONFIG_UPDATED, {"country": geo_country, "num_cities": len(c_list)}, distinct_id=active_user)
             st.success(f"Saved new geographic configuration for {geo_country} to clay_geo.py")
         else:
             st.info(f"Configuration for {geo_country} is active. Restart the app if updating existing entries.")
