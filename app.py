@@ -143,12 +143,37 @@ if not st.session_state["authenticated"]:
     login_screen()
     st.stop()
 
-# Fixed Top Navigation Bar (Logo, Theme Toggle, Stop Button, Logout)
-nav_col1, nav_col2, nav_col3, nav_col4 = st.columns([4, 1.2, 1.2, 1])
+# Fixed Top Navigation Bar (Logo, Cookie Status, Theme Toggle, Stop Button, Logout)
+nav_col1, nav_col_cookie, nav_col2, nav_col3, nav_col4 = st.columns([3.5, 1.8, 1.1, 1.1, 0.9])
 
 with nav_col1:
     st.title("Clay Data Platform")
     st.caption("Centralized Company Data Extraction, Deduplication and Portfolio Engine")
+
+with nav_col_cookie:
+    st.write("")
+    try:
+        from auto_cookie_fetcher import verify_cookie, fetch_cookie, COOKIE_FILE
+        active_c = ""
+        if os.path.exists(COOKIE_FILE):
+            with open(COOKIE_FILE, "r", encoding="utf-8") as cf:
+                active_c = cf.read().strip()
+        is_cookie_valid = verify_cookie(active_c)
+        if is_cookie_valid:
+            st.markdown("<span class='badge-green'>🟢 Cookie: Active</span>", unsafe_allow_html=True)
+        else:
+            st.markdown("<span class='badge-orange'>🔴 Cookie: Expired</span>", unsafe_allow_html=True)
+        
+        if st.button("🍪 Refresh Cookie (Auto)", use_container_width=True, help="Launches automated browser to refresh Clay session cookie"):
+            with st.spinner("Launching Playwright automated login..."):
+                new_c = fetch_cookie(headless=False, timeout_seconds=120)
+                if new_c:
+                    st.success("Cookie successfully refreshed!")
+                    st.rerun()
+                else:
+                    st.error("Failed to capture valid cookie. Please complete login in browser window.")
+    except Exception as e:
+        st.caption(f"Cookie check: {e}")
 
 with nav_col2:
     st.write("")
