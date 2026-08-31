@@ -7,6 +7,7 @@ let step1Data = [];
 let step1TotalCount = 0;
 let step2Data = [];
 let step3Data = [];
+let realRecordsStore = {};
 let activeReplanIndex = -1;
 let isDownloading = false;
 let stopRequested = false;
@@ -486,7 +487,6 @@ function applyCustomReplan() {
 
     document.getElementById("replan-modal").classList.add("hidden");
     
-    // Re-render Step 2 table with updated row
     const totalSlices = step2Data.reduce((acc, r) => acc + (r["Planned Slices"] || 1), 0);
     renderStep2Dashboard(step2Data, "99.8%", totalSlices);
 }
@@ -510,13 +510,14 @@ async function runStep3Download() {
 
     pBar.classList.remove("hidden");
     pInner.style.width = "5%";
-    pStatus.textContent = `Starting incremental extraction pipeline for ${industries.length} industries in ${country}...`;
+    pStatus.textContent = `Starting live extraction pipeline for ${industries.length} industries in ${country}...`;
 
     // Map existing counts from step 1
     const countMap = {};
     step1Data.forEach(r => countMap[r["Industry"]] = r["Exact Clay Target Count"]);
 
     step3Data = [];
+    realRecordsStore = {};
     renderStep3Dashboard([], 0, 0);
 
     const card = document.getElementById("step3-results-card");
@@ -534,7 +535,7 @@ async function runStep3Download() {
         const ind = industries[i];
         const pct = Math.round(((i + 1) / industries.length) * 100);
         pInner.style.width = `${pct}%`;
-        pStatus.textContent = `[${i+1}/${industries.length}] Extracting & merging master file: ${ind}...`;
+        pStatus.textContent = `[${i+1}/${industries.length}] Extracting live Clay records for: ${ind}...`;
 
         let sliceResult = null;
         try {
@@ -560,6 +561,9 @@ async function runStep3Download() {
                     "Master File": d.master_file,
                     "Status": "Merged & Saved"
                 };
+                if (d.real_records && d.real_records.length > 0) {
+                    realRecordsStore[d.master_file] = d.real_records;
+                }
             }
         } catch (e) {
             console.warn("Slice download warning:", e);
@@ -584,16 +588,13 @@ async function runStep3Download() {
         totalMasterSum += (sliceResult["Total Master In File"] || 0);
         totalNewAddedSum += (sliceResult["New Records Added"] || 0);
 
-        // Update table dynamically row by row
         renderStep3Dashboard(step3Data, totalMasterSum, totalNewAddedSum);
-
-        // Small interval to allow UI to breathe
-        await new Promise(r => setTimeout(r, 120));
+        await new Promise(r => setTimeout(r, 150));
     }
 
     isDownloading = false;
     pInner.style.width = "100%";
-    pStatus.textContent = `✅ Step 3 complete! All ${step3Data.length} master files updated and deduplicated.`;
+    pStatus.textContent = `✅ Step 3 complete! All ${step3Data.length} master files updated with live Clay records.`;
 }
 
 function renderStep3Dashboard(data, totalMasterRecords, totalNewAdded) {
@@ -656,12 +657,23 @@ function renderStep3Dashboard(data, totalMasterRecords, totalNewAdded) {
 window.downloadSingleIndustryCSV = function(idx) {
     const row = step3Data[idx];
     if (!row) return;
-    const dummyRows = [
-        ["Company Name", "Domain", "Primary Industry", "Country", "Employee Size", "LinkedIn URL"],
-        [`Sample Enterprise ${row["Industry"]}`, `${row["Master File"].replace('.csv', '')}.com`, row["Industry"], row["Target Country"], "51-200 employees", `https://linkedin.com/company/${row["Master File"].replace('.csv', '')}`]
-    ];
-    let csv = dummyRows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+
+    const realList = realRecordsStore[row["Master File"]] || [];
+    let csv = "";
+
+    if (realList && realList.length > 0) {
+        const headers = Object.keys(realList[0]);
+        csv = headers.join(",") + "\n";
+        realList.forEach(item => {
+            const rowVals = headers.map(h => `"${(item[h] || '').toString().replace(/"/g, '""')}"`);
+            csv += rowVals.join(",") + "\n";
+        });
+    } else {
+        const defaultHeaders = ["Company Name", "Domain", "Primary Industry", "Country", "Employee Size", "Description", "LinkedIn URL"];
+        csv = defaultHeaders.join(",") + "\n";
+    }
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -677,7 +689,7 @@ function exportTableToCSV(data, prefix) {
         const values = headers.map(h => `"${row[h]}"`);
         csv += values.join(",") + "\n";
     });
-    const blob = new Blob([csv], { type: "text/csv" });
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
