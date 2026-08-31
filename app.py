@@ -35,12 +35,43 @@ except ImportError:
 
 import clay_geo
 import clay_lib as cl
+import streamlit.components.v1 as components
+
+# PostHog Analytics Setup
+POSTHOG_API_KEY = os.environ.get("POSTHOG_API_KEY") or "phc_C9kRXc4cEpL5SrF8yb6kpBdJazYy85WmjNTm4Gh2oi5a"
+POSTHOG_HOST = os.environ.get("POSTHOG_HOST") or "https://us.i.posthog.com"
+
+try:
+    import posthog
+    posthog.api_key = POSTHOG_API_KEY
+    posthog.host = POSTHOG_HOST
+    POSTHOG_ENABLED = True
+except Exception:
+    POSTHOG_ENABLED = False
+
+def track_event(event_name, properties=None):
+    if POSTHOG_ENABLED:
+        try:
+            uid = st.session_state.get("user_id", "team")
+            posthog.capture(uid, event_name, properties or {})
+        except Exception:
+            pass
 
 # Page Configuration
 st.set_page_config(
     page_title="Clay Data Platform",
     layout="wide"
 )
+
+# Inject PostHog JS for Web Session Replay & Heatmaps
+posthog_js = f"""
+<script>
+    !function(t,e){{var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){{function g(t,e){{var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){{t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}}}var u=e;for("undefined"!=typeof a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){{var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}},u.people.toString=function(){{return u.toString(1)+".people (stub)"}},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])}},e.__SV=1)}}(document,window.posthog||[]);
+    posthog.init('{POSTHOG_API_KEY}', {{api_host:'{POSTHOG_HOST}'}});
+    posthog.capture('$pageview');
+</script>
+"""
+components.html(posthog_js, height=0, width=0)
 
 # Theme State Handling (Light vs Dark Mode)
 if "theme_mode" not in st.session_state:
@@ -135,6 +166,8 @@ def login_screen():
         if st.button("Login", type="primary", use_container_width=True):
             if user_id.strip() == TEAM_USER_ID and password.strip() == TEAM_PASSWORD:
                 st.session_state["authenticated"] = True
+                st.session_state["user_id"] = user_id.strip()
+                track_event("user_login", {"user_id": user_id.strip()})
                 st.rerun()
             else:
                 st.error("Invalid User ID or Password.")
@@ -294,9 +327,8 @@ with tab_download:
     with step_col1:
         st.markdown("#### Step 1: Count Target Rows")
         st.caption("Free counting query. Estimates raw Clay target counts.")
-        btn_count = st.button("Run Step 1: Count", use_container_width=True, disabled=not country_input or not selected_industries)
-
-        if btn_count:
+        btn_count = st.button("Run Step 1: Count", use_container_width=True, disabled=not country_input or not selected        if btn_count:
+            track_event("count_started", {"country": country_input, "industries_count": len(selected_industries)})
             with open(ind_file, "w", encoding="utf-8") as f:
                 json.dump(selected_industries, f)
             if os.path.exists(counts_file):
@@ -331,6 +363,7 @@ with tab_download:
                 count_progress_bar.progress(1.0)
                 count_status.text("Counting complete.")
                 st.success("Step 1 Count complete.")
+                track_event("count_completed", {"country": country_input, "industries_count": len(selected_industries)})
             else:
                 st.error("Step 1 Count failed or stopped.")
 
@@ -343,6 +376,7 @@ with tab_download:
         btn_plan = st.button("Run Step 2: Generate Plan", use_container_width=True, disabled=not country_input or not selected_industries)
 
         if btn_plan:
+            track_event("plan_started", {"country": country_input, "industries_count": len(selected_industries)})
             with open(ind_file, "w", encoding="utf-8") as f:
                 json.dump(selected_industries, f)
                 
@@ -360,7 +394,8 @@ with tab_download:
                 
             st.session_state["current_process"] = None
             plan_status.text("Planning complete.")
-            st.success("Step 2 Planning complete. Review estimated coverage below.")
+            st.success("Step 2 Planning complete.")
+            track_event("plan_completed", {"country": country_input, "industries_count": len(selected_industries)})anning complete. Review estimated coverage below.")
 
     # ----------------------------------------------------
     # STEP 3: DOWNLOAD & DELIVER WITH PROGRESS BAR
@@ -514,6 +549,7 @@ with tab_download:
             st.warning("Please check the approval box in Step 3 to confirm plan approval before downloading.")
         else:
             st.markdown(f"### Executing Live Step 3 Download for {country_input}...")
+            track_event("download_started", {"country": country_input, "industries_count": len(selected_industries), "industries": selected_industries})
             
             with open(ind_file, "w", encoding="utf-8") as f:
                 json.dump(selected_industries, f)
@@ -559,6 +595,7 @@ with tab_download:
                 dl_progress_bar.progress(1.0)
                 dl_status_text.text("Step 3 Download complete.")
                 st.success(f"Step 3 Download and Centralized Merge complete for {country_input}.")
+                track_event("download_completed", {"country": country_input, "industries_count": len(selected_industries)})
             else:
                 st.error("Download finished with errors or stopped.")
 
