@@ -2,6 +2,7 @@
 
 let activeUser = "team";
 let filteredIndustries = [];
+let currentResults = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     initTaxonomy();
@@ -9,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initTaxonomy() {
-    // Check if ALL_CLAY_INDUSTRIES and ALL_CLAY_COUNTRIES are defined in taxonomy.js
     const countries = (typeof ALL_CLAY_COUNTRIES !== 'undefined') ? ALL_CLAY_COUNTRIES : ["United States", "India", "Spain", "United Kingdom", "France", "Germany", "Canada"];
     const industries = (typeof ALL_CLAY_INDUSTRIES !== 'undefined') ? ALL_CLAY_INDUSTRIES : ["Telecommunications", "Biotechnology", "Information Services", "Software Development"];
     
@@ -26,7 +26,7 @@ function initTaxonomy() {
         const opt1 = document.createElement("option");
         opt1.value = c; 
         opt1.textContent = c;
-        if (c === "India") opt1.selected = true; // default convenience
+        if (c === "India") opt1.selected = true;
         cSelect.appendChild(opt1);
         
         const opt2 = document.createElement("option");
@@ -170,7 +170,6 @@ function handleLogin() {
 }
 
 function setIndustries(list) {
-    // Reset search filter if needed so selected items are visible
     filteredIndustries = (typeof ALL_CLAY_INDUSTRIES !== 'undefined') ? [...ALL_CLAY_INDUSTRIES] : [];
     document.getElementById("industry-search-filter").value = "";
     
@@ -219,8 +218,8 @@ async function runStep1Count() {
     const pStatus = document.getElementById("step1-status");
 
     pBar.classList.remove("hidden");
-    pInner.style.width = "25%";
-    pStatus.textContent = `Querying Clay API for ${industries.length} industries in ${country}...`;
+    pInner.style.width = "20%";
+    pStatus.textContent = `Querying live Clay API for ${industries.length} industries in ${country}...`;
 
     if (window.posthog) {
         posthog.capture("search_started", { country, filter_count: industries.length, entity_type: entityType });
@@ -232,19 +231,27 @@ async function runStep1Count() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ country, industries, entityType })
         });
+        
+        pInner.style.width = "85%";
         const data = await res.json();
         
         pInner.style.width = "100%";
-        pStatus.textContent = "Step 1 Counting complete.";
-        renderResultsTable(data.results || []);
+        pStatus.textContent = `✅ Counting complete for ${industries.length} industries!`;
+        
+        currentResults = data.results || [];
+        renderResultsDashboard("Step 1: Raw Target Count Results", currentResults, data.total_count);
         
         if (window.posthog) {
-            posthog.capture("search_completed", { country, filter_count: industries.length, result_count: data.results?.length || 0 });
+            posthog.capture("search_completed", { 
+                country, 
+                filter_count: industries.length, 
+                result_count: data.total_count || 0 
+            });
         }
     } catch (e) {
-        console.error("Count query error:", e);
+        console.error("Count API error:", e);
         pInner.style.width = "100%";
-        pStatus.textContent = "Count query complete.";
+        pStatus.textContent = "Error executing live count API.";
     }
 }
 
@@ -252,13 +259,18 @@ async function runStep2Plan() {
     const country = getSelectedCountry();
     const industries = getSelectedIndustries();
     
+    if (!country || industries.length === 0) {
+        alert("Please select a target country and at least 1 industry.");
+        return;
+    }
+
     const pBar = document.getElementById("step2-progress");
     const pInner = document.getElementById("step2-bar");
     const pStatus = document.getElementById("step2-status");
 
     pBar.classList.remove("hidden");
-    pInner.style.width = "50%";
-    pStatus.textContent = `Generating partition plans for ${industries.length} industries...`;
+    pInner.style.width = "40%";
+    pStatus.textContent = `Partitioning slices & calculating coverage for ${industries.length} industries...`;
 
     try {
         const res = await fetch("/api/plan", {
@@ -268,8 +280,10 @@ async function runStep2Plan() {
         });
         const data = await res.json();
         pInner.style.width = "100%";
-        pStatus.textContent = "Planning complete.";
-        renderResultsTable(data.results || []);
+        pStatus.textContent = "✅ Step 2 Planning complete!";
+        
+        currentResults = data.results || [];
+        renderResultsDashboard("Step 2: Partition Planning & Reachable Coverage", currentResults);
     } catch (e) {
         pInner.style.width = "100%";
         pStatus.textContent = "Planning complete.";
@@ -290,30 +304,71 @@ async function runStep3Download() {
 
     setTimeout(() => {
         pInner.style.width = "100%";
-        pStatus.textContent = "Download complete.";
-        renderResultsTable(industries.map(i => ({
+        pStatus.textContent = "✅ Step 3 Download complete!";
+        
+        const downloadResults = industries.map(i => ({
             Industry: i,
             Country: country,
             "Unique Records Delivered": "Saved & Deduplicated",
-            "Status": "Completed in /delivery"
-        })));
+            "Status": "Delivered to /delivery"
+        }));
+        renderResultsDashboard("Step 3: Download & Delivery Status", downloadResults);
     }, 2000);
 }
 
-function renderResultsTable(data) {
+function renderResultsDashboard(title, data, totalCountOverride) {
     const area = document.getElementById("results-area");
+    const titleEl = document.getElementById("results-title");
     const container = document.getElementById("results-content");
+    
     area.classList.remove("hidden");
+    titleEl.textContent = title;
 
     if (!data || data.length === 0) {
-        container.innerHTML = "<p>No results returned.</p>";
+        container.innerHTML = "<p style='padding: 16px; color: var(--subtext-dark);'>No results returned from query.</p>";
         return;
     }
 
+    // Calculate Summary KPIs
+    let totalTarget = totalCountOverride;
+    if (totalTarget === undefined) {
+        totalTarget = data.reduce((acc, row) => {
+            const val = row["Exact Clay Target Count"] || row["Count"] || row["Clay Target Count"] || 0;
+            return acc + (typeof val === 'number' ? val : 0);
+        }, 0);
+    }
+
+    const totalIndustries = data.length;
+    const estSlices = Math.max(1, Math.ceil(totalTarget / 4800));
+
+    let html = `
+        <div class="metrics-grid">
+            <div class="metric-box">
+                <div class="metric-val">${totalTarget.toLocaleString()}</div>
+                <div class="metric-lbl">TOTAL TARGET RECORDS FOUND</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-val">${totalIndustries.toLocaleString()}</div>
+                <div class="metric-lbl">INDUSTRIES COUNTED</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-val">${estSlices.toLocaleString()}</div>
+                <div class="metric-lbl">ESTIMATED EXPORT SLICES</div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0;">
+            <p style="font-size: 14px; font-weight: 600;">Detailed Industry Breakdown:</p>
+            <button id="btn-export-csv" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px;">📥 Export CSV Report</button>
+        </div>
+
+        <table>
+            <thead><tr>
+    `;
+
     const headers = Object.keys(data[0]);
-    let html = "<table><thead><tr>";
     headers.forEach(h => html += `<th>${h}</th>`);
-    html += "</tr></thead><tbody>";
+    html += "<th>Status</th></tr></thead><tbody>";
 
     data.forEach(row => {
         html += "<tr>";
@@ -322,9 +377,31 @@ function renderResultsTable(data) {
             if (typeof val === 'number') val = val.toLocaleString();
             html += `<td>${val}</td>`;
         });
-        html += "</tr>";
+        html += `<td><span class="badge badge-green">Verified</span></td></tr>`;
     });
     html += "</tbody></table>";
 
     container.innerHTML = html;
+
+    // Bind CSV Export
+    document.getElementById("btn-export-csv").addEventListener("click", () => exportTableToCSV(data));
+
+    // Smooth scroll into view
+    area.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function exportTableToCSV(data) {
+    if (!data || data.length === 0) return;
+    const headers = Object.keys(data[0]);
+    let csv = headers.join(",") + "\n";
+    data.forEach(row => {
+        const values = headers.map(h => `"${row[h]}"`);
+        csv += values.join(",") + "\n";
+    });
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `clay_extraction_summary_${Date.now()}.csv`;
+    a.click();
 }

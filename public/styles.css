@@ -68,13 +68,22 @@ body.light .card { background-color: var(--card-light); border-color: var(--bord
 /* Industry Preset Bar */
 .preset-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
 
+/* Metrics Banner */
+.metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 16px 0; }
+.metric-box { background-color: #1e293b; border-radius: 8px; padding: 16px; border: 1px solid var(--border-dark); text-align: center; }
+body.light .metric-box { background-color: #f1f5f9; border-color: var(--border-light); }
+.metric-val { font-size: 24px; font-weight: 700; color: #38bdf8; margin-bottom: 4px; }
+.metric-lbl { font-size: 12px; color: var(--subtext-dark); font-weight: 500; }
+
 /* Data Tables */
-.table-responsive { overflow-x: auto; margin-top: 16px; }
+.table-responsive { overflow-x: auto; margin-top: 16px; border-radius: 8px; border: 1px solid var(--border-dark); }
 table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
 th, td { padding: 12px 16px; border-bottom: 1px solid var(--border-dark); }
 body.light th, body.light td { border-color: var(--border-light); }
 th { background-color: #1e293b; font-weight: 600; }
 body.light th { background-color: #f1f5f9; }
+tr:hover { background-color: rgba(255,255,255,0.02); }
+body.light tr:hover { background-color: rgba(0,0,0,0.02); }
 
 /* Progress Bar */
 .progress-container { margin-top: 12px; }
