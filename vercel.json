@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "app.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "app.py"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cookie_refresh",
+      "schedule": "0 0 * * *"
+    }
+  ],
+  "env": {
+    "POSTHOG_HOST": "https://us.i.posthog.com"
+  }
+}

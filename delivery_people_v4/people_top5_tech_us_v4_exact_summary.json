@@ -1,0 +1,42 @@
+[
+  {
+    "Industry": "Appliances, Electrical, and Electronics Manufacturing",
+    "Country": "United States",
+    "Exact Clay Target Contacts": 313306,
+    "Reachable Unique Contacts": 313306,
+    "Coverage %": "100.0%",
+    "Required Export Slices": 69
+  },
+  {
+    "Industry": "Automation Machinery Manufacturing",
+    "Country": "United States",
+    "Exact Clay Target Contacts": 202656,
+    "Reachable Unique Contacts": 202656,
+    "Coverage %": "100.0%",
+    "Required Export Slices": 45
+  },
+  {
+    "Industry": "Biotechnology",
+    "Country": "United States",
+    "Exact Clay Target Contacts": 45204,
+    "Reachable Unique Contacts": 45204,
+    "Coverage %": "100.0%",
+    "Required Export Slices": 10
+  },
+  {
+    "Industry": "Biotechnology Research",
+    "Country": "United States",
+    "Exact Clay Target Contacts": 460421,
+    "Reachable Unique Contacts": 460421,
+    "Coverage %": "100.0%",
+    "Required Export Slices": 102
+  },
+  {
+    "Industry": "Blockchain Services",
+    "Country": "United States",
+    "Exact Clay Target Contacts": 3677,
+    "Reachable Unique Contacts": 3677,
+    "Coverage %": "100.0%",
+    "Required Export Slices": 1
+  }
+]
