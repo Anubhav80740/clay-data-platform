@@ -587,6 +587,30 @@ with tab_download:
                 st.metric("Deduplication Quality", "100% Unique", help="Deduplicated on Domain and LinkedIn URL")
 
             st.dataframe(ledger_df, use_container_width=True)
+
+            st.markdown("#### 📥 Download & Inspect Delivered Master Files")
+            col_fpath = "file" if "file" in ledger_df.columns else ("File" if "File" in ledger_df.columns else None)
+            if col_fpath:
+                for _, lrow in ledger_df.iterrows():
+                    fpath = lrow[col_fpath]
+                    ind_lbl = lrow.get(col_ind, os.path.basename(fpath))
+                    if os.path.exists(fpath):
+                        with st.expander(f"📄 {ind_lbl} ({os.path.basename(fpath)})"):
+                            try:
+                                f_preview = pd.read_csv(fpath, nrows=20)
+                                st.caption(f"Previewing first {len(f_preview)} rows from `{fpath}`:")
+                                st.dataframe(f_preview, use_container_width=True)
+                                
+                                with open(fpath, "rb") as dl_f:
+                                    st.download_button(
+                                        label=f"📥 Download {os.path.basename(fpath)}",
+                                        data=dl_f.read(),
+                                        file_name=os.path.basename(fpath),
+                                        mime="text/csv",
+                                        key=f"dl_btn_{cl.slugify(ind_lbl)}"
+                                    )
+                            except Exception as pe:
+                                st.warning(f"Preview error: {pe}")
         except Exception as ex:
             st.warning(f"Unable to display ledger metrics: {ex}")
 
@@ -667,15 +691,26 @@ with tab_portfolio:
                 cpath = os.path.join(delivery_dir, selected_country_view)
                 cfiles = sorted([f for f in os.listdir(cpath) if f.endswith(".csv")])
                 
-                file_details = []
                 for cf in cfiles:
                     full_p = os.path.join(cpath, cf)
-                    file_details.append({
-                        "File Name": cf,
-                        "File Size": f"{os.path.getsize(full_p)/1024:.1f} KB",
-                        "Full Local Path": full_p
-                    })
-                st.dataframe(pd.DataFrame(file_details), use_container_width=True)
+                    f_size_kb = os.path.getsize(full_p) / 1024
+                    
+                    with st.expander(f"📁 {cf} ({f_size_kb:.1f} KB)"):
+                        try:
+                            df_prev = pd.read_csv(full_p, nrows=20)
+                            st.caption(f"Previewing first {len(df_prev)} rows from `{full_p}`:")
+                            st.dataframe(df_prev, use_container_width=True)
+                            
+                            with open(full_p, "rb") as pf_f:
+                                st.download_button(
+                                    label=f"📥 Download {cf}",
+                                    data=pf_f.read(),
+                                    file_name=cf,
+                                    mime="text/csv",
+                                    key=f"port_dl_{cl.slugify(cf)}"
+                                )
+                        except Exception as pfe:
+                            st.warning(f"Could not preview file: {pfe}")
         else:
             st.info("No country folders found in delivery/ yet.")
     else:

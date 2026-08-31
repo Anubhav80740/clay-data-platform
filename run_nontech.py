@@ -268,7 +268,11 @@ def main():
                   f"{uniq:,} unique of {expected:,} on Clay")
 
     lf.close()
-    print(f"\n=== {country} NON-TECH RUN COMPLETE ===", flush=True)
+    if only:
+        ind_label = ", ".join(sorted(only))
+        print(f"\n=== {country} EXTRACTION COMPLETE (Industry: {ind_label}) ===", flush=True)
+    else:
+        print(f"\n=== {country} DATA EXTRACTION & MERGE COMPLETE ===", flush=True)
 
 
 if __name__ == "__main__":
