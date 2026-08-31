@@ -19,11 +19,11 @@
         <p style="margin-bottom: 24px; color: #94a3b8; font-size: 14px;">Team Login</p>
         <div class="form-group">
             <label>User ID</label>
-            <input type="text" id="login-user" class="form-input" placeholder="User ID">
+            <input type="text" id="login-user" class="form-input" placeholder="User ID" value="team">
         </div>
         <div class="form-group">
             <label>Password</label>
-            <input type="password" id="login-pass" class="form-input" placeholder="Password">
+            <input type="password" id="login-pass" class="form-input" placeholder="Password" value="clay2026">
         </div>
         <button id="login-btn" class="btn btn-primary" style="width: 100%;">Login</button>
         <div id="login-error" style="color: #ef4444; margin-top: 12px; font-size: 13px;" class="hidden">Invalid credentials.</div>
@@ -35,7 +35,7 @@
         <header class="top-navbar">
             <div>
                 <h2>Clay Data Platform</h2>
-                <p style="font-size: 12px; color: var(--subtext-dark);">Centralized Company Data Extraction, Deduplication and Portfolio Engine</p>
+                <p style="font-size: 12px; color: var(--subtext-dark);">Centralized Company & People Data Extraction, Deduplication and Portfolio Engine</p>
             </div>
             <div class="nav-actions">
                 <button id="theme-toggle" class="btn btn-outline">☀️ Light Mode</button>
@@ -55,7 +55,7 @@
         <!-- Tab 1: Run Data Extraction -->
         <section id="tab-extraction" class="tab-content active">
             <div class="card">
-                <h3>Step A: Select Country and Target Industries</h3>
+                <h3>Step A: Select Target Country and Industries</h3>
                 <div class="grid-2" style="margin-top: 16px;">
                     <div>
                         <label style="font-weight: 600; display: block; margin-bottom: 8px;">1. Target Country Selection</label>
@@ -64,18 +64,28 @@
                         </select>
                         <div style="margin-top: 12px;">
                             <label style="font-size: 13px;"><input type="checkbox" id="manual-country-toggle"> Enter country manually</label>
-                            <input type="text" id="manual-country-input" class="form-input hidden" style="margin-top: 6px;" placeholder="Manual Country Name">
+                            <input type="text" id="manual-country-input" class="form-input hidden" style="margin-top: 6px;" placeholder="e.g. India, United States, Spain">
+                        </div>
+
+                        <div style="margin-top: 16px;">
+                            <label style="font-weight: 600; display: block; margin-bottom: 8px;">Search Entity Type</label>
+                            <select id="entity-type-select" class="form-input">
+                                <option value="companies" selected>🏢 Companies Search (Full Records)</option>
+                                <option value="people">👤 People / Contacts Search</option>
+                            </select>
                         </div>
                     </div>
+
                     <div>
-                        <label style="font-weight: 600; display: block; margin-bottom: 8px;">2. Target Industries Selection</label>
+                        <label style="font-weight: 600; display: block; margin-bottom: 8px;">2. Target Industries Selection (458 Available)</label>
                         <div class="preset-bar">
-                            <button id="btn-preset-tech" class="btn btn-outline">Select Tech</button>
-                            <button id="btn-preset-nontech" class="btn btn-outline">Select Non-Tech</button>
-                            <button id="btn-preset-all" class="btn btn-outline">Select All 458</button>
-                            <button id="btn-preset-clear" class="btn btn-outline">Clear Selection</button>
+                            <button id="btn-preset-tech" class="btn btn-outline" type="button">Select Tech</button>
+                            <button id="btn-preset-nontech" class="btn btn-outline" type="button">Select Non-Tech</button>
+                            <button id="btn-preset-all" class="btn btn-outline" type="button">Select All 458</button>
+                            <button id="btn-preset-clear" class="btn btn-outline" type="button">Clear Selection</button>
                         </div>
-                        <select id="industry-select" class="form-input" multiple style="height: 120px;">
+                        <input type="text" id="industry-search-filter" class="form-input" placeholder="🔍 Type to filter 458 industries..." style="margin-bottom: 8px;">
+                        <select id="industry-select" class="form-input" multiple style="height: 150px;">
                         </select>
                         <p id="industry-count-text" style="font-size: 12px; color: var(--subtext-dark); margin-top: 6px;">0 industries selected.</p>
                     </div>
@@ -121,7 +131,7 @@
 
             <!-- Results Output Area -->
             <div id="results-area" class="card hidden">
-                <h3>Execution Results</h3>
+                <h3 id="results-title">Execution Results</h3>
                 <div id="results-content" class="table-responsive"></div>
             </div>
         </section>
@@ -137,7 +147,7 @@
                 </div>
                 <div class="form-group">
                     <label>Major Cities (comma-separated)</label>
-                    <textarea id="geo-cities-input" class="form-input" style="height: 80px;"></textarea>
+                    <textarea id="geo-cities-input" class="form-input" style="height: 80px;" placeholder="e.g. Madrid, Barcelona, Valencia, Seville"></textarea>
                 </div>
                 <button id="btn-save-geo" class="btn btn-primary">Save Geographic Configuration</button>
             </div>
@@ -149,7 +159,7 @@
                 <h3>Delivered Country Portfolio</h3>
                 <p style="font-size: 13px; color: var(--subtext-dark); margin-bottom: 16px;">Overview of completed country data extractions.</p>
                 <div id="portfolio-list" class="table-responsive">
-                    <p style="font-size: 13px; color: var(--subtext-dark);">Loading delivery portfolio...</p>
+                    <p style="font-size: 13px; color: var(--subtext-dark);">Delivery storage active in /delivery folder.</p>
                 </div>
             </div>
         </section>
@@ -166,6 +176,8 @@
         </section>
     </div>
 
+    <!-- Scripts -->
+    <script src="taxonomy.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

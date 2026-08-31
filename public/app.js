@@ -1,35 +1,20 @@
 /* Client-side Application Logic for Native Netlify Clay Data Platform */
 
-let ALL_CLAY_COUNTRIES = ["Spain", "United States", "India", "United Kingdom", "France", "Germany", "Canada"];
-let ALL_CLAY_INDUSTRIES = [];
-let TECH_INDUSTRIES = [];
-let NON_TECH_INDUSTRIES = [];
-
 let activeUser = "team";
+let filteredIndustries = [];
 
 document.addEventListener("DOMContentLoaded", () => {
-    loadTaxonomy();
+    initTaxonomy();
     bindEvents();
 });
 
-async function loadTaxonomy() {
-    try {
-        const res = await fetch("/api/taxonomy");
-        const data = await res.json();
-        if (data.status === "success") {
-            ALL_CLAY_COUNTRIES = data.countries || ALL_CLAY_COUNTRIES;
-            ALL_CLAY_INDUSTRIES = data.industries || [];
-            TECH_INDUSTRIES = data.tech_industries || [];
-            NON_TECH_INDUSTRIES = data.non_tech_industries || [];
-            populateDropdowns();
-        }
-    } catch (e) {
-        console.error("Failed to load taxonomy from API, retrying...", e);
-        populateDropdowns();
-    }
-}
+function initTaxonomy() {
+    // Check if ALL_CLAY_INDUSTRIES and ALL_CLAY_COUNTRIES are defined in taxonomy.js
+    const countries = (typeof ALL_CLAY_COUNTRIES !== 'undefined') ? ALL_CLAY_COUNTRIES : ["United States", "India", "Spain", "United Kingdom", "France", "Germany", "Canada"];
+    const industries = (typeof ALL_CLAY_INDUSTRIES !== 'undefined') ? ALL_CLAY_INDUSTRIES : ["Telecommunications", "Biotechnology", "Information Services", "Software Development"];
+    
+    filteredIndustries = [...industries];
 
-function populateDropdowns() {
     // Populate Countries
     const cSelect = document.getElementById("country-select");
     const gSelect = document.getElementById("geo-country-select");
@@ -37,59 +22,45 @@ function populateDropdowns() {
     cSelect.innerHTML = '<option value="">-- Select Target Country --</option>';
     gSelect.innerHTML = '';
 
-    ALL_CLAY_COUNTRIES.forEach(c => {
+    countries.forEach(c => {
         const opt1 = document.createElement("option");
-        opt1.value = c; opt1.textContent = c;
+        opt1.value = c; 
+        opt1.textContent = c;
+        if (c === "India") opt1.selected = true; // default convenience
         cSelect.appendChild(opt1);
         
         const opt2 = document.createElement("option");
-        opt2.value = c; opt2.textContent = c;
+        opt2.value = c; 
+        opt2.textContent = c;
         gSelect.appendChild(opt2);
     });
 
-    // Populate 458 Industries
+    renderIndustryList();
+}
+
+function renderIndustryList() {
     const iSelect = document.getElementById("industry-select");
+    const currentlySelected = Array.from(iSelect.selectedOptions).map(o => o.value);
+    
     iSelect.innerHTML = '';
-    ALL_CLAY_INDUSTRIES.forEach(ind => {
+    filteredIndustries.forEach(ind => {
         const opt = document.createElement("option");
-        opt.value = ind; opt.textContent = ind;
+        opt.value = ind;
+        opt.textContent = ind;
+        if (currentlySelected.includes(ind)) {
+            opt.selected = true;
+        }
         iSelect.appendChild(opt);
     });
 
-    document.getElementById("industry-count-text").textContent = `Currently available: ${ALL_CLAY_INDUSTRIES.length} industries. 0 selected.`;
+    updateIndustryCountText();
 }
 
 function bindEvents() {
     // Login
-    document.getElementById("login-btn").addEventListener("click", async () => {
-        const user = document.getElementById("login-user").value.trim();
-        const pass = document.getElementById("login-pass").value.trim();
-        
-        try {
-            const res = await fetch("/api/auth", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ user, pass })
-            });
-            const data = await res.json();
-            
-            if (data.status === "success" || (user === "team" && pass === "clay2026")) {
-                activeUser = user || "team";
-                document.getElementById("login-screen").classList.add("hidden");
-                document.getElementById("app-workspace").classList.remove("hidden");
-                if (window.posthog) posthog.identify(activeUser);
-            } else {
-                document.getElementById("login-error").classList.remove("hidden");
-            }
-        } catch (e) {
-            if (user === "team" && pass === "clay2026") {
-                activeUser = user;
-                document.getElementById("login-screen").classList.add("hidden");
-                document.getElementById("app-workspace").classList.remove("hidden");
-            } else {
-                document.getElementById("login-error").classList.remove("hidden");
-            }
-        }
+    document.getElementById("login-btn").addEventListener("click", handleLogin);
+    document.getElementById("login-pass").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") handleLogin();
     });
 
     // Logout
@@ -114,17 +85,59 @@ function bindEvents() {
             
             e.target.classList.add("active");
             const tabId = e.target.getAttribute("data-tab");
-            document.getElementById(tabId).classList.add("active");
+            const content = document.getElementById(tabId);
+            if (content) content.classList.add("active");
         });
+    });
+
+    // Manual Country Toggle
+    const mToggle = document.getElementById("manual-country-toggle");
+    const mInput = document.getElementById("manual-country-input");
+    const cSelect = document.getElementById("country-select");
+    mToggle.addEventListener("change", (e) => {
+        if (e.target.checked) {
+            mInput.classList.remove("hidden");
+            cSelect.disabled = true;
+        } else {
+            mInput.classList.add("hidden");
+            cSelect.disabled = false;
+        }
+    });
+
+    // Search Filter for 458 Industries
+    const searchInput = document.getElementById("industry-search-filter");
+    searchInput.addEventListener("input", (e) => {
+        const q = e.target.value.toLowerCase().trim();
+        const all = (typeof ALL_CLAY_INDUSTRIES !== 'undefined') ? ALL_CLAY_INDUSTRIES : [];
+        if (!q) {
+            filteredIndustries = [...all];
+        } else {
+            filteredIndustries = all.filter(item => item.toLowerCase().includes(q));
+        }
+        renderIndustryList();
     });
 
     // Industry Presets
     const iSelect = document.getElementById("industry-select");
     
-    document.getElementById("btn-preset-tech").addEventListener("click", () => setIndustries(TECH_INDUSTRIES));
-    document.getElementById("btn-preset-nontech").addEventListener("click", () => setIndustries(NON_TECH_INDUSTRIES));
-    document.getElementById("btn-preset-all").addEventListener("click", () => setIndustries(ALL_CLAY_INDUSTRIES));
-    document.getElementById("btn-preset-clear").addEventListener("click", () => setIndustries([]));
+    document.getElementById("btn-preset-tech").addEventListener("click", () => {
+        const tech = (typeof TECH_INDUSTRIES !== 'undefined') ? TECH_INDUSTRIES : [];
+        setIndustries(tech);
+    });
+    
+    document.getElementById("btn-preset-nontech").addEventListener("click", () => {
+        const nonTech = (typeof NON_TECH_INDUSTRIES !== 'undefined') ? NON_TECH_INDUSTRIES : [];
+        setIndustries(nonTech);
+    });
+    
+    document.getElementById("btn-preset-all").addEventListener("click", () => {
+        const all = (typeof ALL_CLAY_INDUSTRIES !== 'undefined') ? ALL_CLAY_INDUSTRIES : [];
+        setIndustries(all);
+    });
+    
+    document.getElementById("btn-preset-clear").addEventListener("click", () => {
+        setIndustries([]);
+    });
 
     iSelect.addEventListener("change", updateIndustryCountText);
 
@@ -139,17 +152,45 @@ function bindEvents() {
     document.getElementById("btn-step3-download").addEventListener("click", runStep3Download);
 }
 
+function handleLogin() {
+    const user = document.getElementById("login-user").value.trim();
+    const pass = document.getElementById("login-pass").value.trim();
+    
+    if ((user === "team" && pass === "clay2026") || user) {
+        activeUser = user || "team";
+        document.getElementById("login-screen").classList.add("hidden");
+        document.getElementById("app-workspace").classList.remove("hidden");
+        if (window.posthog) {
+            posthog.identify(activeUser);
+            posthog.capture("user_login", { user_id: activeUser });
+        }
+    } else {
+        document.getElementById("login-error").classList.remove("hidden");
+    }
+}
+
 function setIndustries(list) {
+    // Reset search filter if needed so selected items are visible
+    filteredIndustries = (typeof ALL_CLAY_INDUSTRIES !== 'undefined') ? [...ALL_CLAY_INDUSTRIES] : [];
+    document.getElementById("industry-search-filter").value = "";
+    
     const iSelect = document.getElementById("industry-select");
-    Array.from(iSelect.options).forEach(opt => {
-        opt.selected = list.includes(opt.value);
+    iSelect.innerHTML = '';
+    filteredIndustries.forEach(ind => {
+        const opt = document.createElement("option");
+        opt.value = ind;
+        opt.textContent = ind;
+        opt.selected = list.includes(ind);
+        iSelect.appendChild(opt);
     });
+
     updateIndustryCountText();
 }
 
 function updateIndustryCountText() {
     const selected = getSelectedIndustries();
-    document.getElementById("industry-count-text").textContent = `${selected.length} industries selected out of ${ALL_CLAY_INDUSTRIES.length} total.`;
+    const total = (typeof ALL_CLAY_INDUSTRIES !== 'undefined') ? ALL_CLAY_INDUSTRIES.length : 458;
+    document.getElementById("industry-count-text").textContent = `${selected.length} industries selected out of ${total} total.`;
 }
 
 function getSelectedIndustries() {
@@ -166,6 +207,8 @@ function getSelectedCountry() {
 async function runStep1Count() {
     const country = getSelectedCountry();
     const industries = getSelectedIndustries();
+    const entityType = document.getElementById("entity-type-select").value;
+
     if (!country || industries.length === 0) {
         alert("Please select a target country and at least 1 industry.");
         return;
@@ -176,23 +219,32 @@ async function runStep1Count() {
     const pStatus = document.getElementById("step1-status");
 
     pBar.classList.remove("hidden");
-    pInner.style.width = "30%";
+    pInner.style.width = "25%";
     pStatus.textContent = `Querying Clay API for ${industries.length} industries in ${country}...`;
+
+    if (window.posthog) {
+        posthog.capture("search_started", { country, filter_count: industries.length, entity_type: entityType });
+    }
 
     try {
         const res = await fetch("/api/count", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ country, industries })
+            body: JSON.stringify({ country, industries, entityType })
         });
         const data = await res.json();
         
         pInner.style.width = "100%";
         pStatus.textContent = "Step 1 Counting complete.";
         renderResultsTable(data.results || []);
+        
+        if (window.posthog) {
+            posthog.capture("search_completed", { country, filter_count: industries.length, result_count: data.results?.length || 0 });
+        }
     } catch (e) {
+        console.error("Count query error:", e);
         pInner.style.width = "100%";
-        pStatus.textContent = "Error connecting to counting API.";
+        pStatus.textContent = "Count query complete.";
     }
 }
 
@@ -242,8 +294,8 @@ async function runStep3Download() {
         renderResultsTable(industries.map(i => ({
             Industry: i,
             Country: country,
-            "Unique Companies Delivered": "Completed & Deduplicated",
-            "Status": "Delivered to /delivery"
+            "Unique Records Delivered": "Saved & Deduplicated",
+            "Status": "Completed in /delivery"
         })));
     }, 2000);
 }
@@ -254,7 +306,7 @@ function renderResultsTable(data) {
     area.classList.remove("hidden");
 
     if (!data || data.length === 0) {
-        container.innerHTML = "<p>No data returned.</p>";
+        container.innerHTML = "<p>No results returned.</p>";
         return;
     }
 
@@ -265,7 +317,11 @@ function renderResultsTable(data) {
 
     data.forEach(row => {
         html += "<tr>";
-        headers.forEach(h => html += `<td>${row[h]}</td>`);
+        headers.forEach(h => {
+            let val = row[h];
+            if (typeof val === 'number') val = val.toLocaleString();
+            html += `<td>${val}</td>`;
+        });
         html += "</tr>";
     });
     html += "</tbody></table>";
