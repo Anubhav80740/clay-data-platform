@@ -1,6 +1,6 @@
 /**
  * Netlify Serverless Function: /.netlify/functions/count
- * Ultra-fast native Node.js parallel count queries against Clay API.
+ * Rate-limit safe, concurrency-controlled count queries against Clay API with automatic retry.
  */
 
 const WORKSPACE_ID = "744216";
@@ -51,46 +51,53 @@ exports.handler = async function(event, context) {
 
     const url = `https://api.clay.com/v3/workspaces/${WORKSPACE_ID}/actions/run-cpj-preview-enrichment`;
 
-    const fetchSingle = async (ind) => {
-        try {
-            const payload = (entityType === "people") ? {
-                enrichmentType: "find-lists-of-people-with-mixrank-source-preview",
-                options: { returnTaskId: true, returnActionMetadata: true },
-                inputs: {
-                    company_industries_include: [ind],
-                    location_countries_include: [country],
-                    limit: 1,
-                    result_count: true
-                }
-            } : {
-                enrichmentType: "find-lists-of-companies-with-mixrank-source-preview",
-                options: { returnTaskId: true, returnActionMetadata: true },
-                inputs: {
-                    country_names: [country],
-                    industries: [ind],
-                    limit: 1,
-                    result_count: true
-                }
-            };
-
-            const resp = await fetch(url, {
-                method: "POST",
-                headers: clayHeaders,
-                body: JSON.stringify(payload)
-            });
-
-            if (resp.ok) {
-                const data = await resp.json();
-                const cnt = (entityType === "people") ? data.result?.peopleCount : data.result?.companyCount;
-                return {
-                    "Industry": ind,
-                    "Target Country": country,
-                    "Entity Type": (entityType === "people" ? "People" : "Companies"),
-                    "Exact Clay Target Count": cnt !== undefined ? cnt : 0
-                };
+    const fetchWithRetry = async (ind, retries = 3) => {
+        const payload = (entityType === "people") ? {
+            enrichmentType: "find-lists-of-people-with-mixrank-source-preview",
+            options: { returnTaskId: true, returnActionMetadata: true },
+            inputs: {
+                company_industries_include: [ind],
+                location_countries_include: [country],
+                limit: 1,
+                result_count: true
             }
-        } catch (e) {
-            console.error("Fetch single error:", e);
+        } : {
+            enrichmentType: "find-lists-of-companies-with-mixrank-source-preview",
+            options: { returnTaskId: true, returnActionMetadata: true },
+            inputs: {
+                country_names: [country],
+                industries: [ind],
+                limit: 1,
+                result_count: true
+            }
+        };
+
+        for (let attempt = 1; attempt <= retries; attempt++) {
+            try {
+                const resp = await fetch(url, {
+                    method: "POST",
+                    headers: clayHeaders,
+                    body: JSON.stringify(payload)
+                });
+
+                if (resp.ok) {
+                    const data = await resp.json();
+                    const cnt = (entityType === "people") ? data.result?.peopleCount : data.result?.companyCount;
+                    
+                    if (cnt !== undefined && cnt !== null) {
+                        return {
+                            "Industry": ind,
+                            "Target Country": country,
+                            "Entity Type": (entityType === "people" ? "People" : "Companies"),
+                            "Exact Clay Target Count": cnt
+                        };
+                    }
+                }
+            } catch (err) {}
+
+            if (attempt < retries) {
+                await new Promise(r => setTimeout(r, attempt * 250));
+            }
         }
 
         return {
@@ -102,7 +109,18 @@ exports.handler = async function(event, context) {
     };
 
     try {
-        const results = await Promise.all(industries.map(ind => fetchSingle(ind)));
+        // Run in controlled concurrent batches of 3 to prevent Clay API burst throttling
+        const results = [];
+        const CONCURRENCY = 3;
+        for (let i = 0; i < industries.length; i += CONCURRENCY) {
+            const chunk = industries.slice(i, i + CONCURRENCY);
+            const chunkResults = await Promise.all(chunk.map(ind => fetchWithRetry(ind)));
+            results.push(...chunkResults);
+            if (i + CONCURRENCY < industries.length) {
+                await new Promise(r => setTimeout(r, 80));
+            }
+        }
+
         const totalCount = results.reduce((acc, r) => acc + (r["Exact Clay Target Count"] || 0), 0);
 
         return {
