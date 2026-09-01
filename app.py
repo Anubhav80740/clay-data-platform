@@ -24,6 +24,36 @@ def safe_sum(series):
     except Exception:
         return 0
 
+def load_ledger_dataframe(filepath):
+    if not filepath or not os.path.exists(filepath):
+        return pd.DataFrame()
+    std_cols = ["industry", "clay_count", "rows_downloaded", "unique_companies", "coverage_pct", "existing_in_file", "new_added", "file"]
+    parsed_rows = []
+    try:
+        with open(filepath, "r", encoding="utf-8", errors="replace") as f:
+            r = csv.reader(f)
+            header = next(r, None)
+            if not header:
+                return pd.DataFrame()
+            for line in r:
+                if not line or not any(line):
+                    continue
+                if len(line) == 6:
+                    ind, cc, dl, un, cov, fpath = line
+                    parsed_rows.append([ind, cc, dl, un, cov, un, 0, fpath])
+                elif len(line) >= 8:
+                    parsed_rows.append(line[:8])
+                else:
+                    padded = line + [""] * (8 - len(line))
+                    parsed_rows.append(padded)
+        df = pd.DataFrame(parsed_rows, columns=std_cols)
+        return df
+    except Exception:
+        try:
+            return pd.read_csv(filepath, on_bad_lines="skip")
+        except Exception:
+            return pd.DataFrame()
+
 # Import taxonomy and geo dict
 try:
     from clay_taxonomy import ALL_CLAY_INDUSTRIES, ALL_CLAY_COUNTRIES, TECH_INDUSTRIES, NON_TECH_INDUSTRIES
@@ -784,7 +814,7 @@ with tab_download:
                     
                     if os.path.exists(ledger_file):
                         try:
-                            pdf_prog = pd.read_csv(ledger_file)
+                            pdf_prog = load_ledger_dataframe(ledger_file)
                             col_i = "industry" if "industry" in pdf_prog.columns else ("Industry" if "Industry" in pdf_prog.columns else None)
                             if col_i:
                                 pdf_sel = pdf_prog[pdf_prog[col_i].isin(selected_industries)]
@@ -808,7 +838,7 @@ with tab_download:
     if country_input and os.path.exists(ledger_file):
         st.markdown(f"### 📦 Delivered Master Datasets & Incremental Merge Ledger ({country_input} - {entity_label})")
         try:
-            ledger_df = pd.read_csv(ledger_file)
+            ledger_df = load_ledger_dataframe(ledger_file)
             col_ind = "industry" if "industry" in ledger_df.columns else ("Industry" if "Industry" in ledger_df.columns else None)
             if selected_industries and col_ind:
                 ledger_df = ledger_df[ledger_df[col_ind].isin(selected_industries)]
@@ -837,21 +867,24 @@ with tab_download:
             col_fpath = "file" if "file" in ledger_df.columns else ("File" if "File" in ledger_df.columns else None)
             if col_fpath:
                 for _, lrow in ledger_df.iterrows():
-                    fpath = lrow[col_fpath]
+                    fpath = str(lrow[col_fpath]).replace("\\", "/")
                     ind_lbl = lrow.get(col_ind, os.path.basename(fpath))
                     if os.path.exists(fpath):
                         with st.expander(f"📄 {ind_lbl} ({os.path.basename(fpath)})"):
                             try:
                                 f_preview = pd.read_csv(fpath, nrows=20)
                                 st.caption(f"Previewing first {len(f_preview)} rows from `{fpath}`:")
-                                st.dataframe(f_preview, use_container_width=True)
+                                f_preview_disp = f_preview.copy()
+                                f_preview_disp.index = range(1, len(f_preview_disp) + 1)
+                                st.dataframe(f_preview_disp, use_container_width=True)
                                 
                                 with open(fpath, "rb") as dl_f:
                                     st.download_button(
-                                        label=f"📥 Download {os.path.basename(fpath)}",
+                                        label=f"📥 Download Full Dataset: {os.path.basename(fpath)}",
                                         data=dl_f.read(),
                                         file_name=os.path.basename(fpath),
                                         mime="text/csv",
+                                        type="primary",
                                         key=f"dl_btn_{cl.slugify(ind_lbl)}_{'ppl' if is_people_mode else 'cmp'}"
                                     )
                             except Exception as pe:
@@ -947,14 +980,17 @@ with tab_portfolio:
                         try:
                             df_prev = pd.read_csv(full_p, nrows=20)
                             st.caption(f"Previewing first {len(df_prev)} rows from `{full_p}`:")
-                            st.dataframe(df_prev, use_container_width=True)
+                            df_prev_disp = df_prev.copy()
+                            df_prev_disp.index = range(1, len(df_prev_disp) + 1)
+                            st.dataframe(df_prev_disp, use_container_width=True)
                             
                             with open(full_p, "rb") as pf_f:
                                 st.download_button(
-                                    label=f"📥 Download {cf}",
+                                    label=f"📥 Download Full Master Dataset: {cf}",
                                     data=pf_f.read(),
                                     file_name=cf,
                                     mime="text/csv",
+                                    type="primary",
                                     key=f"port_dl_{cl.slugify(cf)}_{'ppl' if 'People' in portfolio_choice else 'cmp'}"
                                 )
                         except Exception as pfe:

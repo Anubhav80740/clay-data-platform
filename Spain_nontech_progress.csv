@@ -1,18 +1,18 @@
-industry,clay_count,rows_downloaded,unique_companies,coverage_pct,file
-Telecommunications,7862,7782,7782,99.0,delivery\Spain\Spain Data [Clay] -Telecommunications.csv
-"Appliances, Electrical, and Electronics Manufacturing",7732,7729,7729,100.0,delivery\Spain\Spain Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
-Renewable Energy Semiconductor Manufacturing,2280,2278,2278,99.9,delivery\Spain\Spain Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
-Information Services,1960,1960,1960,100.0,delivery\Spain\Spain Data [Clay] -Information-Services.csv
-Biotechnology Research,1393,1391,1391,99.9,delivery\Spain\Spain Data [Clay] -Biotechnology-Research.csv
-Automation Machinery Manufacturing,1103,1103,1103,100.0,delivery\Spain\Spain Data [Clay] -Automation-Machinery-Manufacturing.csv
-Consumer Electronics,702,702,702,100.0,delivery\Spain\Spain Data [Clay] -Consumer-Electronics.csv
-Media & Telecommunications,647,647,647,100.0,delivery\Spain\Spain Data [Clay] -Media-Telecommunications.csv
-Biotechnology,262,262,262,100.0,delivery\Spain\Spain Data [Clay] -Biotechnology.csv
-Industrial Automation,249,249,249,100.0,delivery\Spain\Spain Data [Clay] -Industrial-Automation.csv
-Nanotechnology Research,167,167,167,100.0,delivery\Spain\Spain Data [Clay] -Nanotechnology-Research.csv
-Robotics Engineering,122,122,122,100.0,delivery\Spain\Spain Data [Clay] -Robotics-Engineering.csv
-Telecommunications Carriers,89,89,89,100.0,delivery\Spain\Spain Data [Clay] -Telecommunications-Carriers.csv
-Space Research and Technology,83,83,83,100.0,delivery\Spain\Spain Data [Clay] -Space-Research-and-Technology.csv
-Climate Technology Product Manufacturing,65,65,65,100.0,delivery\Spain\Spain Data [Clay] -Climate-Technology-Product-Manufacturing.csv
-Climate Data and Analytics,21,21,21,100.0,delivery\Spain\Spain Data [Clay] -Climate-Data-and-Analytics.csv
-Satellite Telecommunications,13,13,13,100.0,delivery\Spain\Spain Data [Clay] -Satellite-Telecommunications.csv
+industry,clay_count,rows_downloaded,unique_companies,coverage_pct,existing_in_file,new_added,file
+Telecommunications,7862,7782,7782,99.0,7782,0,delivery\Spain\Spain Data [Clay] -Telecommunications.csv
+"Appliances, Electrical, and Electronics Manufacturing",7732,7729,7729,100.0,7729,0,delivery\Spain\Spain Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
+Renewable Energy Semiconductor Manufacturing,2280,2278,2278,99.9,2278,0,delivery\Spain\Spain Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
+Information Services,1960,1960,1960,100.0,1960,0,delivery\Spain\Spain Data [Clay] -Information-Services.csv
+Biotechnology Research,1393,1391,1391,99.9,1391,0,delivery\Spain\Spain Data [Clay] -Biotechnology-Research.csv
+Automation Machinery Manufacturing,1103,1103,1103,100.0,1103,0,delivery\Spain\Spain Data [Clay] -Automation-Machinery-Manufacturing.csv
+Consumer Electronics,702,702,702,100.0,702,0,delivery\Spain\Spain Data [Clay] -Consumer-Electronics.csv
+Media & Telecommunications,647,647,647,100.0,647,0,delivery\Spain\Spain Data [Clay] -Media-Telecommunications.csv
+Biotechnology,262,262,262,100.0,262,0,delivery\Spain\Spain Data [Clay] -Biotechnology.csv
+Industrial Automation,249,249,249,100.0,249,0,delivery\Spain\Spain Data [Clay] -Industrial-Automation.csv
+Nanotechnology Research,167,167,167,100.0,167,0,delivery\Spain\Spain Data [Clay] -Nanotechnology-Research.csv
+Robotics Engineering,122,122,122,100.0,122,0,delivery\Spain\Spain Data [Clay] -Robotics-Engineering.csv
+Telecommunications Carriers,89,89,89,100.0,89,0,delivery\Spain\Spain Data [Clay] -Telecommunications-Carriers.csv
+Space Research and Technology,83,83,83,100.0,83,0,delivery\Spain\Spain Data [Clay] -Space-Research-and-Technology.csv
+Climate Technology Product Manufacturing,65,65,65,100.0,65,0,delivery\Spain\Spain Data [Clay] -Climate-Technology-Product-Manufacturing.csv
+Climate Data and Analytics,21,21,21,100.0,21,0,delivery\Spain\Spain Data [Clay] -Climate-Data-and-Analytics.csv
+Satellite Telecommunications,13,13,13,100.0,13,0,delivery\Spain\Spain Data [Clay] -Satellite-Telecommunications.csv

@@ -1,18 +1,18 @@
-industry,clay_count,rows_downloaded,unique_companies,coverage_pct,file
-"Appliances, Electrical, and Electronics Manufacturing",613,613,613,100.0,delivery\New Zealand\New Zealand Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
-Telecommunications,481,481,481,100.0,delivery\New Zealand\New Zealand Data [Clay] -Telecommunications.csv
-Information Services,345,345,345,100.0,delivery\New Zealand\New Zealand Data [Clay] -Information-Services.csv
-Biotechnology Research,169,168,168,99.4,delivery\New Zealand\New Zealand Data [Clay] -Biotechnology-Research.csv
-Renewable Energy Semiconductor Manufacturing,158,158,158,100.0,delivery\New Zealand\New Zealand Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
-Automation Machinery Manufacturing,155,155,155,100.0,delivery\New Zealand\New Zealand Data [Clay] -Automation-Machinery-Manufacturing.csv
-Industrial Automation,43,43,43,100.0,delivery\New Zealand\New Zealand Data [Clay] -Industrial-Automation.csv
-Biotechnology,43,43,43,100.0,delivery\New Zealand\New Zealand Data [Clay] -Biotechnology.csv
-Consumer Electronics,30,30,30,100.0,delivery\New Zealand\New Zealand Data [Clay] -Consumer-Electronics.csv
-Nanotechnology Research,24,24,24,100.0,delivery\New Zealand\New Zealand Data [Clay] -Nanotechnology-Research.csv
-Space Research and Technology,23,23,23,100.0,delivery\New Zealand\New Zealand Data [Clay] -Space-Research-and-Technology.csv
-Climate Technology Product Manufacturing,22,22,22,100.0,delivery\New Zealand\New Zealand Data [Clay] -Climate-Technology-Product-Manufacturing.csv
-Robotics Engineering,20,20,20,100.0,delivery\New Zealand\New Zealand Data [Clay] -Robotics-Engineering.csv
-Media & Telecommunications,15,15,15,100.0,delivery\New Zealand\New Zealand Data [Clay] -Media-Telecommunications.csv
-Climate Data and Analytics,13,13,13,100.0,delivery\New Zealand\New Zealand Data [Clay] -Climate-Data-and-Analytics.csv
-Satellite Telecommunications,5,5,5,100.0,delivery\New Zealand\New Zealand Data [Clay] -Satellite-Telecommunications.csv
-Telecommunications Carriers,1,1,1,100.0,delivery\New Zealand\New Zealand Data [Clay] -Telecommunications-Carriers.csv
+industry,clay_count,rows_downloaded,unique_companies,coverage_pct,existing_in_file,new_added,file
+"Appliances, Electrical, and Electronics Manufacturing",613,613,613,100.0,613,0,delivery\New Zealand\New Zealand Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
+Telecommunications,481,481,481,100.0,481,0,delivery\New Zealand\New Zealand Data [Clay] -Telecommunications.csv
+Information Services,345,345,345,100.0,345,0,delivery\New Zealand\New Zealand Data [Clay] -Information-Services.csv
+Biotechnology Research,169,168,168,99.4,168,0,delivery\New Zealand\New Zealand Data [Clay] -Biotechnology-Research.csv
+Renewable Energy Semiconductor Manufacturing,158,158,158,100.0,158,0,delivery\New Zealand\New Zealand Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
+Automation Machinery Manufacturing,155,155,155,100.0,155,0,delivery\New Zealand\New Zealand Data [Clay] -Automation-Machinery-Manufacturing.csv
+Industrial Automation,43,43,43,100.0,43,0,delivery\New Zealand\New Zealand Data [Clay] -Industrial-Automation.csv
+Biotechnology,43,43,43,100.0,43,0,delivery\New Zealand\New Zealand Data [Clay] -Biotechnology.csv
+Consumer Electronics,30,30,30,100.0,30,0,delivery\New Zealand\New Zealand Data [Clay] -Consumer-Electronics.csv
+Nanotechnology Research,24,24,24,100.0,24,0,delivery\New Zealand\New Zealand Data [Clay] -Nanotechnology-Research.csv
+Space Research and Technology,23,23,23,100.0,23,0,delivery\New Zealand\New Zealand Data [Clay] -Space-Research-and-Technology.csv
+Climate Technology Product Manufacturing,22,22,22,100.0,22,0,delivery\New Zealand\New Zealand Data [Clay] -Climate-Technology-Product-Manufacturing.csv
+Robotics Engineering,20,20,20,100.0,20,0,delivery\New Zealand\New Zealand Data [Clay] -Robotics-Engineering.csv
+Media & Telecommunications,15,15,15,100.0,15,0,delivery\New Zealand\New Zealand Data [Clay] -Media-Telecommunications.csv
+Climate Data and Analytics,13,13,13,100.0,13,0,delivery\New Zealand\New Zealand Data [Clay] -Climate-Data-and-Analytics.csv
+Satellite Telecommunications,5,5,5,100.0,5,0,delivery\New Zealand\New Zealand Data [Clay] -Satellite-Telecommunications.csv
+Telecommunications Carriers,1,1,1,100.0,1,0,delivery\New Zealand\New Zealand Data [Clay] -Telecommunications-Carriers.csv

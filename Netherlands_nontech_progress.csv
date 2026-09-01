@@ -1,18 +1,18 @@
-industry,clay_count,rows_downloaded,unique_companies,coverage_pct,file
-"Appliances, Electrical, and Electronics Manufacturing",3240,3237,3237,99.9,delivery\Netherlands\Netherlands Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
-Information Services,2754,2754,2754,100.0,delivery\Netherlands\Netherlands Data [Clay] -Information-Services.csv
-Telecommunications,2460,2460,2460,100.0,delivery\Netherlands\Netherlands Data [Clay] -Telecommunications.csv
-Renewable Energy Semiconductor Manufacturing,2416,2414,2414,99.9,delivery\Netherlands\Netherlands Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
-Automation Machinery Manufacturing,1328,1327,1327,99.9,delivery\Netherlands\Netherlands Data [Clay] -Automation-Machinery-Manufacturing.csv
-Biotechnology Research,969,968,968,99.9,delivery\Netherlands\Netherlands Data [Clay] -Biotechnology-Research.csv
-Industrial Automation,401,400,400,99.8,delivery\Netherlands\Netherlands Data [Clay] -Industrial-Automation.csv
-Consumer Electronics,346,346,346,100.0,delivery\Netherlands\Netherlands Data [Clay] -Consumer-Electronics.csv
-Biotechnology,205,205,205,100.0,delivery\Netherlands\Netherlands Data [Clay] -Biotechnology.csv
-Nanotechnology Research,144,143,143,99.3,delivery\Netherlands\Netherlands Data [Clay] -Nanotechnology-Research.csv
-Robotics Engineering,100,100,100,100.0,delivery\Netherlands\Netherlands Data [Clay] -Robotics-Engineering.csv
-Media & Telecommunications,99,99,99,100.0,delivery\Netherlands\Netherlands Data [Clay] -Media-Telecommunications.csv
-Climate Technology Product Manufacturing,98,98,98,100.0,delivery\Netherlands\Netherlands Data [Clay] -Climate-Technology-Product-Manufacturing.csv
-Space Research and Technology,50,50,50,100.0,delivery\Netherlands\Netherlands Data [Clay] -Space-Research-and-Technology.csv
-Climate Data and Analytics,39,39,39,100.0,delivery\Netherlands\Netherlands Data [Clay] -Climate-Data-and-Analytics.csv
-Telecommunications Carriers,17,17,17,100.0,delivery\Netherlands\Netherlands Data [Clay] -Telecommunications-Carriers.csv
-Satellite Telecommunications,9,9,9,100.0,delivery\Netherlands\Netherlands Data [Clay] -Satellite-Telecommunications.csv
+industry,clay_count,rows_downloaded,unique_companies,coverage_pct,existing_in_file,new_added,file
+"Appliances, Electrical, and Electronics Manufacturing",3240,3237,3237,99.9,3237,0,delivery\Netherlands\Netherlands Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
+Information Services,2754,2754,2754,100.0,2754,0,delivery\Netherlands\Netherlands Data [Clay] -Information-Services.csv
+Telecommunications,2460,2460,2460,100.0,2460,0,delivery\Netherlands\Netherlands Data [Clay] -Telecommunications.csv
+Renewable Energy Semiconductor Manufacturing,2416,2414,2414,99.9,2414,0,delivery\Netherlands\Netherlands Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
+Automation Machinery Manufacturing,1328,1327,1327,99.9,1327,0,delivery\Netherlands\Netherlands Data [Clay] -Automation-Machinery-Manufacturing.csv
+Biotechnology Research,969,968,968,99.9,968,0,delivery\Netherlands\Netherlands Data [Clay] -Biotechnology-Research.csv
+Industrial Automation,401,400,400,99.8,400,0,delivery\Netherlands\Netherlands Data [Clay] -Industrial-Automation.csv
+Consumer Electronics,346,346,346,100.0,346,0,delivery\Netherlands\Netherlands Data [Clay] -Consumer-Electronics.csv
+Biotechnology,205,205,205,100.0,205,0,delivery\Netherlands\Netherlands Data [Clay] -Biotechnology.csv
+Nanotechnology Research,144,143,143,99.3,143,0,delivery\Netherlands\Netherlands Data [Clay] -Nanotechnology-Research.csv
+Robotics Engineering,100,100,100,100.0,100,0,delivery\Netherlands\Netherlands Data [Clay] -Robotics-Engineering.csv
+Media & Telecommunications,99,99,99,100.0,99,0,delivery\Netherlands\Netherlands Data [Clay] -Media-Telecommunications.csv
+Climate Technology Product Manufacturing,98,98,98,100.0,98,0,delivery\Netherlands\Netherlands Data [Clay] -Climate-Technology-Product-Manufacturing.csv
+Space Research and Technology,50,50,50,100.0,50,0,delivery\Netherlands\Netherlands Data [Clay] -Space-Research-and-Technology.csv
+Climate Data and Analytics,39,39,39,100.0,39,0,delivery\Netherlands\Netherlands Data [Clay] -Climate-Data-and-Analytics.csv
+Telecommunications Carriers,17,17,17,100.0,17,0,delivery\Netherlands\Netherlands Data [Clay] -Telecommunications-Carriers.csv
+Satellite Telecommunications,9,9,9,100.0,9,0,delivery\Netherlands\Netherlands Data [Clay] -Satellite-Telecommunications.csv

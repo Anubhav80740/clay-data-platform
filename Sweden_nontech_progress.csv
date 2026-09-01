@@ -1,18 +1,18 @@
-industry,clay_count,rows_downloaded,unique_companies,coverage_pct,file
-Telecommunications,1043,1042,1042,99.9,delivery\Sweden\Sweden Data [Clay] -Telecommunications.csv
-"Appliances, Electrical, and Electronics Manufacturing",989,989,989,100.0,delivery\Sweden\Sweden Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
-Information Services,811,811,811,100.0,delivery\Sweden\Sweden Data [Clay] -Information-Services.csv
-Automation Machinery Manufacturing,562,562,562,100.0,delivery\Sweden\Sweden Data [Clay] -Automation-Machinery-Manufacturing.csv
-Biotechnology Research,529,529,529,100.0,delivery\Sweden\Sweden Data [Clay] -Biotechnology-Research.csv
-Renewable Energy Semiconductor Manufacturing,300,300,300,100.0,delivery\Sweden\Sweden Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
-Industrial Automation,160,160,160,100.0,delivery\Sweden\Sweden Data [Clay] -Industrial-Automation.csv
-Biotechnology,86,86,86,100.0,delivery\Sweden\Sweden Data [Clay] -Biotechnology.csv
-Nanotechnology Research,74,74,74,100.0,delivery\Sweden\Sweden Data [Clay] -Nanotechnology-Research.csv
-Consumer Electronics,54,54,54,100.0,delivery\Sweden\Sweden Data [Clay] -Consumer-Electronics.csv
-Media & Telecommunications,42,42,42,100.0,delivery\Sweden\Sweden Data [Clay] -Media-Telecommunications.csv
-Space Research and Technology,37,37,37,100.0,delivery\Sweden\Sweden Data [Clay] -Space-Research-and-Technology.csv
-Climate Technology Product Manufacturing,30,30,30,100.0,delivery\Sweden\Sweden Data [Clay] -Climate-Technology-Product-Manufacturing.csv
-Robotics Engineering,29,29,29,100.0,delivery\Sweden\Sweden Data [Clay] -Robotics-Engineering.csv
-Climate Data and Analytics,18,18,18,100.0,delivery\Sweden\Sweden Data [Clay] -Climate-Data-and-Analytics.csv
-Telecommunications Carriers,6,6,6,100.0,delivery\Sweden\Sweden Data [Clay] -Telecommunications-Carriers.csv
-Satellite Telecommunications,3,3,3,100.0,delivery\Sweden\Sweden Data [Clay] -Satellite-Telecommunications.csv
+industry,clay_count,rows_downloaded,unique_companies,coverage_pct,existing_in_file,new_added,file
+Telecommunications,1043,1042,1042,99.9,1042,0,delivery\Sweden\Sweden Data [Clay] -Telecommunications.csv
+"Appliances, Electrical, and Electronics Manufacturing",989,989,989,100.0,989,0,delivery\Sweden\Sweden Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
+Information Services,811,811,811,100.0,811,0,delivery\Sweden\Sweden Data [Clay] -Information-Services.csv
+Automation Machinery Manufacturing,562,562,562,100.0,562,0,delivery\Sweden\Sweden Data [Clay] -Automation-Machinery-Manufacturing.csv
+Biotechnology Research,529,529,529,100.0,529,0,delivery\Sweden\Sweden Data [Clay] -Biotechnology-Research.csv
+Renewable Energy Semiconductor Manufacturing,300,300,300,100.0,300,0,delivery\Sweden\Sweden Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
+Industrial Automation,160,160,160,100.0,160,0,delivery\Sweden\Sweden Data [Clay] -Industrial-Automation.csv
+Biotechnology,86,86,86,100.0,86,0,delivery\Sweden\Sweden Data [Clay] -Biotechnology.csv
+Nanotechnology Research,74,74,74,100.0,74,0,delivery\Sweden\Sweden Data [Clay] -Nanotechnology-Research.csv
+Consumer Electronics,54,54,54,100.0,54,0,delivery\Sweden\Sweden Data [Clay] -Consumer-Electronics.csv
+Media & Telecommunications,42,42,42,100.0,42,0,delivery\Sweden\Sweden Data [Clay] -Media-Telecommunications.csv
+Space Research and Technology,37,37,37,100.0,37,0,delivery\Sweden\Sweden Data [Clay] -Space-Research-and-Technology.csv
+Climate Technology Product Manufacturing,30,30,30,100.0,30,0,delivery\Sweden\Sweden Data [Clay] -Climate-Technology-Product-Manufacturing.csv
+Robotics Engineering,29,29,29,100.0,29,0,delivery\Sweden\Sweden Data [Clay] -Robotics-Engineering.csv
+Climate Data and Analytics,18,18,18,100.0,18,0,delivery\Sweden\Sweden Data [Clay] -Climate-Data-and-Analytics.csv
+Telecommunications Carriers,6,6,6,100.0,6,0,delivery\Sweden\Sweden Data [Clay] -Telecommunications-Carriers.csv
+Satellite Telecommunications,3,3,3,100.0,3,0,delivery\Sweden\Sweden Data [Clay] -Satellite-Telecommunications.csv

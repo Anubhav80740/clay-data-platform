@@ -1,22 +1,22 @@
-industry,clay_count,rows_downloaded,unique_companies,coverage_pct,file
-"Appliances, Electrical, and Electronics Manufacturing",1106,1105,1105,99.9,delivery\Switzerland\Switzerland Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
-Biotechnology Research,863,863,863,100.0,delivery\Switzerland\Switzerland Data [Clay] -Biotechnology-Research.csv
-Biotechnology Research,863,863,863,100.0,delivery\Switzerland\Switzerland Data [Clay] -Biotechnology-Research.csv
-Information Services,806,834,574,71.2,delivery\Switzerland\Switzerland Data [Clay] -Information-Services.csv
-Information Services,806,834,574,71.2,delivery\Switzerland\Switzerland Data [Clay] -Information-Services.csv
-Telecommunications,766,764,764,99.7,delivery\Switzerland\Switzerland Data [Clay] -Telecommunications.csv
-Telecommunications,766,764,764,99.7,delivery\Switzerland\Switzerland Data [Clay] -Telecommunications.csv
-Renewable Energy Semiconductor Manufacturing,652,1304,1259,193.1,delivery\Switzerland\Switzerland Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
-Renewable Energy Semiconductor Manufacturing,652,652,652,100.0,delivery\Switzerland\Switzerland Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
-Automation Machinery Manufacturing,531,531,531,100.0,delivery\Switzerland\Switzerland Data [Clay] -Automation-Machinery-Manufacturing.csv
-Biotechnology,158,158,158,100.0,delivery\Switzerland\Switzerland Data [Clay] -Biotechnology.csv
-Robotics Engineering,105,105,105,100.0,delivery\Switzerland\Switzerland Data [Clay] -Robotics-Engineering.csv
-Industrial Automation,100,100,100,100.0,delivery\Switzerland\Switzerland Data [Clay] -Industrial-Automation.csv
-Nanotechnology Research,100,100,100,100.0,delivery\Switzerland\Switzerland Data [Clay] -Nanotechnology-Research.csv
-Media & Telecommunications,88,88,88,100.0,delivery\Switzerland\Switzerland Data [Clay] -Media-Telecommunications.csv
-Consumer Electronics,60,60,60,100.0,delivery\Switzerland\Switzerland Data [Clay] -Consumer-Electronics.csv
-Space Research and Technology,56,56,56,100.0,delivery\Switzerland\Switzerland Data [Clay] -Space-Research-and-Technology.csv
-Climate Technology Product Manufacturing,40,40,40,100.0,delivery\Switzerland\Switzerland Data [Clay] -Climate-Technology-Product-Manufacturing.csv
-Climate Data and Analytics,20,20,20,100.0,delivery\Switzerland\Switzerland Data [Clay] -Climate-Data-and-Analytics.csv
-Telecommunications Carriers,18,18,18,100.0,delivery\Switzerland\Switzerland Data [Clay] -Telecommunications-Carriers.csv
-Satellite Telecommunications,4,4,4,100.0,delivery\Switzerland\Switzerland Data [Clay] -Satellite-Telecommunications.csv
+industry,clay_count,rows_downloaded,unique_companies,coverage_pct,existing_in_file,new_added,file
+"Appliances, Electrical, and Electronics Manufacturing",1106,1105,1105,99.9,1105,0,delivery\Switzerland\Switzerland Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
+Biotechnology Research,863,863,863,100.0,863,0,delivery\Switzerland\Switzerland Data [Clay] -Biotechnology-Research.csv
+Biotechnology Research,863,863,863,100.0,863,0,delivery\Switzerland\Switzerland Data [Clay] -Biotechnology-Research.csv
+Information Services,806,834,574,71.2,574,0,delivery\Switzerland\Switzerland Data [Clay] -Information-Services.csv
+Information Services,806,834,574,71.2,574,0,delivery\Switzerland\Switzerland Data [Clay] -Information-Services.csv
+Telecommunications,766,764,764,99.7,764,0,delivery\Switzerland\Switzerland Data [Clay] -Telecommunications.csv
+Telecommunications,766,764,764,99.7,764,0,delivery\Switzerland\Switzerland Data [Clay] -Telecommunications.csv
+Renewable Energy Semiconductor Manufacturing,652,1304,1259,193.1,1259,0,delivery\Switzerland\Switzerland Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
+Renewable Energy Semiconductor Manufacturing,652,652,652,100.0,652,0,delivery\Switzerland\Switzerland Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
+Automation Machinery Manufacturing,531,531,531,100.0,531,0,delivery\Switzerland\Switzerland Data [Clay] -Automation-Machinery-Manufacturing.csv
+Biotechnology,158,158,158,100.0,158,0,delivery\Switzerland\Switzerland Data [Clay] -Biotechnology.csv
+Robotics Engineering,105,105,105,100.0,105,0,delivery\Switzerland\Switzerland Data [Clay] -Robotics-Engineering.csv
+Industrial Automation,100,100,100,100.0,100,0,delivery\Switzerland\Switzerland Data [Clay] -Industrial-Automation.csv
+Nanotechnology Research,100,100,100,100.0,100,0,delivery\Switzerland\Switzerland Data [Clay] -Nanotechnology-Research.csv
+Media & Telecommunications,88,88,88,100.0,88,0,delivery\Switzerland\Switzerland Data [Clay] -Media-Telecommunications.csv
+Consumer Electronics,60,60,60,100.0,60,0,delivery\Switzerland\Switzerland Data [Clay] -Consumer-Electronics.csv
+Space Research and Technology,56,56,56,100.0,56,0,delivery\Switzerland\Switzerland Data [Clay] -Space-Research-and-Technology.csv
+Climate Technology Product Manufacturing,40,40,40,100.0,40,0,delivery\Switzerland\Switzerland Data [Clay] -Climate-Technology-Product-Manufacturing.csv
+Climate Data and Analytics,20,20,20,100.0,20,0,delivery\Switzerland\Switzerland Data [Clay] -Climate-Data-and-Analytics.csv
+Telecommunications Carriers,18,18,18,100.0,18,0,delivery\Switzerland\Switzerland Data [Clay] -Telecommunications-Carriers.csv
+Satellite Telecommunications,4,4,4,100.0,4,0,delivery\Switzerland\Switzerland Data [Clay] -Satellite-Telecommunications.csv

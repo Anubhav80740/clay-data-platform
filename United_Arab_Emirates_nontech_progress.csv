@@ -1,18 +1,18 @@
-industry,clay_count,rows_downloaded,unique_companies,coverage_pct,file
-Telecommunications,1150,1150,1150,100.0,delivery\UAE\UAE Data [Clay] -Telecommunications.csv
-"Appliances, Electrical, and Electronics Manufacturing",1119,1119,1119,100.0,delivery\UAE\UAE Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
-Information Services,799,799,799,100.0,delivery\UAE\UAE Data [Clay] -Information-Services.csv
-Automation Machinery Manufacturing,487,487,487,100.0,delivery\UAE\UAE Data [Clay] -Automation-Machinery-Manufacturing.csv
-Renewable Energy Semiconductor Manufacturing,263,263,263,100.0,delivery\UAE\UAE Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
-Biotechnology Research,195,195,195,100.0,delivery\UAE\UAE Data [Clay] -Biotechnology-Research.csv
-Media & Telecommunications,132,132,132,100.0,delivery\UAE\UAE Data [Clay] -Media-Telecommunications.csv
-Industrial Automation,106,106,106,100.0,delivery\UAE\UAE Data [Clay] -Industrial-Automation.csv
-Consumer Electronics,91,91,91,100.0,delivery\UAE\UAE Data [Clay] -Consumer-Electronics.csv
-Robotics Engineering,75,75,75,100.0,delivery\UAE\UAE Data [Clay] -Robotics-Engineering.csv
-Space Research and Technology,52,52,52,100.0,delivery\UAE\UAE Data [Clay] -Space-Research-and-Technology.csv
-Nanotechnology Research,29,29,29,100.0,delivery\UAE\UAE Data [Clay] -Nanotechnology-Research.csv
-Climate Technology Product Manufacturing,28,28,28,100.0,delivery\UAE\UAE Data [Clay] -Climate-Technology-Product-Manufacturing.csv
-Climate Data and Analytics,20,20,20,100.0,delivery\UAE\UAE Data [Clay] -Climate-Data-and-Analytics.csv
-Satellite Telecommunications,19,19,19,100.0,delivery\UAE\UAE Data [Clay] -Satellite-Telecommunications.csv
-Biotechnology,16,16,16,100.0,delivery\UAE\UAE Data [Clay] -Biotechnology.csv
-Telecommunications Carriers,13,13,13,100.0,delivery\UAE\UAE Data [Clay] -Telecommunications-Carriers.csv
+industry,clay_count,rows_downloaded,unique_companies,coverage_pct,existing_in_file,new_added,file
+Telecommunications,1150,1150,1150,100.0,1150,0,delivery\UAE\UAE Data [Clay] -Telecommunications.csv
+"Appliances, Electrical, and Electronics Manufacturing",1119,1119,1119,100.0,1119,0,delivery\UAE\UAE Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
+Information Services,799,799,799,100.0,799,0,delivery\UAE\UAE Data [Clay] -Information-Services.csv
+Automation Machinery Manufacturing,487,487,487,100.0,487,0,delivery\UAE\UAE Data [Clay] -Automation-Machinery-Manufacturing.csv
+Renewable Energy Semiconductor Manufacturing,263,263,263,100.0,263,0,delivery\UAE\UAE Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
+Biotechnology Research,195,195,195,100.0,195,0,delivery\UAE\UAE Data [Clay] -Biotechnology-Research.csv
+Media & Telecommunications,132,132,132,100.0,132,0,delivery\UAE\UAE Data [Clay] -Media-Telecommunications.csv
+Industrial Automation,106,106,106,100.0,106,0,delivery\UAE\UAE Data [Clay] -Industrial-Automation.csv
+Consumer Electronics,91,91,91,100.0,91,0,delivery\UAE\UAE Data [Clay] -Consumer-Electronics.csv
+Robotics Engineering,75,75,75,100.0,75,0,delivery\UAE\UAE Data [Clay] -Robotics-Engineering.csv
+Space Research and Technology,52,52,52,100.0,52,0,delivery\UAE\UAE Data [Clay] -Space-Research-and-Technology.csv
+Nanotechnology Research,29,29,29,100.0,29,0,delivery\UAE\UAE Data [Clay] -Nanotechnology-Research.csv
+Climate Technology Product Manufacturing,28,28,28,100.0,28,0,delivery\UAE\UAE Data [Clay] -Climate-Technology-Product-Manufacturing.csv
+Climate Data and Analytics,20,20,20,100.0,20,0,delivery\UAE\UAE Data [Clay] -Climate-Data-and-Analytics.csv
+Satellite Telecommunications,19,19,19,100.0,19,0,delivery\UAE\UAE Data [Clay] -Satellite-Telecommunications.csv
+Biotechnology,16,16,16,100.0,16,0,delivery\UAE\UAE Data [Clay] -Biotechnology.csv
+Telecommunications Carriers,13,13,13,100.0,13,0,delivery\UAE\UAE Data [Clay] -Telecommunications-Carriers.csv

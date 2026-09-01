@@ -1,17 +1,17 @@
-industry,clay_count,rows_downloaded,unique_companies,coverage_pct,file
-Telecommunications,596,595,595,99.8,delivery\Ireland\Ireland Data [Clay] -Telecommunications.csv
-"Appliances, Electrical, and Electronics Manufacturing",490,490,490,100.0,delivery\Ireland\Ireland Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
-Information Services,374,374,374,100.0,delivery\Ireland\Ireland Data [Clay] -Information-Services.csv
-Biotechnology Research,286,285,285,99.7,delivery\Ireland\Ireland Data [Clay] -Biotechnology-Research.csv
-Renewable Energy Semiconductor Manufacturing,278,278,278,100.0,delivery\Ireland\Ireland Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
-Automation Machinery Manufacturing,176,176,176,100.0,delivery\Ireland\Ireland Data [Clay] -Automation-Machinery-Manufacturing.csv
-Biotechnology,50,50,50,100.0,delivery\Ireland\Ireland Data [Clay] -Biotechnology.csv
-Industrial Automation,40,40,40,100.0,delivery\Ireland\Ireland Data [Clay] -Industrial-Automation.csv
-Media & Telecommunications,40,40,40,100.0,delivery\Ireland\Ireland Data [Clay] -Media-Telecommunications.csv
-Consumer Electronics,35,35,35,100.0,delivery\Ireland\Ireland Data [Clay] -Consumer-Electronics.csv
-Nanotechnology Research,29,29,29,100.0,delivery\Ireland\Ireland Data [Clay] -Nanotechnology-Research.csv
-Space Research and Technology,25,25,25,100.0,delivery\Ireland\Ireland Data [Clay] -Space-Research-and-Technology.csv
-Robotics Engineering,20,20,20,100.0,delivery\Ireland\Ireland Data [Clay] -Robotics-Engineering.csv
-Climate Technology Product Manufacturing,17,17,17,100.0,delivery\Ireland\Ireland Data [Clay] -Climate-Technology-Product-Manufacturing.csv
-Climate Data and Analytics,11,11,11,100.0,delivery\Ireland\Ireland Data [Clay] -Climate-Data-and-Analytics.csv
-Satellite Telecommunications,3,3,3,100.0,delivery\Ireland\Ireland Data [Clay] -Satellite-Telecommunications.csv
+industry,clay_count,rows_downloaded,unique_companies,coverage_pct,existing_in_file,new_added,file
+Telecommunications,596,595,595,99.8,595,0,delivery\Ireland\Ireland Data [Clay] -Telecommunications.csv
+"Appliances, Electrical, and Electronics Manufacturing",490,490,490,100.0,490,0,delivery\Ireland\Ireland Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
+Information Services,374,374,374,100.0,374,0,delivery\Ireland\Ireland Data [Clay] -Information-Services.csv
+Biotechnology Research,286,285,285,99.7,285,0,delivery\Ireland\Ireland Data [Clay] -Biotechnology-Research.csv
+Renewable Energy Semiconductor Manufacturing,278,278,278,100.0,278,0,delivery\Ireland\Ireland Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
+Automation Machinery Manufacturing,176,176,176,100.0,176,0,delivery\Ireland\Ireland Data [Clay] -Automation-Machinery-Manufacturing.csv
+Biotechnology,50,50,50,100.0,50,0,delivery\Ireland\Ireland Data [Clay] -Biotechnology.csv
+Industrial Automation,40,40,40,100.0,40,0,delivery\Ireland\Ireland Data [Clay] -Industrial-Automation.csv
+Media & Telecommunications,40,40,40,100.0,40,0,delivery\Ireland\Ireland Data [Clay] -Media-Telecommunications.csv
+Consumer Electronics,35,35,35,100.0,35,0,delivery\Ireland\Ireland Data [Clay] -Consumer-Electronics.csv
+Nanotechnology Research,29,29,29,100.0,29,0,delivery\Ireland\Ireland Data [Clay] -Nanotechnology-Research.csv
+Space Research and Technology,25,25,25,100.0,25,0,delivery\Ireland\Ireland Data [Clay] -Space-Research-and-Technology.csv
+Robotics Engineering,20,20,20,100.0,20,0,delivery\Ireland\Ireland Data [Clay] -Robotics-Engineering.csv
+Climate Technology Product Manufacturing,17,17,17,100.0,17,0,delivery\Ireland\Ireland Data [Clay] -Climate-Technology-Product-Manufacturing.csv
+Climate Data and Analytics,11,11,11,100.0,11,0,delivery\Ireland\Ireland Data [Clay] -Climate-Data-and-Analytics.csv
+Satellite Telecommunications,3,3,3,100.0,3,0,delivery\Ireland\Ireland Data [Clay] -Satellite-Telecommunications.csv

@@ -1,18 +1,18 @@
-industry,clay_count,rows_downloaded,unique_companies,coverage_pct,file
-"Appliances, Electrical, and Electronics Manufacturing",922,920,920,99.8,delivery\Singapore\Singapore Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
-Telecommunications,723,723,723,100.0,delivery\Singapore\Singapore Data [Clay] -Telecommunications.csv
-Information Services,534,534,534,100.0,delivery\Singapore\Singapore Data [Clay] -Information-Services.csv
-Biotechnology Research,511,511,511,100.0,delivery\Singapore\Singapore Data [Clay] -Biotechnology-Research.csv
-Automation Machinery Manufacturing,358,357,357,99.7,delivery\Singapore\Singapore Data [Clay] -Automation-Machinery-Manufacturing.csv
-Renewable Energy Semiconductor Manufacturing,223,223,223,100.0,delivery\Singapore\Singapore Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
-Biotechnology,96,96,96,100.0,delivery\Singapore\Singapore Data [Clay] -Biotechnology.csv
-Industrial Automation,77,77,77,100.0,delivery\Singapore\Singapore Data [Clay] -Industrial-Automation.csv
-Robotics Engineering,68,67,67,98.5,delivery\Singapore\Singapore Data [Clay] -Robotics-Engineering.csv
-Nanotechnology Research,53,53,53,100.0,delivery\Singapore\Singapore Data [Clay] -Nanotechnology-Research.csv
-Consumer Electronics,50,50,50,100.0,delivery\Singapore\Singapore Data [Clay] -Consumer-Electronics.csv
-Media & Telecommunications,35,35,35,100.0,delivery\Singapore\Singapore Data [Clay] -Media-Telecommunications.csv
-Climate Technology Product Manufacturing,30,30,30,100.0,delivery\Singapore\Singapore Data [Clay] -Climate-Technology-Product-Manufacturing.csv
-Climate Data and Analytics,23,23,23,100.0,delivery\Singapore\Singapore Data [Clay] -Climate-Data-and-Analytics.csv
-Space Research and Technology,22,22,22,100.0,delivery\Singapore\Singapore Data [Clay] -Space-Research-and-Technology.csv
-Satellite Telecommunications,18,18,18,100.0,delivery\Singapore\Singapore Data [Clay] -Satellite-Telecommunications.csv
-Telecommunications Carriers,9,9,9,100.0,delivery\Singapore\Singapore Data [Clay] -Telecommunications-Carriers.csv
+industry,clay_count,rows_downloaded,unique_companies,coverage_pct,existing_in_file,new_added,file
+"Appliances, Electrical, and Electronics Manufacturing",922,920,920,99.8,920,0,delivery\Singapore\Singapore Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
+Telecommunications,723,723,723,100.0,723,0,delivery\Singapore\Singapore Data [Clay] -Telecommunications.csv
+Information Services,534,534,534,100.0,534,0,delivery\Singapore\Singapore Data [Clay] -Information-Services.csv
+Biotechnology Research,511,511,511,100.0,511,0,delivery\Singapore\Singapore Data [Clay] -Biotechnology-Research.csv
+Automation Machinery Manufacturing,358,357,357,99.7,357,0,delivery\Singapore\Singapore Data [Clay] -Automation-Machinery-Manufacturing.csv
+Renewable Energy Semiconductor Manufacturing,223,223,223,100.0,223,0,delivery\Singapore\Singapore Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
+Biotechnology,96,96,96,100.0,96,0,delivery\Singapore\Singapore Data [Clay] -Biotechnology.csv
+Industrial Automation,77,77,77,100.0,77,0,delivery\Singapore\Singapore Data [Clay] -Industrial-Automation.csv
+Robotics Engineering,68,67,67,98.5,67,0,delivery\Singapore\Singapore Data [Clay] -Robotics-Engineering.csv
+Nanotechnology Research,53,53,53,100.0,53,0,delivery\Singapore\Singapore Data [Clay] -Nanotechnology-Research.csv
+Consumer Electronics,50,50,50,100.0,50,0,delivery\Singapore\Singapore Data [Clay] -Consumer-Electronics.csv
+Media & Telecommunications,35,35,35,100.0,35,0,delivery\Singapore\Singapore Data [Clay] -Media-Telecommunications.csv
+Climate Technology Product Manufacturing,30,30,30,100.0,30,0,delivery\Singapore\Singapore Data [Clay] -Climate-Technology-Product-Manufacturing.csv
+Climate Data and Analytics,23,23,23,100.0,23,0,delivery\Singapore\Singapore Data [Clay] -Climate-Data-and-Analytics.csv
+Space Research and Technology,22,22,22,100.0,22,0,delivery\Singapore\Singapore Data [Clay] -Space-Research-and-Technology.csv
+Satellite Telecommunications,18,18,18,100.0,18,0,delivery\Singapore\Singapore Data [Clay] -Satellite-Telecommunications.csv
+Telecommunications Carriers,9,9,9,100.0,9,0,delivery\Singapore\Singapore Data [Clay] -Telecommunications-Carriers.csv

@@ -1,18 +1,18 @@
-industry,clay_count,rows_downloaded,unique_companies,coverage_pct,file
-Telecommunications,4287,4287,4287,100.0,delivery\Canada\Canada Data [Clay] -Telecommunications.csv
-"Appliances, Electrical, and Electronics Manufacturing",3760,3758,3758,99.9,delivery\Canada\Canada Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
-Information Services,2257,2257,2257,100.0,delivery\Canada\Canada Data [Clay] -Information-Services.csv
-Biotechnology Research,1958,1958,1958,100.0,delivery\Canada\Canada Data [Clay] -Biotechnology-Research.csv
-Renewable Energy Semiconductor Manufacturing,1533,1533,1533,100.0,delivery\Canada\Canada Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
-Automation Machinery Manufacturing,1455,1454,1454,99.9,delivery\Canada\Canada Data [Clay] -Automation-Machinery-Manufacturing.csv
-Biotechnology,433,433,433,100.0,delivery\Canada\Canada Data [Clay] -Biotechnology.csv
-Industrial Automation,416,416,416,100.0,delivery\Canada\Canada Data [Clay] -Industrial-Automation.csv
-Consumer Electronics,285,285,285,100.0,delivery\Canada\Canada Data [Clay] -Consumer-Electronics.csv
-Media & Telecommunications,280,279,279,99.6,delivery\Canada\Canada Data [Clay] -Media-Telecommunications.csv
-Robotics Engineering,238,238,238,100.0,delivery\Canada\Canada Data [Clay] -Robotics-Engineering.csv
-Nanotechnology Research,199,199,199,100.0,delivery\Canada\Canada Data [Clay] -Nanotechnology-Research.csv
-Climate Technology Product Manufacturing,150,150,150,100.0,delivery\Canada\Canada Data [Clay] -Climate-Technology-Product-Manufacturing.csv
-Space Research and Technology,115,115,115,100.0,delivery\Canada\Canada Data [Clay] -Space-Research-and-Technology.csv
-Climate Data and Analytics,44,44,44,100.0,delivery\Canada\Canada Data [Clay] -Climate-Data-and-Analytics.csv
-Telecommunications Carriers,16,16,16,100.0,delivery\Canada\Canada Data [Clay] -Telecommunications-Carriers.csv
-Satellite Telecommunications,11,11,11,100.0,delivery\Canada\Canada Data [Clay] -Satellite-Telecommunications.csv
+industry,clay_count,rows_downloaded,unique_companies,coverage_pct,existing_in_file,new_added,file
+Telecommunications,4287,4287,4287,100.0,4287,0,delivery\Canada\Canada Data [Clay] -Telecommunications.csv
+"Appliances, Electrical, and Electronics Manufacturing",3760,3758,3758,99.9,3758,0,delivery\Canada\Canada Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
+Information Services,2257,2257,2257,100.0,2257,0,delivery\Canada\Canada Data [Clay] -Information-Services.csv
+Biotechnology Research,1958,1958,1958,100.0,1958,0,delivery\Canada\Canada Data [Clay] -Biotechnology-Research.csv
+Renewable Energy Semiconductor Manufacturing,1533,1533,1533,100.0,1533,0,delivery\Canada\Canada Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
+Automation Machinery Manufacturing,1455,1454,1454,99.9,1454,0,delivery\Canada\Canada Data [Clay] -Automation-Machinery-Manufacturing.csv
+Biotechnology,433,433,433,100.0,433,0,delivery\Canada\Canada Data [Clay] -Biotechnology.csv
+Industrial Automation,416,416,416,100.0,416,0,delivery\Canada\Canada Data [Clay] -Industrial-Automation.csv
+Consumer Electronics,285,285,285,100.0,285,0,delivery\Canada\Canada Data [Clay] -Consumer-Electronics.csv
+Media & Telecommunications,280,279,279,99.6,279,0,delivery\Canada\Canada Data [Clay] -Media-Telecommunications.csv
+Robotics Engineering,238,238,238,100.0,238,0,delivery\Canada\Canada Data [Clay] -Robotics-Engineering.csv
+Nanotechnology Research,199,199,199,100.0,199,0,delivery\Canada\Canada Data [Clay] -Nanotechnology-Research.csv
+Climate Technology Product Manufacturing,150,150,150,100.0,150,0,delivery\Canada\Canada Data [Clay] -Climate-Technology-Product-Manufacturing.csv
+Space Research and Technology,115,115,115,100.0,115,0,delivery\Canada\Canada Data [Clay] -Space-Research-and-Technology.csv
+Climate Data and Analytics,44,44,44,100.0,44,0,delivery\Canada\Canada Data [Clay] -Climate-Data-and-Analytics.csv
+Telecommunications Carriers,16,16,16,100.0,16,0,delivery\Canada\Canada Data [Clay] -Telecommunications-Carriers.csv
+Satellite Telecommunications,11,11,11,100.0,11,0,delivery\Canada\Canada Data [Clay] -Satellite-Telecommunications.csv

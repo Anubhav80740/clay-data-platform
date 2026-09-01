@@ -1,17 +1,17 @@
-Telecommunications,53305,88178,53154,99.7,delivery\US Data [Clay] -Telecommunications.csv
-"Appliances, Electrical, and Electronics Manufacturing",47854,47174,45048,94.1,delivery\US Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
-Biotechnology Research,22745,22562,21541,94.7,delivery\US Data [Clay] -Biotechnology-Research.csv
-Information Services,18849,19406,18847,100.0,delivery\US Data [Clay] -Information-Services.csv
-Renewable Energy Semiconductor Manufacturing,15110,14381,13959,92.4,delivery\US Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
-Automation Machinery Manufacturing,10972,10539,10010,91.2,delivery\US Data [Clay] -Automation-Machinery-Manufacturing.csv
-Biotechnology,5216,5191,5165,99.0,delivery\US Data [Clay] -Biotechnology.csv
-Consumer Electronics,3420,3420,3420,100.0,delivery\US Data [Clay] -Consumer-Electronics.csv
-Industrial Automation,3095,3092,3092,99.9,delivery\US Data [Clay] -Industrial-Automation.csv
-Media & Telecommunications,1798,1798,1798,100.0,delivery\US Data [Clay] -Media-Telecommunications.csv
-Robotics Engineering,1459,1456,1455,99.7,delivery\US Data [Clay] -Robotics-Engineering.csv
-Nanotechnology Research,1444,1444,1444,100.0,delivery\US Data [Clay] -Nanotechnology-Research.csv
-Space Research and Technology,1098,1098,1098,100.0,delivery\US Data [Clay] -Space-Research-and-Technology.csv
-Climate Technology Product Manufacturing,540,540,540,100.0,delivery\US Data [Clay] -Climate-Technology-Product-Manufacturing.csv
-Climate Data and Analytics,285,285,285,100.0,delivery\US Data [Clay] -Climate-Data-and-Analytics.csv
-Telecommunications Carriers,169,169,169,100.0,delivery\US Data [Clay] -Telecommunications-Carriers.csv
-Satellite Telecommunications,128,128,128,100.0,delivery\US Data [Clay] -Satellite-Telecommunications.csv
+industry,clay_count,rows_downloaded,unique_companies,coverage_pct,existing_in_file,new_added,file
+"Appliances, Electrical, and Electronics Manufacturing",47854,47174,45048,94.1,45048,0,delivery\US Data [Clay] -Appliances-Electrical-and-Electronics-Manufacturing.csv
+Biotechnology Research,22745,22562,21541,94.7,21541,0,delivery\US Data [Clay] -Biotechnology-Research.csv
+Information Services,18849,19406,18847,100.0,18847,0,delivery\US Data [Clay] -Information-Services.csv
+Renewable Energy Semiconductor Manufacturing,15110,14381,13959,92.4,13959,0,delivery\US Data [Clay] -Renewable-Energy-Semiconductor-Manufacturing.csv
+Automation Machinery Manufacturing,10972,10539,10010,91.2,10010,0,delivery\US Data [Clay] -Automation-Machinery-Manufacturing.csv
+Biotechnology,5216,5191,5165,99.0,5165,0,delivery\US Data [Clay] -Biotechnology.csv
+Consumer Electronics,3420,3420,3420,100.0,3420,0,delivery\US Data [Clay] -Consumer-Electronics.csv
+Industrial Automation,3095,3092,3092,99.9,3092,0,delivery\US Data [Clay] -Industrial-Automation.csv
+Media & Telecommunications,1798,1798,1798,100.0,1798,0,delivery\US Data [Clay] -Media-Telecommunications.csv
+Robotics Engineering,1459,1456,1455,99.7,1455,0,delivery\US Data [Clay] -Robotics-Engineering.csv
+Nanotechnology Research,1444,1444,1444,100.0,1444,0,delivery\US Data [Clay] -Nanotechnology-Research.csv
+Space Research and Technology,1098,1098,1098,100.0,1098,0,delivery\US Data [Clay] -Space-Research-and-Technology.csv
+Climate Technology Product Manufacturing,540,540,540,100.0,540,0,delivery\US Data [Clay] -Climate-Technology-Product-Manufacturing.csv
+Climate Data and Analytics,285,285,285,100.0,285,0,delivery\US Data [Clay] -Climate-Data-and-Analytics.csv
+Telecommunications Carriers,169,169,169,100.0,169,0,delivery\US Data [Clay] -Telecommunications-Carriers.csv
+Satellite Telecommunications,128,128,128,100.0,128,0,delivery\US Data [Clay] -Satellite-Telecommunications.csv
