@@ -399,7 +399,18 @@ with tab_download:
     # ----------------------------------------------------
     with step_col1:
         st.markdown(f"#### Step 1: Count Target {entity_label}")
-        btn_count = st.button(f"Run Step 1: Count {entity_label}", use_container_width=True, disabled=not country_input or not selected_industries)
+        c_btn_c1, c_btn_c2 = st.columns([2.5, 1])
+        with c_btn_c1:
+            btn_count = st.button(f"Run Step 1: Count", use_container_width=True, disabled=not country_input or not selected_industries)
+        with c_btn_c2:
+            if st.button("🛑 Stop", key="stop_step1_btn", type="secondary", use_container_width=True):
+                proc = st.session_state.get("current_process")
+                if proc and proc.poll() is None:
+                    proc.terminate()
+                    st.session_state["current_process"] = None
+                    st.warning("Counting stopped.")
+                else:
+                    st.info("No active count process.")
 
         if btn_count:
             track_event("count_started", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries)})
@@ -445,9 +456,20 @@ with tab_download:
     # STEP 2: PLAN & ESTIMATE COVERAGE
     # ----------------------------------------------------
     with step_col2:
-        st.markdown(f"#### Step 2: Plan & Estimate Coverage")
+        st.markdown(f"#### Step 2: Plan Coverage")
         st.caption(f"Free planning query. Partitions {entity_label} slices and estimates reachable coverage.")
-        btn_plan = st.button(f"Run Step 2: Generate Plan", use_container_width=True, disabled=not country_input or not selected_industries)
+        p_btn_c1, p_btn_c2 = st.columns([2.5, 1])
+        with p_btn_c1:
+            btn_plan = st.button(f"Run Step 2: Plan", use_container_width=True, disabled=not country_input or not selected_industries)
+        with p_btn_c2:
+            if st.button("🛑 Stop", key="stop_step2_btn", type="secondary", use_container_width=True):
+                proc = st.session_state.get("current_process")
+                if proc and proc.poll() is None:
+                    proc.terminate()
+                    st.session_state["current_process"] = None
+                    st.warning("Planning stopped.")
+                else:
+                    st.info("No active plan process.")
 
         if btn_plan:
             track_event("plan_started", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries)})
@@ -475,11 +497,22 @@ with tab_download:
     # STEP 3: DOWNLOAD & DELIVER WITH PROGRESS BAR
     # ----------------------------------------------------
     with step_col3:
-        st.markdown(f"#### Step 3: Download {entity_label}")
+        st.markdown(f"#### Step 3: Download Data")
         st.caption(f"Executes download, incremental merge, and deduplication.")
         
         plan_approved = st.checkbox(f"I approve the plan & estimated coverage", key=f"plan_approved_check_{'ppl' if is_people_mode else 'cmp'}")
-        btn_download = st.button(f"Run Step 3: Download {entity_label}", type="primary", use_container_width=True, disabled=not plan_approved or not country_input or not selected_industries)
+        d_btn_c1, d_btn_c2 = st.columns([2.5, 1])
+        with d_btn_c1:
+            btn_download = st.button(f"Run Step 3: Download", type="primary", use_container_width=True, disabled=not plan_approved or not country_input or not selected_industries)
+        with d_btn_c2:
+            if st.button("🛑 Stop", key="stop_step3_btn", type="secondary", use_container_width=True):
+                proc = st.session_state.get("current_process")
+                if proc and proc.poll() is None:
+                    proc.terminate()
+                    st.session_state["current_process"] = None
+                    st.warning("Download stopped.")
+                else:
+                    st.info("No active download process.")
 
     # ----------------------------------------------------
     # PERSISTENT COUNTS LOAD & DISPLAY FOR SELECTED COUNTRY
