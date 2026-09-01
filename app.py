@@ -521,12 +521,13 @@ with tab_download:
                 "Unreachable Gap": gap if is_planned else "-",
                 "Est Coverage %": f"{cov_pct}%" if is_planned else "Pending",
                 "Planned Slices": num_slices,
-                "Status": status_str
+                "Status": status_str,
+                "cov_num": cov_pct if is_planned else 0.0
             })
 
     if planned_data:
         st.markdown(f"### Step 2 Plan & Coverage Estimate Results ({country_input} - {entity_label})")
-        pdf_plan = pd.DataFrame(planned_data)
+        pdf_plan = pd.DataFrame([{k: v for k, v in r.items() if k != "cov_num"} for r in planned_data])
         
         # Display Overview Metric Cards
         tot_reach = sum(safe_int(r["Estimated Reachable"]) for r in planned_data if isinstance(r["Estimated Reachable"], (int, float)) or str(r["Estimated Reachable"]).isdigit())
@@ -552,17 +553,28 @@ with tab_download:
         
         for p_row in planned_data:
             ind_name = p_row["Industry"]
-            cov_val = p_row["Est Coverage %"]
+            cov_num = p_row.get("cov_num", 0.0)
             c_target = p_row["Clay Target Count"]
             c_reach = p_row["Estimated Reachable"]
             c_status = p_row["Status"]
 
-            badge = "🟢 High Coverage" if cov_val >= 95.0 else ("🟡 Partial Coverage" if cov_val >= 80.0 else "🔴 Gaps Identified")
+            if c_status != "✅ Planned":
+                badge = "⏳ Pending Generation"
+                target_str = f"{c_target:,}" if isinstance(c_target, (int, float)) else c_target
+                exp_title = f"{ind_name} | ⏳ Plan Pending ({target_str} Target Rows) | {badge}"
+            else:
+                badge = "🟢 High Coverage" if cov_num >= 95.0 else ("🟡 Partial Coverage" if cov_num >= 80.0 else "🔴 Gaps Identified")
+                reach_str = f"{c_reach:,}" if isinstance(c_reach, (int, float)) else c_reach
+                target_str = f"{c_target:,}" if isinstance(c_target, (int, float)) else c_target
+                exp_title = f"{ind_name} | {cov_num}% Coverage ({reach_str}/{target_str}) | {badge}"
             
-            with st.expander(f"{ind_name} | {cov_val}% Coverage ({c_reach:,}/{c_target:,}) | {badge}"):
+            with st.expander(exp_title):
                 exp_c1, exp_c2, exp_c3 = st.columns([2, 1, 1])
                 with exp_c1:
-                    st.write(f"**Target Rows**: {c_target:,} | **Reachable**: {c_reach:,} | **Gap**: {p_row['Unreachable Gap']:,} | **Slices**: {p_row['Planned Slices']}")
+                    target_disp = f"{c_target:,}" if isinstance(c_target, (int, float)) else c_target
+                    reach_disp = f"{c_reach:,}" if isinstance(c_reach, (int, float)) else c_reach
+                    gap_disp = f"{p_row['Unreachable Gap']:,}" if isinstance(p_row['Unreachable Gap'], (int, float)) else p_row['Unreachable Gap']
+                    st.write(f"**Target Rows**: {target_disp} | **Reachable**: {reach_disp} | **Gap**: {gap_disp} | **Slices**: {p_row['Planned Slices']}")
                     st.write(f"**Current Status**: `{c_status}`")
                 with exp_c2:
                     if st.button(f"Re-Plan '{ind_name[:15]}...'", key=f"replan_{slugify(ind_name)}_{'ppl' if is_people_mode else 'cmp'}", use_container_width=True):
