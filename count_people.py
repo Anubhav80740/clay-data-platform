@@ -28,7 +28,8 @@ def main():
             with open(sys.argv[idx + 1], "r", encoding="utf-8") as f:
                 industries = json.load(f)
                 
-    out_file = f"{cl.slugify(country)}_people_counts.csv"
+    os.makedirs("data", exist_ok=True)
+    out_file = os.path.join("data", f"{cl.slugify(country)}_people_counts.csv")
     print(f"Counting People for {len(industries)} industries in {country} -> {out_file}...")
     
     counts = []

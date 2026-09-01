@@ -18,7 +18,8 @@ def main():
         sys.exit(1)
         
     country = sys.argv[1]
-    out = f"{cl.slugify(country)}_nontech_counts.csv"
+    os.makedirs("data", exist_ok=True)
+    out = os.path.join("data", f"{cl.slugify(country)}_nontech_counts.csv")
     
     industries = ALL_CLAY_INDUSTRIES
     

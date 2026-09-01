@@ -461,17 +461,22 @@ with tab_download:
         return re.sub(r'[^a-zA-Z0-9]+', '_', text).strip('_')
 
     country_slug = slugify(country_input) if country_input else ""
+    os.makedirs("data", exist_ok=True)
     if is_people_mode:
-        counts_file = f"{country_slug}_people_counts.csv" if country_slug else ""
-        ledger_file = f"{country_slug}_people_progress.csv" if country_slug else ""
+        base_c = f"{country_slug}_people_counts.csv" if country_slug else ""
+        base_l = f"{country_slug}_people_progress.csv" if country_slug else ""
+        counts_file = os.path.join("data", base_c) if base_c and (os.path.exists(os.path.join("data", base_c)) or not os.path.exists(base_c)) else base_c
+        ledger_file = os.path.join("data", base_l) if base_l and (os.path.exists(os.path.join("data", base_l)) or not os.path.exists(base_l)) else base_l
         count_script = "count_people.py"
         plan_script = "generate_people_clicklist.py"
         run_script = "run_people.py"
         plan_suffix = "_people"
         delivery_root = "delivery_people"
     else:
-        counts_file = f"{country_slug}_nontech_counts.csv" if country_slug else ""
-        ledger_file = f"{country_slug}_nontech_progress.csv" if country_slug else ""
+        base_c = f"{country_slug}_nontech_counts.csv" if country_slug else ""
+        base_l = f"{country_slug}_nontech_progress.csv" if country_slug else ""
+        counts_file = os.path.join("data", base_c) if base_c and (os.path.exists(os.path.join("data", base_c)) or not os.path.exists(base_c)) else base_c
+        ledger_file = os.path.join("data", base_l) if base_l and (os.path.exists(os.path.join("data", base_l)) or not os.path.exists(base_l)) else base_l
         count_script = "count_industries.py"
         plan_script = "generate_clicklist.py"
         run_script = "run_nontech.py"

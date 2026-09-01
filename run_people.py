@@ -123,8 +123,11 @@ def main():
         sys.exit(1)
         
     country = sys.argv[1]
-    src = f"{cl.slugify(country)}_people_counts.csv"
-    ledger = f"{cl.slugify(country)}_people_progress.csv"
+    os.makedirs("data", exist_ok=True)
+    c_fn = f"{cl.slugify(country)}_people_counts.csv"
+    src = os.path.join("data", c_fn) if os.path.exists(os.path.join("data", c_fn)) else c_fn
+    l_fn = f"{cl.slugify(country)}_people_progress.csv"
+    ledger = os.path.join("data", l_fn) if (os.path.exists(os.path.join("data", l_fn)) or not os.path.exists(l_fn)) else l_fn
     a = sys.argv[2:]
     only = set(a[a.index("--only") + 1].split("|")) if "--only" in a else None
     
