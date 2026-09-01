@@ -53,6 +53,15 @@ except Exception:
 def track_event(event_name, properties=None):
     uid = st.session_state.get("user_id", "team_user")
     props = properties or {}
+    # Enrich with Web Analytics properties
+    if "$host" not in props:
+        props["$host"] = "clay-data-platform.streamlit.app"
+    if "$current_url" not in props:
+        props["$current_url"] = "https://clay-data-platform.streamlit.app/"
+    if "$pathname" not in props:
+        props["$pathname"] = "/"
+    props["application"] = "Clay Data Platform"
+
     if POSTHOG_ENABLED:
         try:
             posthog.capture(uid, event_name, props)
@@ -80,10 +89,24 @@ posthog_js = f"""
 <script>
     !function(t,e){{var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){{function g(t,e){{var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){{t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}}}var u=e;for("undefined"!=typeof a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){{var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}},u.people.toString=function(){{return u.toString(1)+".people (stub)"}},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])}},e.__SV=1)}}(document,window.posthog||[]);
     
-    var appUrl = window.location.href;
+    var appUrl = document.referrer || window.location.href;
     try {{
-        if (window.parent && window.parent.location.href) {{
+        if (window.parent && window.parent.location && window.parent.location.href) {{
             appUrl = window.parent.location.href;
+        }}
+    }} catch(e) {{
+        if (document.referrer) {{
+            appUrl = document.referrer;
+        }}
+    }}
+
+    var parsedHost = "clay-data-platform.streamlit.app";
+    var parsedPath = "/";
+    try {{
+        if (appUrl.indexOf("http") === 0) {{
+            var urlObj = new URL(appUrl);
+            parsedHost = urlObj.host || parsedHost;
+            parsedPath = urlObj.pathname || parsedPath;
         }}
     }} catch(e) {{}}
 
@@ -91,7 +114,7 @@ posthog_js = f"""
         api_host: '{POSTHOG_HOST}',
         person_profiles: 'always',
         autocapture: true,
-        capture_pageview: true,
+        capture_pageview: false,
         capture_pageleave: true,
         session_recording: {{
             maskAllInputs: false,
@@ -101,8 +124,15 @@ posthog_js = f"""
         }}
     }});
     
-    posthog.register({{'application': 'Clay Data Platform', '$current_url': appUrl}});
-    posthog.capture('$pageview', {{'$current_url': appUrl}});
+    var webProps = {{
+        'application': 'Clay Data Platform',
+        '$current_url': appUrl,
+        '$host': parsedHost,
+        '$pathname': parsedPath
+    }};
+    
+    posthog.register(webProps);
+    posthog.capture('$pageview', webProps);
 </script>
 """
 components.html(posthog_js, height=0, width=0)
