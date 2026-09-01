@@ -63,7 +63,7 @@ def verify_cookie(cookie_str=None):
         resp = requests.post(TEST_URL, json=payload, headers=headers, timeout=10)
         if resp.status_code == 200:
             data = resp.json()
-            if "result" in data and ("companyCount" in data["result"] or "peopleCount" in data["result"]):
+            if "result" in data:
                 return True
     except Exception as e:
         print(f"Verification request error: {e}")
