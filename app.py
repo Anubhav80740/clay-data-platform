@@ -485,7 +485,12 @@ with tab_download:
                 cmd = [sys.executable, "-u", plan_script, ind, country_input]
                 proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
                 st.session_state["current_process"] = proc
-                proc.wait()
+                stdout_out, _ = proc.communicate()
+                if proc.returncode != 0:
+                    time.sleep(1)
+                    proc_retry = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+                    st.session_state["current_process"] = proc_retry
+                    proc_retry.communicate()
                 plan_progress_bar.progress(idx / tot_p)
                 
             st.session_state["current_process"] = None
@@ -528,7 +533,9 @@ with tab_download:
             if not cdf_sel.empty:
                 st.markdown(f"### Step 1 Count Results ({country_input})")
                 st.caption("Cached counts loaded. Click 'Run Step 1: Count' anytime to refresh counts from Clay.")
-                st.dataframe(cdf_sel, use_container_width=True)
+                cdf_sel_disp = cdf_sel.copy()
+                cdf_sel_disp.index = range(1, len(cdf_sel_disp) + 1)
+                st.dataframe(cdf_sel_disp, use_container_width=True)
                 tot_c = safe_sum(cdf_sel["Count"]) if "Count" in cdf_sel.columns else 0
                 st.info(f"Total Clay Target Rows: {tot_c:,} rows across {len(cdf_sel)} selected industries.")
         except Exception:
@@ -562,17 +569,30 @@ with tab_download:
                 try:
                     p_slices = json.load(open(pj))
                     num_slices = len(p_slices)
+                    slice_sum = sum(safe_int(s.get("count")) for s in p_slices)
+
+                    if exp == 0 and slice_sum > 0:
+                        exp = slice_sum
+
                     unc_csv = f"plans/clicklist_{prefix}_uncovered.csv"
                     if os.path.exists(unc_csv):
                         with open(unc_csv) as uf:
                             gap = sum(safe_int(r.get("count")) for r in csv.DictReader(uf))
-                    reachable = max(0, exp - gap) if exp else sum(safe_int(s.get("count")) for s in p_slices)
+                    
+                    if exp > 0:
+                        reachable = min(exp, max(0, exp - gap))
+                    else:
+                        reachable = slice_sum
+                        exp = reachable
                 except Exception:
                     reachable = 0
             else:
                 reachable = 0
 
-            cov_pct = round(100 * reachable / exp, 1) if exp and is_planned else (100.0 if is_planned else 0.0)
+            if exp > 0 and reachable > exp:
+                reachable = exp
+
+            cov_pct = min(100.0, round(100 * reachable / max(1, exp), 1)) if exp and is_planned else (100.0 if is_planned else 0.0)
 
             planned_data.append({
                 "Industry": ind,
@@ -588,12 +608,15 @@ with tab_download:
     if planned_data:
         st.markdown(f"### Step 2 Plan & Coverage Estimate Results ({country_input} - {entity_label})")
         pdf_plan = pd.DataFrame([{k: v for k, v in r.items() if k != "cov_num"} for r in planned_data])
+        pdf_plan.index = range(1, len(pdf_plan) + 1)
         
         # Display Overview Metric Cards
         tot_reach = sum(safe_int(r["Estimated Reachable"]) for r in planned_data if isinstance(r["Estimated Reachable"], (int, float)) or str(r["Estimated Reachable"]).isdigit())
         tot_target = sum(safe_int(r["Clay Target Count"]) for r in planned_data)
+        if tot_target < tot_reach:
+            tot_target = tot_reach
         all_planned = all(r["Status"] == "✅ Planned" for r in planned_data)
-        overall_cov = round(100 * tot_reach / max(1, tot_target), 1) if tot_target and all_planned else (0.0 if not all_planned else 100.0)
+        overall_cov = min(100.0, round(100 * tot_reach / max(1, tot_target), 1)) if tot_target and all_planned else (0.0 if not all_planned else 100.0)
         
         m_col1, m_col2, m_col3 = st.columns(3)
         with m_col1:
@@ -745,7 +768,9 @@ with tab_download:
             with dm3:
                 st.metric("Deduplication Quality", "100% Unique", help="Deduplicated on Domain and LinkedIn URL")
 
-            st.dataframe(ledger_df, use_container_width=True)
+            ledger_df_disp = ledger_df.copy()
+            ledger_df_disp.index = range(1, len(ledger_df_disp) + 1)
+            st.dataframe(ledger_df_disp, use_container_width=True)
 
             st.markdown(f"#### 📥 Download & Inspect Delivered {entity_label} Master Files")
             col_fpath = "file" if "file" in ledger_df.columns else ("File" if "File" in ledger_df.columns else None)
