@@ -495,10 +495,10 @@ with tab_download:
             
             num_slices = 0
             gap = 0
-            reachable = exp
-            status_str = "Planned" if os.path.exists(pj) else "Not Planned Yet"
+            is_planned = os.path.exists(pj) and os.path.getsize(pj) > 2
+            status_str = "✅ Planned" if is_planned else "⏳ Pending Plan (Click Step 2)"
 
-            if os.path.exists(pj):
+            if is_planned:
                 try:
                     p_slices = json.load(open(pj))
                     num_slices = len(p_slices)
@@ -508,16 +508,18 @@ with tab_download:
                             gap = sum(safe_int(r.get("count")) for r in csv.DictReader(uf))
                     reachable = max(0, exp - gap) if exp else sum(safe_int(s.get("count")) for s in p_slices)
                 except Exception:
-                    pass
+                    reachable = 0
+            else:
+                reachable = 0
 
-            cov_pct = round(100 * reachable / exp, 1) if exp else 100.0
+            cov_pct = round(100 * reachable / exp, 1) if exp and is_planned else (100.0 if is_planned else 0.0)
 
             planned_data.append({
                 "Industry": ind,
                 "Clay Target Count": exp,
-                "Estimated Reachable": reachable,
-                "Unreachable Gap": gap,
-                "Est Coverage %": cov_pct,
+                "Estimated Reachable": reachable if is_planned else "Pending",
+                "Unreachable Gap": gap if is_planned else "-",
+                "Est Coverage %": f"{cov_pct}%" if is_planned else "Pending",
                 "Planned Slices": num_slices,
                 "Status": status_str
             })
@@ -527,17 +529,18 @@ with tab_download:
         pdf_plan = pd.DataFrame(planned_data)
         
         # Display Overview Metric Cards
-        tot_reach = sum(r["Estimated Reachable"] for r in planned_data)
-        tot_target = sum(r["Clay Target Count"] for r in planned_data)
-        overall_cov = round(100 * tot_reach / max(1, tot_target), 1) if tot_target else 100.0
+        tot_reach = sum(safe_int(r["Estimated Reachable"]) for r in planned_data if isinstance(r["Estimated Reachable"], (int, float)) or str(r["Estimated Reachable"]).isdigit())
+        tot_target = sum(safe_int(r["Clay Target Count"]) for r in planned_data)
+        all_planned = all(r["Status"] == "✅ Planned" for r in planned_data)
+        overall_cov = round(100 * tot_reach / max(1, tot_target), 1) if tot_target and all_planned else (0.0 if not all_planned else 100.0)
         
         m_col1, m_col2, m_col3 = st.columns(3)
         with m_col1:
             st.metric(f"Total Target {entity_label}", f"{tot_target:,}")
         with m_col2:
-            st.metric(f"Estimated Reachable {entity_label}", f"{tot_reach:,}")
+            st.metric(f"Estimated Reachable {entity_label}", f"{tot_reach:,}" if all_planned else "Pending Step 2")
         with m_col3:
-            st.metric("Overall Estimated Coverage", f"{overall_cov}%")
+            st.metric("Overall Estimated Coverage", f"{overall_cov}%" if all_planned else "Pending Step 2")
 
         st.dataframe(pdf_plan, use_container_width=True)
 
