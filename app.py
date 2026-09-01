@@ -85,6 +85,8 @@ posthog_js = f"""
 """
 components.html(posthog_js, height=0, width=0)
 
+import uuid
+
 # Theme State Handling (Light vs Dark Mode)
 if "theme_mode" not in st.session_state:
     st.session_state["theme_mode"] = "dark"
@@ -92,9 +94,12 @@ if "theme_mode" not in st.session_state:
 if "current_process" not in st.session_state:
     st.session_state["current_process"] = None
 
+if "session_id" not in st.session_state:
+    st.session_state["session_id"] = uuid.uuid4().hex[:8]
+
 if "posthog_init" not in st.session_state:
     st.session_state["posthog_init"] = True
-    track_event("app_loaded", {"platform": "Streamlit Cloud", "theme": st.session_state["theme_mode"]})
+    track_event("app_loaded", {"platform": "Streamlit Cloud", "theme": st.session_state["theme_mode"], "session_id": st.session_state["session_id"]})
 
 # Inject Clean Responsive CSS with Dark/Light Theme Support & Hidden Headers
 if st.session_state["theme_mode"] == "dark":
@@ -358,7 +363,7 @@ with tab_download:
         plan_suffix = ""
         delivery_root = "delivery"
 
-    ind_file = "selected_industries.json"
+    ind_file = f"selected_industries_{st.session_state['session_id']}.json"
 
     step_col1, step_col2, step_col3 = st.columns([1, 1, 1])
 
