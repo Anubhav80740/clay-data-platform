@@ -173,6 +173,12 @@ try:
 except Exception:
     pass
 
+# Persistent Session Restore via Query Params
+if st.query_params.get("auth") == "1":
+    st.session_state["authenticated"] = True
+    if "user_id" not in st.session_state:
+        st.session_state["user_id"] = st.query_params.get("uid", TEAM_USER_ID)
+
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
@@ -188,6 +194,8 @@ def login_screen():
             if user_id.strip() == TEAM_USER_ID and password.strip() == TEAM_PASSWORD:
                 st.session_state["authenticated"] = True
                 st.session_state["user_id"] = user_id.strip()
+                st.query_params["auth"] = "1"
+                st.query_params["uid"] = user_id.strip()
                 track_event("user_login", {"user_id": user_id.strip()})
                 st.rerun()
             else:
@@ -248,6 +256,7 @@ with nav_col4:
     st.write("")
     if st.button("Logout", type="secondary", use_container_width=True):
         st.session_state["authenticated"] = False
+        st.query_params.clear()
         st.rerun()
 
 st.divider()
@@ -262,14 +271,16 @@ tab_download, tab_geo, tab_portfolio, tab_faq = st.tabs([
 with tab_download:
     st.subheader("Step A: Select Extraction Mode, Country, and Target Industries")
     
+    qp_mode = st.query_params.get("mode", "companies")
     search_mode = st.radio(
         "Select Extraction Entity:",
         ["🏢 Companies Search", "👤 People Search"],
         horizontal=True,
-        index=0,
+        index=1 if qp_mode == "people" else 0,
         help="Choose whether to extract Company datasets (Domains, Employee sizes, LinkedIn) or People/Contacts datasets (Full Names, Job Titles, Locations, Profile URLs)"
     )
     is_people_mode = "People" in search_mode
+    st.query_params["mode"] = "people" if is_people_mode else "companies"
     
     col_c, col_i = st.columns([1, 2])
     
@@ -278,20 +289,27 @@ with tab_download:
         
         # Country dropdown - STARTS EMPTY (No default Spain)
         country_options = ["-- Select Target Country --"] + ALL_CLAY_COUNTRIES
+        qp_c = st.query_params.get("c", "")
+        default_c_idx = country_options.index(qp_c) if qp_c in country_options else 0
+        
         selected_country_raw = st.selectbox(
             "Search and select country (218 countries available):",
             options=country_options,
-            index=0,
+            index=default_c_idx,
             help="Select any country from the dropdown"
         )
         
         custom_country_toggle = st.checkbox("Enter custom country name manually")
         if custom_country_toggle:
-            country_input = st.text_input("Manual Country Name", "")
+            country_input = st.text_input("Manual Country Name", qp_c if default_c_idx == 0 else "")
         else:
             country_input = "" if selected_country_raw == "-- Select Target Country --" else selected_country_raw
             
         country_input = country_input.strip()
+        if country_input:
+            st.query_params["c"] = country_input
+        elif "c" in st.query_params:
+            del st.query_params["c"]
         
         if country_input:
             geo_dict = getattr(clay_geo, "GEO", {})
@@ -309,8 +327,12 @@ with tab_download:
     with col_i:
         st.markdown("**2. Target Industries Selection**")
         
-        if "selected_industries" not in st.session_state:
-            st.session_state["selected_industries"] = []
+        if "selected_industries" not in st.session_state or not st.session_state["selected_industries"]:
+            qp_ind = st.query_params.get("ind", "")
+            if qp_ind:
+                st.session_state["selected_industries"] = [x.strip() for x in qp_ind.split("|") if x.strip() and x.strip() in ALL_CLAY_INDUSTRIES]
+            else:
+                st.session_state["selected_industries"] = []
 
         b_col1, b_col2, b_col3, b_col4 = st.columns(4)
         
@@ -335,6 +357,11 @@ with tab_download:
             options=ALL_CLAY_INDUSTRIES,
             key="selected_industries"
         )
+        
+        if selected_industries:
+            st.query_params["ind"] = "|".join(selected_industries)
+        elif "ind" in st.query_params:
+            del st.query_params["ind"]
         
         st.caption(f"Currently selected: {len(selected_industries)} industries out of 458 total Clay industries.")
 
