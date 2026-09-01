@@ -224,13 +224,16 @@ with nav_col_cookie:
             st.markdown("<span class='badge-orange'>🔴 Cookie: Expired</span>", unsafe_allow_html=True)
         
         if st.button("🍪 Refresh Cookie (Auto)", use_container_width=True, help="Launches automated browser to refresh Clay session cookie"):
+            track_event("cookie_refresh_started", {"user_id": st.session_state.get("user_id", "team_user")})
             with st.spinner("Refreshing Clay cookie..."):
                 new_c = fetch_cookie(timeout_seconds=90)
                 if new_c:
                     st.success("Cookie successfully verified & updated!")
+                    track_event("cookie_refresh_completed", {"success": True})
                     st.rerun()
                 else:
                     st.error("Failed to capture new cookie. Using default active session.")
+                    track_event("cookie_refresh_completed", {"success": False})
     except Exception as e:
         st.caption(f"Cookie status: {e}")
 
@@ -238,7 +241,9 @@ with nav_col2:
     st.write("")
     theme_btn_label = "☀️ Light Mode" if st.session_state["theme_mode"] == "dark" else "🌙 Dark Mode"
     if st.button(theme_btn_label, use_container_width=True):
-        st.session_state["theme_mode"] = "light" if st.session_state["theme_mode"] == "dark" else "dark"
+        new_theme = "light" if st.session_state["theme_mode"] == "dark" else "dark"
+        st.session_state["theme_mode"] = new_theme
+        track_event("theme_toggled", {"theme": new_theme})
         st.rerun()
 
 with nav_col3:
@@ -248,6 +253,7 @@ with nav_col3:
         if proc and proc.poll() is None:
             proc.terminate()
             st.session_state["current_process"] = None
+            track_event("process_stopped", {"location": "navbar"})
             st.warning("Active process stopped by user.")
         else:
             st.info("No active process running.")
@@ -661,6 +667,7 @@ with tab_download:
                     st.write(f"**Current Status**: `{c_status}`")
                 with exp_c2:
                     if st.button(f"Re-Plan '{ind_name[:15]}...'", key=f"replan_{slugify(ind_name)}_{'ppl' if is_people_mode else 'cmp'}", use_container_width=True):
+                        track_event("single_replan_triggered", {"industry": ind_name, "country": country_input, "entity": entity_label})
                         with st.spinner(f"Re-generating partition plan for '{ind_name}'..."):
                             cmd = [sys.executable, "-u", plan_script, ind_name, country_input]
                             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
@@ -671,6 +678,7 @@ with tab_download:
                             st.rerun()
                 with exp_c3:
                     if st.button(f"Download '{ind_name[:15]}...'", key=f"dl_{slugify(ind_name)}_{'ppl' if is_people_mode else 'cmp'}", type="primary", use_container_width=True):
+                        track_event("single_download_started", {"industry": ind_name, "country": country_input, "entity": entity_label})
                         st.markdown(f"Executing single-industry download for `{ind_name}`...")
                         cmd_run = [sys.executable, "-u", run_script, country_input, "--only", ind_name]
                         proc = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
@@ -686,6 +694,7 @@ with tab_download:
                                 log_box.code("\n".join(logs_single[-15:]))
                         proc.wait()
                         st.session_state["current_process"] = None
+                        track_event("single_download_completed", {"industry": ind_name, "country": country_input, "entity": entity_label})
                         st.success(f"Download complete for '{ind_name}'!")
 
     # Execute Step 3 Download with Progress Bar
@@ -838,6 +847,7 @@ with tab_geo:
             code = code.rstrip().rstrip("}").rstrip() + "\n" + new_entry
             with open(geo_file, "w", encoding="utf-8") as gf:
                 gf.write(code)
+            track_event("geo_settings_saved", {"country": geo_country, "cities_count": len(c_list), "states_count": len(s_list)})
             st.success(f"Saved new geographic configuration for {geo_country} to clay_geo.py")
         else:
             st.info(f"Configuration for {geo_country} is active. Restart the app if updating existing entries.")
