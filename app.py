@@ -255,7 +255,16 @@ tab_download, tab_geo, tab_portfolio, tab_faq = st.tabs([
 ])
 
 with tab_download:
-    st.subheader("Step A: Select Country and Target Industries")
+    st.subheader("Step A: Select Extraction Mode, Country, and Target Industries")
+    
+    search_mode = st.radio(
+        "Select Extraction Entity:",
+        ["🏢 Companies Search", "👤 People Search"],
+        horizontal=True,
+        index=0,
+        help="Choose whether to extract Company datasets (Domains, Employee sizes, LinkedIn) or People/Contacts datasets (Full Names, Job Titles, Locations, Profile URLs)"
+    )
+    is_people_mode = "People" in search_mode
     
     col_c, col_i = st.columns([1, 2])
     
@@ -325,14 +334,30 @@ with tab_download:
         st.caption(f"Currently selected: {len(selected_industries)} industries out of 458 total Clay industries.")
 
     st.divider()
-    st.subheader("Step B: 3-Step Execution Workflow")
+    entity_label = "People / Contacts" if is_people_mode else "Companies"
+    st.subheader(f"Step B: 3-Step Execution Workflow ({entity_label})")
     
     def slugify(text):
         return re.sub(r'[^a-zA-Z0-9]+', '_', text).strip('_')
 
     country_slug = slugify(country_input) if country_input else ""
-    counts_file = f"{country_slug}_nontech_counts.csv" if country_slug else ""
-    ledger_file = f"{country_slug}_nontech_progress.csv" if country_slug else ""
+    if is_people_mode:
+        counts_file = f"{country_slug}_people_counts.csv" if country_slug else ""
+        ledger_file = f"{country_slug}_people_progress.csv" if country_slug else ""
+        count_script = "count_people.py"
+        plan_script = "generate_people_clicklist.py"
+        run_script = "run_people.py"
+        plan_suffix = "_people"
+        delivery_root = "delivery_people"
+    else:
+        counts_file = f"{country_slug}_nontech_counts.csv" if country_slug else ""
+        ledger_file = f"{country_slug}_nontech_progress.csv" if country_slug else ""
+        count_script = "count_industries.py"
+        plan_script = "generate_clicklist.py"
+        run_script = "run_nontech.py"
+        plan_suffix = ""
+        delivery_root = "delivery"
+
     ind_file = "selected_industries.json"
 
     step_col1, step_col2, step_col3 = st.columns([1, 1, 1])
@@ -341,11 +366,11 @@ with tab_download:
     # STEP 1: COUNT WITH PROGRESS BAR
     # ----------------------------------------------------
     with step_col1:
-        st.markdown("#### Step 1: Count Target Rows")
-        btn_count = st.button("Run Step 1: Count", use_container_width=True, disabled=not country_input or not selected_industries)
+        st.markdown(f"#### Step 1: Count Target {entity_label}")
+        btn_count = st.button(f"Run Step 1: Count {entity_label}", use_container_width=True, disabled=not country_input or not selected_industries)
 
         if btn_count:
-            track_event("count_started", {"country": country_input, "industries_count": len(selected_industries)})
+            track_event("count_started", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries)})
             with open(ind_file, "w", encoding="utf-8") as f:
                 json.dump(selected_industries, f)
             if os.path.exists(counts_file):
@@ -353,9 +378,9 @@ with tab_download:
             
             count_progress_bar = st.progress(0.0)
             count_status = st.empty()
-            count_status.text(f"Starting count for {len(selected_industries)} industries in {country_input}...")
+            count_status.text(f"Starting {entity_label} count for {len(selected_industries)} industries in {country_input}...")
             
-            cmd = [sys.executable, "-u", "count_industries.py", country_input, "--industries-file", ind_file]
+            cmd = [sys.executable, "-u", count_script, country_input, "--industries-file", ind_file]
             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
             st.session_state["current_process"] = proc
             
@@ -379,8 +404,8 @@ with tab_download:
             if proc.returncode == 0:
                 count_progress_bar.progress(1.0)
                 count_status.text("Counting complete.")
-                st.success("Step 1 Count complete.")
-                track_event("count_completed", {"country": country_input, "industries_count": len(selected_industries)})
+                st.success(f"Step 1 Count complete for {entity_label}.")
+                track_event("count_completed", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries)})
             else:
                 st.error("Step 1 Count failed or stopped.")
 
@@ -388,12 +413,12 @@ with tab_download:
     # STEP 2: PLAN & ESTIMATE COVERAGE
     # ----------------------------------------------------
     with step_col2:
-        st.markdown("#### Step 2: Plan & Estimate Coverage")
-        st.caption("Free planning query. Partitions slices and estimates reachable coverage.")
-        btn_plan = st.button("Run Step 2: Generate Plan", use_container_width=True, disabled=not country_input or not selected_industries)
+        st.markdown(f"#### Step 2: Plan & Estimate Coverage")
+        st.caption(f"Free planning query. Partitions {entity_label} slices and estimates reachable coverage.")
+        btn_plan = st.button(f"Run Step 2: Generate Plan", use_container_width=True, disabled=not country_input or not selected_industries)
 
         if btn_plan:
-            track_event("plan_started", {"country": country_input, "industries_count": len(selected_industries)})
+            track_event("plan_started", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries)})
             with open(ind_file, "w", encoding="utf-8") as f:
                 json.dump(selected_industries, f)
                 
@@ -402,8 +427,8 @@ with tab_download:
             tot_p = len(selected_industries)
             
             for idx, ind in enumerate(selected_industries, 1):
-                plan_status.text(f"Planning {idx} of {tot_p}: {ind}...")
-                cmd = [sys.executable, "-u", "generate_clicklist.py", ind, country_input]
+                plan_status.text(f"Planning {idx} of {tot_p}: {ind} ({entity_label})...")
+                cmd = [sys.executable, "-u", plan_script, ind, country_input]
                 proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
                 st.session_state["current_process"] = proc
                 proc.wait()
@@ -412,17 +437,17 @@ with tab_download:
             st.session_state["current_process"] = None
             plan_status.text("Planning complete.")
             st.success("Step 2 Planning complete. Review estimated coverage below.")
-            track_event("plan_completed", {"country": country_input, "industries_count": len(selected_industries)})
+            track_event("plan_completed", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries)})
 
     # ----------------------------------------------------
     # STEP 3: DOWNLOAD & DELIVER WITH PROGRESS BAR
     # ----------------------------------------------------
     with step_col3:
-        st.markdown("#### Step 3: Download Data")
-        st.caption("Executes download, incremental merge, and deduplication.")
+        st.markdown(f"#### Step 3: Download {entity_label}")
+        st.caption(f"Executes download, incremental merge, and deduplication.")
         
-        plan_approved = st.checkbox("I approve the plan & estimated coverage", key="plan_approved_check")
-        btn_download = st.button("Run Step 3: Download Data", type="primary", use_container_width=True, disabled=not plan_approved or not country_input or not selected_industries)
+        plan_approved = st.checkbox(f"I approve the plan & estimated coverage", key=f"plan_approved_check_{'ppl' if is_people_mode else 'cmp'}")
+        btn_download = st.button(f"Run Step 3: Download {entity_label}", type="primary", use_container_width=True, disabled=not plan_approved or not country_input or not selected_industries)
 
     # ----------------------------------------------------
     # PERSISTENT COUNTS LOAD & DISPLAY FOR SELECTED COUNTRY
@@ -459,7 +484,7 @@ with tab_download:
                 pass
 
         for ind in selected_industries:
-            prefix = slugify(f"{ind}_{country_input}")
+            prefix = slugify(f"{ind}_{country_input}{plan_suffix}")
             pj = f"plans/clicklist_{prefix}.json"
             exp = counts_lookup.get(ind, 0)
             
@@ -493,7 +518,7 @@ with tab_download:
             })
 
     if planned_data:
-        st.markdown(f"### Step 2 Plan & Coverage Estimate Results ({country_input})")
+        st.markdown(f"### Step 2 Plan & Coverage Estimate Results ({country_input} - {entity_label})")
         pdf_plan = pd.DataFrame(planned_data)
         
         # Display Overview Metric Cards
@@ -503,9 +528,9 @@ with tab_download:
         
         m_col1, m_col2, m_col3 = st.columns(3)
         with m_col1:
-            st.metric("Total Target Rows", f"{tot_target:,}")
+            st.metric(f"Total Target {entity_label}", f"{tot_target:,}")
         with m_col2:
-            st.metric("Estimated Reachable Companies", f"{tot_reach:,}")
+            st.metric(f"Estimated Reachable {entity_label}", f"{tot_reach:,}")
         with m_col3:
             st.metric("Overall Estimated Coverage", f"{overall_cov}%")
 
@@ -514,7 +539,7 @@ with tab_download:
         # ----------------------------------------------------
         # IN-TABLE PER-INDUSTRY RE-PLANNING ACTIONS
         # ----------------------------------------------------
-        st.markdown("#### In-Table Per-Industry Re-Planning & Fine-Tuning")
+        st.markdown(f"#### In-Table Per-Industry Re-Planning & Fine-Tuning ({entity_label})")
         st.caption("If any industry coverage is not sufficient, re-plan that specific industry below without changing your selected industries:")
         
         for p_row in planned_data:
@@ -532,9 +557,9 @@ with tab_download:
                     st.write(f"**Target Rows**: {c_target:,} | **Reachable**: {c_reach:,} | **Gap**: {p_row['Unreachable Gap']:,} | **Slices**: {p_row['Planned Slices']}")
                     st.write(f"**Current Status**: `{c_status}`")
                 with exp_c2:
-                    if st.button(f"Re-Plan '{ind_name[:15]}...'", key=f"replan_{slugify(ind_name)}", use_container_width=True):
+                    if st.button(f"Re-Plan '{ind_name[:15]}...'", key=f"replan_{slugify(ind_name)}_{'ppl' if is_people_mode else 'cmp'}", use_container_width=True):
                         with st.spinner(f"Re-generating partition plan for '{ind_name}'..."):
-                            cmd = [sys.executable, "-u", "generate_clicklist.py", ind_name, country_input]
+                            cmd = [sys.executable, "-u", plan_script, ind_name, country_input]
                             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
                             st.session_state["current_process"] = proc
                             proc.wait()
@@ -542,9 +567,9 @@ with tab_download:
                             st.success(f"Re-plan complete for '{ind_name}'!")
                             st.rerun()
                 with exp_c3:
-                    if st.button(f"Download '{ind_name[:15]}...'", key=f"dl_{slugify(ind_name)}", type="primary", use_container_width=True):
+                    if st.button(f"Download '{ind_name[:15]}...'", key=f"dl_{slugify(ind_name)}_{'ppl' if is_people_mode else 'cmp'}", type="primary", use_container_width=True):
                         st.markdown(f"Executing single-industry download for `{ind_name}`...")
-                        cmd_run = [sys.executable, "-u", "run_nontech.py", country_input, "--only", ind_name]
+                        cmd_run = [sys.executable, "-u", run_script, country_input, "--only", ind_name]
                         proc = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
                         st.session_state["current_process"] = proc
                         log_box = st.empty()
@@ -565,8 +590,8 @@ with tab_download:
         if not plan_approved:
             st.warning("Please check the approval box in Step 3 to confirm plan approval before downloading.")
         else:
-            st.markdown(f"### Executing Live Step 3 Download for {country_input}...")
-            track_event("download_started", {"country": country_input, "industries_count": len(selected_industries), "industries": selected_industries})
+            st.markdown(f"### Executing Live Step 3 Download for {country_input} ({entity_label})...")
+            track_event("download_started", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries), "industries": selected_industries})
             
             with open(ind_file, "w", encoding="utf-8") as f:
                 json.dump(selected_industries, f)
@@ -575,7 +600,7 @@ with tab_download:
             dl_progress_bar = st.progress(0.0)
             dl_status_text = st.empty()
             
-            cmd_run = [sys.executable, "-u", "run_nontech.py", country_input]
+            cmd_run = [sys.executable, "-u", run_script, country_input]
             only_str = "|".join(selected_industries)
             cmd_run.extend(["--only", only_str])
 
@@ -611,20 +636,20 @@ with tab_download:
             if process.returncode == 0:
                 dl_progress_bar.progress(1.0)
                 dl_status_text.text("Step 3 Download complete.")
-                st.success(f"Step 3 Download and Centralized Merge complete for {country_input}.")
-                track_event("download_completed", {"country": country_input, "industries_count": len(selected_industries)})
+                st.success(f"Step 3 Download and Centralized Merge complete for {country_input} ({entity_label}).")
+                track_event("download_completed", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries)})
             else:
                 st.error("Download finished with errors or stopped.")
 
     if country_input and os.path.exists(ledger_file):
-        st.markdown(f"### 📦 Delivered Master Datasets & Incremental Merge Ledger ({country_input})")
+        st.markdown(f"### 📦 Delivered Master Datasets & Incremental Merge Ledger ({country_input} - {entity_label})")
         try:
             ledger_df = pd.read_csv(ledger_file)
             col_ind = "industry" if "industry" in ledger_df.columns else ("Industry" if "Industry" in ledger_df.columns else None)
             if selected_industries and col_ind:
                 ledger_df = ledger_df[ledger_df[col_ind].isin(selected_industries)]
             
-            col_uniq = "unique_companies" if "unique_companies" in ledger_df.columns else ("Total Master" if "Total Master" in ledger_df.columns else None)
+            col_uniq = "unique_people" if "unique_people" in ledger_df.columns else ("unique_companies" if "unique_companies" in ledger_df.columns else ("Total Master" if "Total Master" in ledger_df.columns else None))
             col_new = "new_added" if "new_added" in ledger_df.columns else None
             col_ex = "existing_in_file" if "existing_in_file" in ledger_df.columns else None
 
@@ -634,7 +659,7 @@ with tab_download:
 
             dm1, dm2, dm3 = st.columns(3)
             with dm1:
-                st.metric("Total Master Unique Records", f"{tot_master:,}")
+                st.metric(f"Total Master Unique {entity_label}", f"{tot_master:,}")
             with dm2:
                 st.metric("Newly Identified & Merged", f"+{tot_new:,}")
             with dm3:
@@ -642,7 +667,7 @@ with tab_download:
 
             st.dataframe(ledger_df, use_container_width=True)
 
-            st.markdown("#### 📥 Download & Inspect Delivered Master Files")
+            st.markdown(f"#### 📥 Download & Inspect Delivered {entity_label} Master Files")
             col_fpath = "file" if "file" in ledger_df.columns else ("File" if "File" in ledger_df.columns else None)
             if col_fpath:
                 for _, lrow in ledger_df.iterrows():
@@ -661,7 +686,7 @@ with tab_download:
                                         data=dl_f.read(),
                                         file_name=os.path.basename(fpath),
                                         mime="text/csv",
-                                        key=f"dl_btn_{cl.slugify(ind_lbl)}"
+                                        key=f"dl_btn_{cl.slugify(ind_lbl)}_{'ppl' if is_people_mode else 'cmp'}"
                                     )
                             except Exception as pe:
                                 st.warning(f"Preview error: {pe}")
@@ -715,11 +740,13 @@ with tab_geo:
 with tab_portfolio:
     st.subheader("Delivered Country Portfolio")
     
-    delivery_dir = "delivery"
+    portfolio_choice = st.radio("Select Portfolio View:", ["🏢 Delivered Companies Master Portfolio", "👤 Delivered People Master Portfolio"], horizontal=True)
+    delivery_dir = "delivery_people" if "People" in portfolio_choice else "delivery"
+    
     if os.path.exists(delivery_dir):
         countries = [d for d in os.listdir(delivery_dir) if os.path.isdir(os.path.join(delivery_dir, d))]
         if countries:
-            st.write(f"Found {len(countries)} completed country folders in delivery/:")
+            st.write(f"Found {len(countries)} completed country folders in `{delivery_dir}/`:")
             
             summary_data = []
             for c in sorted(countries):
@@ -739,9 +766,9 @@ with tab_portfolio:
                 
             st.dataframe(pd.DataFrame(summary_data), use_container_width=True)
             
-            selected_country_view = st.selectbox("Select a country to view individual delivered files:", sorted(countries))
+            selected_country_view = st.selectbox(f"Select a country to view individual delivered files ({portfolio_choice}):", sorted(countries))
             if selected_country_view:
-                st.markdown(f"#### Delivered Files in delivery/{selected_country_view}/")
+                st.markdown(f"#### Delivered Files in {delivery_dir}/{selected_country_view}/")
                 cpath = os.path.join(delivery_dir, selected_country_view)
                 cfiles = sorted([f for f in os.listdir(cpath) if f.endswith(".csv")])
                 
@@ -761,14 +788,14 @@ with tab_portfolio:
                                     data=pf_f.read(),
                                     file_name=cf,
                                     mime="text/csv",
-                                    key=f"port_dl_{cl.slugify(cf)}"
+                                    key=f"port_dl_{cl.slugify(cf)}_{'ppl' if 'People' in portfolio_choice else 'cmp'}"
                                 )
                         except Exception as pfe:
                             st.warning(f"Could not preview file: {pfe}")
         else:
-            st.info("No country folders found in delivery/ yet.")
+            st.info(f"No country folders found in `{delivery_dir}/` yet.")
     else:
-        st.info("No delivery directory created yet.")
+        st.info(f"No `{delivery_dir}/` directory created yet.")
 
 with tab_faq:
     st.subheader("Centralized Store and Deduplication FAQ")
