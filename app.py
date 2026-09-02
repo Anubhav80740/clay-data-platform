@@ -96,13 +96,15 @@ def track_event(event_name, properties=None):
 
     # Centralized Activity Audit Log
     try:
+        ind_val = props.get("industries", props.get("industry", None))
         clay_logger.log_activity(
-            event_name,
+            action=event_name,
             entity=props.get("entity", "Companies"),
             country=props.get("country", ""),
-            industry=props.get("industry", ""),
+            industries=ind_val,
+            total_rows=props.get("total_rows", props.get("total_people", props.get("total_unique", 0))),
             status=props.get("status", "SUCCESS"),
-            details=props,
+            details=props.get("details", ""),
             user_id=uid
         )
     except Exception:
@@ -1379,109 +1381,50 @@ with tab_portfolio:
         st.info(f"No `{delivery_dir}/` directory created yet.")
 
 with tab_audit:
-    st.subheader("📋 Professional Activity Audit & Clay Count Drift Analytics")
-    st.caption("Comprehensive tracking of all team operations, downloads, and historical Clay count changes over time.")
+    st.subheader("📋 Activity Log")
+    st.caption("Simple, centralized log of data extractions, counts, plans, and system activities.")
     
-    audit_tab_drift, audit_tab_act, audit_tab_paths = st.tabs([
-        "📈 Clay Count Volatility & Drift Tracker",
-        "📜 System Activity Audit Log",
-        "📁 Storage & Log File Locations"
-    ])
+    df_act = clay_logger.get_activity_logs(limit=500)
     
-    with audit_tab_drift:
-        st.markdown("### 📈 Clay Count Volatility & Drift Tracker")
-        st.caption("Tracks how often and how drastically Clay changes company & people counts over time across countries and industries.")
+    if not df_act.empty:
+        c_f1, c_f2 = st.columns([1, 2])
+        with c_f1:
+            filter_action = st.selectbox("Filter by Action:", ["All"] + sorted(list(df_act["Action"].unique())), key="act_filter_action_key")
+        with c_f2:
+            search_query = st.text_input("🔍 Search in Logs (Country, Industry, User):", placeholder="e.g. Austria, Software, team...", key="act_search_key")
+            
+        df_disp = df_act.copy()
+        if filter_action != "All":
+            df_disp = df_disp[df_disp["Action"] == filter_action]
+        if search_query.strip():
+            q = search_query.strip().lower()
+            df_disp = df_disp[
+                df_disp["Country"].astype(str).str.lower().str.contains(q) |
+                df_disp["Industries_JSON"].astype(str).str.lower().str.contains(q) |
+                df_disp["User"].astype(str).str.lower().str.contains(q) |
+                df_disp["Details"].astype(str).str.lower().str.contains(q)
+            ]
+            
+        df_disp.index = range(1, len(df_disp) + 1)
+        st.dataframe(df_disp, use_container_width=True)
         
-        df_drift_all = clay_logger.get_count_drift_summary()
-        df_history_all = clay_logger.get_count_history_logs(limit=1000)
-        
-        # Metric summary row
-        c_m1, c_m2, c_m3 = st.columns(3)
-        total_obs = len(df_history_all)
-        drifted_ind = len(df_drift_all[df_drift_all["delta_num"] != 0]) if not df_drift_all.empty else 0
-        
-        with c_m1:
-            st.metric("Total Count Observations Logged", f"{total_obs:,}")
-        with c_m2:
-            st.metric("Industries with Detected Data Drift", f"{drifted_ind:,}", delta=f"{drifted_ind} count updates recorded" if drifted_ind else None)
-        with c_m3:
-            st.metric("Time-Series Logging Status", "Active", delta="Real-time CSV & Analytics")
-            
-        st.markdown("#### Count Drift Summary (First vs Latest Observed)")
-        f_c1, f_c2 = st.columns(2)
-        with f_c1:
-            drift_filter_entity = st.selectbox("Filter Drift by Entity:", ["All", "Companies", "People"], key="drift_filter_ent_key")
-        with f_c2:
-            drift_countries = ["All"] + sorted(list(df_drift_all["Country"].unique())) if not df_drift_all.empty else ["All"]
-            drift_filter_country = st.selectbox("Filter Drift by Country:", drift_countries, key="drift_filter_ctry_key")
-            
-        df_drift_filtered = clay_logger.get_count_drift_summary(country=drift_filter_country, entity=drift_filter_entity)
-        if not df_drift_filtered.empty:
-            disp_df = df_drift_filtered.drop(columns=["delta_num"], errors="ignore")
-            disp_df.index = range(1, len(disp_df) + 1)
-            st.dataframe(disp_df, use_container_width=True)
-        else:
-            st.info("No count observations recorded yet. Run 'Step 1: Count' on any country to start building drift history.")
-            
-        st.markdown("#### Full Time-Series Count Log (Every Count Event)")
-        df_cnt_log = clay_logger.get_count_history_logs(country=drift_filter_country, entity=drift_filter_entity, limit=500)
-        if not df_cnt_log.empty:
-            disp_cnt = df_cnt_log.drop(columns=["Timestamp_UTC"], errors="ignore")
-            disp_cnt.index = range(1, len(disp_cnt) + 1)
-            st.dataframe(disp_cnt, use_container_width=True)
-            
-            with open(clay_logger.COUNT_HISTORY_FILE, "rb") as f_cnt:
-                st.download_button(
-                    "📥 Download Complete Count History Log (CSV)",
-                    data=f_cnt.read(),
-                    file_name="clay_count_history.csv",
-                    mime="text/csv",
-                    type="primary",
-                    key="dl_count_history_csv_btn"
-                )
+        c_d1, c_d2 = st.columns([1, 3])
+        with c_d1:
+            if os.path.exists(clay_logger.LOG_FILE):
+                with open(clay_logger.LOG_FILE, "rb") as f_act:
+                    st.download_button(
+                        "📥 Download Activity Log (CSV)",
+                        data=f_act.read(),
+                        file_name="activity_log.csv",
+                        mime="text/csv",
+                        type="primary",
+                        key="dl_act_csv_btn"
+                    )
+        with c_d2:
+            st.caption("📂 Saved locally to `logs/activity_log.csv` and version-controlled on GitHub repository for centralized tracking.")
+    else:
+        st.info("No activity logged yet. Running counts, plans, or downloads will automatically populate this log.")
 
-    with audit_tab_act:
-        st.markdown("### 📜 System Activity Audit Log")
-        st.caption("Timestamped audit trail of all extraction runs, plans, slice downloads, and user actions.")
-        
-        df_act = clay_logger.get_activity_logs(limit=500)
-        if not df_act.empty:
-            filter_action = st.selectbox("Filter Activity by Action Type:", ["All"] + sorted(list(df_act["Action"].unique())), key="act_filter_action_key")
-            if filter_action != "All":
-                df_act_disp = df_act[df_act["Action"] == filter_action]
-            else:
-                df_act_disp = df_act
-                
-            df_act_view = df_act_disp.drop(columns=["Timestamp_UTC"], errors="ignore")
-            df_act_view.index = range(1, len(df_act_view) + 1)
-            st.dataframe(df_act_view, use_container_width=True)
-            
-            with open(clay_logger.ACTIVITY_LOG_FILE, "rb") as f_act:
-                st.download_button(
-                    "📥 Download Activity Audit Log (CSV)",
-                    data=f_act.read(),
-                    file_name="activity_audit_log.csv",
-                    mime="text/csv",
-                    type="primary",
-                    key="dl_act_audit_csv_btn"
-                )
-        else:
-            st.info("No activity logs recorded yet.")
-
-    with audit_tab_paths:
-        st.markdown("### 📁 Storage & Log File Locations")
-        st.markdown("""
-        All logs and time-series data are permanently saved on disk in standardized, professional UTF-8 BOM CSV format:
-
-        | Log Category | File Path | Description |
-        |---|---|---|
-        | **Clay Count Drift History** | `logs/clay_count_history.csv` | Time-series record of every count query, tracking changes, deltas (±), and % volatility over time. |
-        | **Activity Audit Trail** | `logs/activity_audit_log.csv` | Full audit log of all extractions, slice downloads, merges, and system actions. |
-        | **Current Industry Counts** | `data/<country>_nontech_counts.csv` | Latest snapshot of target counts for Company extractions. |
-        | **Current People Counts** | `data/<country>_people_counts.csv` | Latest snapshot of target counts for People extractions. |
-        | **Execution Progress Ledger** | `data/<country>_nontech_progress.csv` | Progress and deduplication metrics for delivered datasets. |
-        | **Delivered Master Datasets** | `delivery/<Country>/` & `delivery_people/<Country>/` | Centralized permanent stores of clean, deduped CSVs. |
-        """)
 
 with tab_faq:
     st.subheader("Centralized Store and Deduplication FAQ")

@@ -5,7 +5,8 @@ __pycache__/
 
 # Temporary downloads, logs and clicklists
 downloads/
-logs/
+logs/*
+!logs/activity_log.csv
 plans/
 *.tmp
 *.log
@@ -13,6 +14,7 @@ plans/
 # Generated CSV datasets & delivered folders (keep repository small)
 delivery/
 *.csv
+!logs/activity_log.csv
 
 # Sensitive authentication cookies
 .clay_cookie.txt

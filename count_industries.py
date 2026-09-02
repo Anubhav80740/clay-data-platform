@@ -48,17 +48,11 @@ def main():
 
     have = {}
     print(f"Fetching fresh Clay counts for {len(industries)} industries in {country}...", flush=True)
-    clay_logger.log_activity("COUNT_STARTED", "Companies", country, details={"industries_count": len(industries)})
 
     for i, ind in enumerate(industries, 1):
         prev_val = have_prev.get(ind)
         c = cl.count({"industries": [ind], "country_names": [country]})
         have[ind] = "" if c is None else c
-        
-        # Log to permanent time-series count history
-        if c is not None:
-            clay_logger.log_count_observation("Companies", country, ind, new_count=c, previous_count=prev_val, notes="Step 1 Live Count")
-            
         print(f"[{i}/{len(industries)}] {ind}: {c if c is not None else 0:,} (previous: {prev_val if prev_val is not None else 'N/A'})", flush=True)
         if i % 10 == 0:
             write(out, country, industries, have)
@@ -68,7 +62,7 @@ def main():
     total = sum(int(have[i]) for i in nz)
     failed = [i for i in industries if have.get(i) == ""]
     
-    clay_logger.log_activity("COUNT_COMPLETED", "Companies", country, status="SUCCESS" if not failed else "PARTIAL", details={"total_rows": total, "industries_count": len(industries), "failed": len(failed)})
+    clay_logger.log_activity("COUNT", "Companies", country, industries=industries, total_rows=total, status="SUCCESS" if not failed else "PARTIAL", details=f"{total:,} rows across {len(industries)} industries")
     print(f"\n{len(industries)} industries | {len(nz)} with count>0 | total {total:,} rows")
     if failed:
         print(f"COUNT FAILED (re-run to retry): {len(failed)} -> {failed[:5]}")

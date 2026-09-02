@@ -1,0 +1,2 @@
+﻿Timestamp,User,Action,Entity,Country,Num_Industries,Industries_JSON,Total_Rows,Status,Details
+2026-09-02 17:04:09,team,COUNT,Companies,Austria,3,"[""Software Development"", ""Nanotechnology Research"", ""Telecommunications""]",13737,SUCCESS,"13,737 rows across 3 industries"

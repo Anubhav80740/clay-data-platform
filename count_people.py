@@ -57,8 +57,6 @@ def main():
         
         # Log to permanent time-series count history
         clay_logger.log_count_observation("People", country, ind, new_count=val, previous_count=prev_val, notes="Step 1 People Live Count")
-        time.sleep(0.2)
-        
     counts.sort(key=lambda x: -x["Count"])
     with open(out_file, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.DictWriter(f, fieldnames=["Industry", "Count"])
@@ -66,9 +64,10 @@ def main():
         w.writerows(counts)
         
     tot_people = sum(c['Count'] for c in counts)
-    clay_logger.log_activity("COUNT_COMPLETED", "People", country, status="SUCCESS", details={"total_people": tot_people, "industries_count": len(counts)})
+    clay_logger.log_activity("COUNT", "People", country, industries=industries, total_rows=tot_people, status="SUCCESS", details=f"{tot_people:,} people across {len(counts)} industries")
     print(f"Count complete! Total People in {country}: {tot_people:,} across {len(counts)} industries.")
 
 if __name__ == "__main__":
     main()
+
 

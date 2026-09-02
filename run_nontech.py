@@ -329,14 +329,7 @@ def main():
         print(f"DELIVERED {rows_dl:,} rows | Existing: {existing_cnt:,} | Added: +{new_added_cnt:,} | Total Master: {total_unique:,} -> {dst}", flush=True)
         try:
             import clay_logger
-            clay_logger.log_activity("INDUSTRY_DELIVERED", "Companies", country, ind, details={
-                "clay_expected": expected,
-                "rows_downloaded": rows_dl,
-                "new_added": new_added_cnt,
-                "total_master": total_unique,
-                "coverage_pct": cov,
-                "output_file": dst
-            })
+            clay_logger.log_activity("DOWNLOAD", "Companies", country, industries=[ind], total_rows=total_unique, status="SUCCESS", details=f"Delivered {rows_dl:,} rows, +{new_added_cnt:,} new added ({cov}% coverage)")
         except Exception:
             pass
         if cov != "" and cov < ALERT_MIN:
