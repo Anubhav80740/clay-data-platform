@@ -159,6 +159,24 @@ def start_plan(country, industry):
                             stdout=open(log, "w"), stderr=subprocess.STDOUT)
 
 
+def record_ledger_progress(ledger_path, row_data):
+    rows = {}
+    header = ["industry", "clay_count", "rows_downloaded", "unique_companies", "coverage_pct", "existing_in_file", "new_added", "file"]
+    if os.path.exists(ledger_path):
+        with open(ledger_path, "r", encoding="utf-8", errors="replace") as f:
+            r = csv.reader(f)
+            h = next(r, None)
+            for line in r:
+                if line and len(line) >= 1 and line[0].strip():
+                    rows[line[0].strip()] = line
+    rows[row_data[0].strip()] = row_data
+    os.makedirs(os.path.dirname(ledger_path) or ".", exist_ok=True)
+    with open(ledger_path, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(header)
+        for k, v in rows.items():
+            w.writerow(v)
+
 def main():
     country = sys.argv[1]
     os.makedirs("data", exist_ok=True)
@@ -188,13 +206,6 @@ def main():
     rows = rows[si::sn]
     print(f"{country}: {len(rows)} industries selected in [{lo:,}, {hi:,}), "
           f"~{sum(int(r['Count']) for r in rows):,} target rows", flush=True)
-
-    new = not os.path.exists(ledger)
-    lf = open(ledger, "a", newline="", encoding="utf-8")
-    lw = csv.writer(lf)
-    if new:
-        lw.writerow(["industry", "clay_count", "rows_downloaded",
-                     "unique_companies", "coverage_pct", "existing_in_file", "new_added", "file"])
 
     ahead = start_plan(country, rows[0]["Industry"]) if rows else None
 
@@ -264,13 +275,12 @@ def main():
         except Exception:
             pass
 
-        lw.writerow([ind, expected, rows_dl, total_unique, cov, existing_cnt, new_added_cnt, dst]); lf.flush()
+        record_ledger_progress(ledger, [ind, expected, rows_dl, total_unique, cov, existing_cnt, new_added_cnt, dst])
         print(f"DELIVERED {rows_dl:,} rows | Existing: {existing_cnt:,} | Added: +{new_added_cnt:,} | Total Master: {total_unique:,} -> {dst}", flush=True)
         if cov != "" and cov < ALERT_MIN:
             alert(country, "downloaded", ind, cov,
                   f"{uniq:,} unique of {expected:,} on Clay")
 
-    lf.close()
     if only:
         ind_label = ", ".join(sorted(only))
         print(f"\n=== {country} EXTRACTION COMPLETE (Industry: {ind_label}) ===", flush=True)

@@ -845,6 +845,8 @@ with tab_download:
         try:
             ledger_df = load_ledger_dataframe(ledger_file)
             col_ind = "industry" if "industry" in ledger_df.columns else ("Industry" if "Industry" in ledger_df.columns else None)
+            if col_ind and not ledger_df.empty:
+                ledger_df = ledger_df.drop_duplicates(subset=[col_ind], keep="last")
             if selected_industries and col_ind:
                 ledger_df = ledger_df[ledger_df[col_ind].isin(selected_industries)]
             

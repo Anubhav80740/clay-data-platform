@@ -117,6 +117,24 @@ def merge_people_slices(prefix):
     return out
 
 
+def record_ledger_progress(ledger_path, row_data):
+    rows = {}
+    header = ["industry", "clay_count", "rows_downloaded", "unique_people", "coverage_pct", "existing_in_file", "new_added", "file"]
+    if os.path.exists(ledger_path):
+        with open(ledger_path, "r", encoding="utf-8", errors="replace") as f:
+            r = csv.reader(f)
+            h = next(r, None)
+            for line in r:
+                if line and len(line) >= 1 and line[0].strip():
+                    rows[line[0].strip()] = line
+    rows[row_data[0].strip()] = row_data
+    os.makedirs(os.path.dirname(ledger_path) or ".", exist_ok=True)
+    with open(ledger_path, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(header)
+        for k, v in rows.items():
+            w.writerow(v)
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: python3 run_people.py <Country> [--only \"Industry1|Industry2\"]")
@@ -152,14 +170,6 @@ def main():
         rows = [r for r in rows if r["Industry"] in only]
         
     print(f"{country} (People): {len(rows)} industries selected, ~{sum(int(r['Count']) for r in rows):,} target people", flush=True)
-    
-    new = not os.path.exists(ledger)
-    lf = open(ledger, "a", newline="", encoding="utf-8")
-    lw = csv.writer(lf)
-    if new:
-        lw.writerow(["industry", "clay_count", "rows_downloaded",
-                     "unique_people", "coverage_pct", "existing_in_file", "new_added", "file"])
-        lf.flush()
         
     for i, r in enumerate(rows, 1):
         ind, expected = r["Industry"], int(r["Count"])
@@ -185,11 +195,9 @@ def main():
         total_unique, existing_cnt, new_added_cnt = cp.dedupe_people_file(out_all, dst)
         cov = round(100 * total_unique / expected, 1) if expected else 100.0
         
-        lw.writerow([ind, expected, total_unique, total_unique, cov, existing_cnt, new_added_cnt, dst])
-        lf.flush()
+        record_ledger_progress(ledger, [ind, expected, total_unique, total_unique, cov, existing_cnt, new_added_cnt, dst])
         print(f"DELIVERED PEOPLE DATA: Existing: {existing_cnt:,} | Added: +{new_added_cnt:,} | Total Master Unique: {total_unique:,} -> {dst}", flush=True)
         
-    lf.close()
     if only:
         ind_label = ", ".join(sorted(only))
         print(f"\n=== {country} PEOPLE EXTRACTION COMPLETE (Industry: {ind_label}) ===", flush=True)
