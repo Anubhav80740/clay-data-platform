@@ -27,6 +27,9 @@ def verify_cookie(cookie_str=None, username=None):
     if not c:
         c = clay_users.get_user_cookie("team")
 
+    if c:
+        c = clay_users.extract_clean_cookie(c)
+
     if not c or "claysession=" not in c:
         return False
 
@@ -36,13 +39,15 @@ def verify_cookie(cookie_str=None, username=None):
         "origin": "https://app.clay.com",
         "referer": "https://app.clay.com/",
         "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
-        "x-clay-frontend-version": "v20260815_170454z_6bd76386ec"
+        "x-clay-frontend-version": "v20260901_204532Z_1f9b744063"
     }
-    url = "https://api.clay.com/v3/workspaces"
+    url = "https://api.clay.com/v3/my-workspaces"
     try:
         resp = requests.get(url, headers=headers, timeout=10)
         if resp.status_code == 200:
             data = resp.json()
+            if isinstance(data, dict) and "results" in data:
+                return len(data["results"]) > 0 or "id" in data
             if isinstance(data, list) and len(data) > 0:
                 return True
             if isinstance(data, dict) and ("id" in data or "name" in data):

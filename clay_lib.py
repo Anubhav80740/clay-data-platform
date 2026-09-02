@@ -69,19 +69,24 @@ def get_active_workspace_id(cookie_str=None, user_id=None):
     if c in _CACHED_WORKSPACES:
         return _CACHED_WORKSPACES[c]
     try:
+        clean_c = clay_users.extract_clean_cookie(c)
         headers_dict = {
             "accept": "application/json, text/plain, */*",
-            "cookie": c,
+            "cookie": clean_c,
             "origin": "https://app.clay.com",
             "referer": "https://app.clay.com/",
             "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
             "x-clay-frontend-version": FRONTEND_VERSION
         }
         import requests
-        r = requests.get("https://api.clay.com/v3/workspaces", headers=headers_dict, timeout=10)
+        r = requests.get("https://api.clay.com/v3/my-workspaces", headers=headers_dict, timeout=10)
         if r.status_code == 200:
             data = r.json()
-            if isinstance(data, list) and len(data) > 0:
+            if isinstance(data, dict) and "results" in data and len(data["results"]) > 0:
+                wid = str(data["results"][0].get("id", WORKSPACE_ID))
+                _CACHED_WORKSPACES[c] = wid
+                return wid
+            elif isinstance(data, list) and len(data) > 0:
                 wid = str(data[0].get("id", WORKSPACE_ID))
                 _CACHED_WORKSPACES[c] = wid
                 return wid
