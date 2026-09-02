@@ -546,12 +546,13 @@ with nav_col_cookie:
             manual_cookie = st.text_area("Cookie Header:", value=active_c or "", placeholder="claysession=...", height=100)
             if st.button("Save & Verify Cookie", type="primary", use_container_width=True):
                 if manual_cookie.strip():
-                    from auto_cookie_fetcher import verify_cookie
+                    from auto_cookie_fetcher import verify_cookie, seed_browser_cookies
                     is_valid = verify_cookie(manual_cookie.strip(), username=current_user)
                     clay_users.save_user_cookie(current_user, manual_cookie.strip())
+                    seed_browser_cookies(current_user, manual_cookie.strip())
                     st.cache_data.clear()
                     if is_valid:
-                        st.success(f"Cookie verified & saved for '{current_user}'!")
+                        st.success(f"Cookie verified, profile seeded & saved for '{current_user}'!")
                         st.rerun()
                     else:
                         st.warning("Cookie saved, but verification returned inactive. Please ensure it contains a valid claysession token.")

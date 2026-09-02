@@ -51,6 +51,42 @@ def verify_cookie(cookie_str=None, username=None):
         pass
     return False
 
+def seed_browser_cookies(username, cookie_str):
+    """Injects a valid cookie string into the user's persistent Playwright profile so future Auto-Refreshes work automatically."""
+    from playwright.sync_api import sync_playwright
+    u = (username or "team").strip().lower()
+    user_data_dir = clay_users.get_user_data_dir(u)
+    os.makedirs(user_data_dir, exist_ok=True)
+    
+    cookies_to_add = []
+    for item in (cookie_str or "").split(";"):
+        item = item.strip()
+        if "=" in item:
+            name, val = item.split("=", 1)
+            name = name.strip()
+            val = val.strip()
+            if name and val:
+                cookies_to_add.append({
+                    "name": name,
+                    "value": val,
+                    "domain": ".clay.com",
+                    "path": "/"
+                })
+                
+    if cookies_to_add:
+        try:
+            with sync_playwright() as p:
+                context = p.chromium.launch_persistent_context(
+                    user_data_dir=user_data_dir,
+                    headless=True,
+                    args=["--disable-blink-features=AutomationControlled", "--no-sandbox", "--disable-setuid-sandbox"]
+                )
+                context.add_cookies(cookies_to_add)
+                context.close()
+                print(f"[+] Seeded {len(cookies_to_add)} cookies into profile for '{u}'")
+        except Exception as e:
+            print(f"[!] Cookie seed note: {e}")
+
 def ensure_playwright_browsers():
     """Auto-installs Chromium binaries if running in cloud Linux environment."""
     try:
