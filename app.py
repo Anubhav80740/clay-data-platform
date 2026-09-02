@@ -509,20 +509,26 @@ def check_cookie_cached(cookie_token, username):
 
 with nav_col_cookie:
     st.write("")
-    try:
-        from auto_cookie_fetcher import fetch_cookie
-        active_c = cl._cookie(user_id=current_user)
-        is_cookie_valid = check_cookie_cached(active_c, current_user)
-        if is_cookie_valid:
-            st.markdown(f"<span class='badge-green'>🟢 Cookie: Active ({current_user})</span>", unsafe_allow_html=True)
-        else:
-            st.markdown(f"<span class='badge-orange'>🔴 Cookie: Expired ({current_user})</span>", unsafe_allow_html=True)
-        
-        c_btn_a, c_btn_b = st.columns([1.5, 1.0])
-        with c_btn_a:
-            if st.button("🍪 Auto-Refresh", use_container_width=True, help=f"Launches automated browser for '{current_user}' profile"):
-                track_event("cookie_refresh_started", {"user_id": current_user})
-                with st.spinner(f"Refreshing Clay cookie for '{current_user}'..."):
+    active_c = clay_users.get_user_cookie(current_user)
+    is_cookie_valid = False
+    if active_c:
+        try:
+            is_cookie_valid = check_cookie_cached(active_c, current_user)
+        except Exception:
+            is_cookie_valid = False
+            
+    if is_cookie_valid:
+        st.markdown(f"<span class='badge-green'>🟢 Cookie: Active ({current_user})</span>", unsafe_allow_html=True)
+    else:
+        st.markdown(f"<span class='badge-orange'>🔴 Cookie: Needs Setup ({current_user})</span>", unsafe_allow_html=True)
+    
+    c_btn_a, c_btn_b = st.columns([1.5, 1.0])
+    with c_btn_a:
+        if st.button("🍪 Auto-Refresh", use_container_width=True, help=f"Launches automated browser for '{current_user}' profile"):
+            track_event("cookie_refresh_started", {"user_id": current_user})
+            with st.spinner(f"Refreshing Clay cookie for '{current_user}'..."):
+                try:
+                    from auto_cookie_fetcher import fetch_cookie
                     new_c = fetch_cookie(username=current_user, timeout_seconds=90)
                     if new_c:
                         st.cache_data.clear()
@@ -532,17 +538,17 @@ with nav_col_cookie:
                     else:
                         st.error("Failed to capture new cookie.")
                         track_event("cookie_refresh_completed", {"success": False})
-        with c_btn_b:
-            with st.popover("📝 Paste"):
-                manual_cookie = st.text_area("Paste Clay Cookie Header:", value=active_c or "", placeholder="claysession=...")
-                if st.button("Save Cookie", type="primary", use_container_width=True):
-                    if manual_cookie.strip():
-                        clay_users.save_user_cookie(current_user, manual_cookie)
-                        st.cache_data.clear()
-                        st.success("Saved!")
-                        st.rerun()
-    except Exception as e:
-        st.caption(f"Cookie status: {e}")
+                except Exception as e:
+                    st.error(f"Auto-refresh error: {e}")
+    with c_btn_b:
+        with st.popover("📝 Paste"):
+            manual_cookie = st.text_area("Paste Clay Cookie Header:", value=active_c or "", placeholder="claysession=...")
+            if st.button("Save Cookie", type="primary", use_container_width=True):
+                if manual_cookie.strip():
+                    clay_users.save_user_cookie(current_user, manual_cookie)
+                    st.cache_data.clear()
+                    st.success("Saved!")
+                    st.rerun()
 
 with nav_col2:
     st.write("")

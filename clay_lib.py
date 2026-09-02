@@ -147,8 +147,17 @@ BASIC_FIELDS = [
 ]
 
 
-def _cookie(user_id=None):
-    uid = user_id or os.environ.get("CLAY_USER_ID")
+def _cookie(*args, **kwargs):
+    uid = None
+    if args:
+        uid = args[0]
+    elif "user_id" in kwargs:
+        uid = kwargs["user_id"]
+    elif "username" in kwargs:
+        uid = kwargs["username"]
+
+    if not uid:
+        uid = os.environ.get("CLAY_USER_ID")
     if not uid:
         try:
             import streamlit as st
