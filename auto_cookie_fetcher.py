@@ -69,13 +69,13 @@ def ensure_playwright_browsers():
         return False
 
 def fetch_cookie(username="team", headless=None, timeout_seconds=120):
-    """Launches browser for specific user, intercepts request headers to api.clay.com, and extracts active cookie."""
+    """Launches browser for specific user, intercepts request headers and cookie jars from api.clay.com."""
     from playwright.sync_api import sync_playwright
     
     u = (username or "team").strip().lower()
     user_data_dir = clay_users.get_user_data_dir(u)
     
-    # In cloud Linux (Streamlit Cloud), default to headless
+    # In cloud Linux (Streamlit Cloud), default to headless. On Windows, default to headed so user can log in once if needed.
     if headless is None:
         headless = sys.platform != "win32" and "DISPLAY" not in os.environ
 
@@ -87,60 +87,97 @@ def fetch_cookie(username="team", headless=None, timeout_seconds=120):
     # Auto-download chromium if missing
     ensure_playwright_browsers()
 
-    with sync_playwright() as p:
-        try:
-            context = p.chromium.launch_persistent_context(
-                user_data_dir=user_data_dir,
-                headless=headless,
-                viewport={"width": 1280, "height": 800},
-                args=["--disable-blink-features=AutomationControlled", "--no-sandbox", "--disable-setuid-sandbox"]
-            )
-        except Exception as e:
-            print(f"Launch failed ({e}), installing chromium...")
-            subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], check=True)
-            context = p.chromium.launch_persistent_context(
-                user_data_dir=user_data_dir,
-                headless=headless,
-                viewport={"width": 1280, "height": 800},
-                args=["--disable-blink-features=AutomationControlled", "--no-sandbox", "--disable-setuid-sandbox"]
-            )
+    try:
+        with sync_playwright() as p:
+            try:
+                context = p.chromium.launch_persistent_context(
+                    user_data_dir=user_data_dir,
+                    headless=headless,
+                    viewport={"width": 1280, "height": 800},
+                    args=["--disable-blink-features=AutomationControlled", "--no-sandbox", "--disable-setuid-sandbox"]
+                )
+            except Exception as e:
+                print(f"Launch failed ({e}), installing chromium...")
+                subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], check=True)
+                context = p.chromium.launch_persistent_context(
+                    user_data_dir=user_data_dir,
+                    headless=headless,
+                    viewport={"width": 1280, "height": 800},
+                    args=["--disable-blink-features=AutomationControlled", "--no-sandbox", "--disable-setuid-sandbox"]
+                )
 
-        page = context.new_page()
+            page = context.pages[0] if context.pages else context.new_page()
 
-        def handle_request(request):
-            nonlocal captured_cookie
-            url = request.url
-            if "api.clay.com/v3" in url:
-                headers = request.headers
-                if "cookie" in headers and "claysession=" in headers["cookie"]:
-                    cookie_val = headers["cookie"]
-                    if captured_cookie != cookie_val:
-                        captured_cookie = cookie_val
-                        print("[+] Captured live claysession cookie from outgoing API call!")
+            def handle_request(request):
+                nonlocal captured_cookie
+                try:
+                    url = request.url
+                    if "api.clay.com" in url or "app.clay.com" in url:
+                        headers = request.headers
+                        if "cookie" in headers and "claysession=" in headers["cookie"]:
+                            cookie_val = headers["cookie"]
+                            if captured_cookie != cookie_val:
+                                captured_cookie = cookie_val
+                except Exception:
+                    pass
 
-        page.on("request", handle_request)
+            try:
+                page.on("request", handle_request)
+            except Exception:
+                pass
 
-        try:
-            print("[*] Navigating to https://app.clay.com ...")
-            page.goto("https://app.clay.com", wait_until="networkidle", timeout=45000)
-        except Exception as e:
-            print(f"[!] Navigation note: {e}")
+            try:
+                print("[*] Navigating to https://app.clay.com ...")
+                page.goto("https://app.clay.com", wait_until="domcontentloaded", timeout=45000)
+            except Exception as e:
+                print(f"[!] Navigation note: {e}")
 
-        # Poll for cookie capture
-        start_time = time.time()
-        while time.time() - start_time < timeout_seconds:
-            if captured_cookie:
-                print("[*] Testing captured cookie against Clay live API...")
-                if verify_cookie(captured_cookie, username=u):
-                    print(f"[OK] COOKIE VERIFICATION SUCCESSFUL FOR USER '{u}'!")
-                    clay_users.save_user_cookie(u, captured_cookie)
-                    context.close()
-                    return captured_cookie
-                else:
-                    captured_cookie = None
-            time.sleep(2)
+            # Poll for cookie capture or direct cookie inspection
+            start_time = time.time()
+            while time.time() - start_time < timeout_seconds:
+                # 1. Direct browser cookie jar extraction
+                try:
+                    all_cookies = context.cookies(["https://app.clay.com", "https://api.clay.com"])
+                    has_session = any(c.get("name") == "claysession" for c in all_cookies)
+                    if has_session:
+                        jar_cookie = "; ".join([f"{c['name']}={c['value']}" for c in all_cookies if c.get("name") and c.get("value")])
+                        if jar_cookie and verify_cookie(jar_cookie, username=u):
+                            print(f"[OK] Extracted active cookie directly from browser context for '{u}'!")
+                            clay_users.save_user_cookie(u, jar_cookie)
+                            try:
+                                context.close()
+                            except Exception:
+                                pass
+                            return jar_cookie
+                except Exception:
+                    # If browser was manually closed, break gracefully
+                    break
 
-        context.close()
+                # 2. Intercepted request header validation
+                if captured_cookie:
+                    try:
+                        if verify_cookie(captured_cookie, username=u):
+                            print(f"[OK] COOKIE VERIFICATION SUCCESSFUL FOR USER '{u}'!")
+                            clay_users.save_user_cookie(u, captured_cookie)
+                            try:
+                                context.close()
+                            except Exception:
+                                pass
+                            return captured_cookie
+                        else:
+                            captured_cookie = None
+                    except Exception:
+                        pass
+
+                time.sleep(2)
+
+            try:
+                context.close()
+            except Exception:
+                pass
+
+    except Exception as outer_e:
+        print(f"[!] Auto-cookie fetcher note: {outer_e}")
 
     return None
 
