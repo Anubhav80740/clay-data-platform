@@ -87,8 +87,13 @@ def seed_browser_cookies(username, cookie_str):
                     args=["--disable-blink-features=AutomationControlled", "--no-sandbox", "--disable-setuid-sandbox"]
                 )
                 context.add_cookies(cookies_to_add)
+                page = context.pages[0] if context.pages else context.new_page()
+                try:
+                    page.goto("https://app.clay.com", wait_until="domcontentloaded", timeout=10000)
+                except Exception:
+                    pass
                 context.close()
-                print(f"[+] Seeded {len(cookies_to_add)} cookies into profile for '{u}'")
+                print(f"[+] Seeded and persisted {len(cookies_to_add)} cookies into profile for '{u}'")
         except Exception as e:
             print(f"[!] Cookie seed note: {e}")
 
