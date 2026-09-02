@@ -109,11 +109,17 @@ def ensure_playwright_browsers():
         print(f"Error during browser install: {e}")
         return False
 
-def fetch_cookie(username="team", headless=None, timeout_seconds=120):
+def fetch_cookie(username="team", headless=None, timeout_seconds=60):
     """Launches browser for specific user, intercepts request headers and cookie jars from api.clay.com."""
-    from playwright.sync_api import sync_playwright
-    
     u = (username or "team").strip().lower()
+
+    # 1. Fast Check: If the user's saved cookie is ALREADY valid & active, return instantly!
+    existing_c = clay_users.get_user_cookie(u)
+    if existing_c and verify_cookie(existing_c, username=u):
+        print(f"[OK] Current cookie for '{u}' is ALREADY active and verified!")
+        return existing_c
+
+    from playwright.sync_api import sync_playwright
     user_data_dir = clay_users.get_user_data_dir(u)
     
     # In cloud Linux (Streamlit Cloud), default to headless. On Windows, default to headed so user can log in once if needed.
