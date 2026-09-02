@@ -387,10 +387,34 @@ def export_download(table_id, view_id, slug, base_dir="downloads", poll_timeout=
     os.makedirs(out_dir, exist_ok=True)
     raw = os.path.join(out_dir, slug + "_raw.csv")
     final = os.path.join(out_dir, slug + ".csv")
-    subprocess.run(["curl", "-s", "-o", raw, dl], timeout=180)
+    
+    # Download the CSV from S3 downloadUrl with retries
+    downloaded_ok = False
+    for dl_attempt in range(3):
+        try:
+            import urllib.request
+            urllib.request.urlretrieve(dl, raw)
+            if os.path.exists(raw) and os.path.getsize(raw) > 0:
+                downloaded_ok = True
+                break
+        except Exception:
+            pass
+        try:
+            subprocess.run(["curl", "-s", "-o", raw, dl], timeout=180)
+            if os.path.exists(raw) and os.path.getsize(raw) > 0:
+                downloaded_ok = True
+                break
+        except Exception:
+            pass
+        time.sleep(2 * (dl_attempt + 1))
+        
+    if not downloaded_ok or not os.path.exists(raw) or os.path.getsize(raw) == 0:
+        log(f"   [download error] Failed to download CSV file from S3 for slice {slug}")
+        return 0, None
+
     t2 = time.time()
-    log(f"   export job {t1-t0:.1f}s | file transfer {t2-t1:.1f}s "
-        f"({os.path.getsize(raw)/1e6:.2f} MB)")
+    raw_size_mb = os.path.getsize(raw) / 1e6 if os.path.exists(raw) else 0.0
+    log(f"   export job {t1-t0:.1f}s | file transfer {t2-t1:.1f}s ({raw_size_mb:.2f} MB)")
     n = 0
     with open(raw, newline="", encoding="utf-8", errors="replace") as fin, \
          open(final, "w", newline="", encoding="utf-8") as fout:

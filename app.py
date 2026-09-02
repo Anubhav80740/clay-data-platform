@@ -415,30 +415,38 @@ with tab_download:
     with col_i:
         st.markdown("**2. Target Industries Selection**")
         
-        if "selected_industries" not in st.session_state or not st.session_state["selected_industries"]:
+        if "_init_ind_loaded" not in st.session_state:
+            st.session_state["_init_ind_loaded"] = True
             qp_ind = st.query_params.get("ind", "")
             if qp_ind:
                 st.session_state["selected_industries"] = [x.strip() for x in qp_ind.split("|") if x.strip() and x.strip() in ALL_CLAY_INDUSTRIES]
             else:
                 st.session_state["selected_industries"] = []
+        elif "selected_industries" not in st.session_state:
+            st.session_state["selected_industries"] = []
 
         b_col1, b_col2, b_col3, b_col4 = st.columns(4)
         
         with b_col1:
             if st.button("Select Tech Industries", use_container_width=True):
                 st.session_state["selected_industries"] = TECH_INDUSTRIES
+                st.query_params["ind"] = "|".join(TECH_INDUSTRIES)
                 
         with b_col2:
             if st.button("Select Non-Tech Industries", use_container_width=True):
                 st.session_state["selected_industries"] = NON_TECH_INDUSTRIES
+                st.query_params["ind"] = "|".join(NON_TECH_INDUSTRIES)
                 
         with b_col3:
             if st.button("Select All 458 Industries", use_container_width=True):
                 st.session_state["selected_industries"] = ALL_CLAY_INDUSTRIES
+                st.query_params["ind"] = "|".join(ALL_CLAY_INDUSTRIES)
                 
         with b_col4:
             if st.button("Clear Selection", use_container_width=True):
                 st.session_state["selected_industries"] = []
+                if "ind" in st.query_params:
+                    del st.query_params["ind"]
 
         selected_industries = st.multiselect(
             "Search and select industries (starts empty; select manually or use category buttons above):",
@@ -756,12 +764,24 @@ with tab_download:
                     if st.button(f"Re-Plan '{ind_name[:15]}...'", key=f"replan_{slugify(ind_name)}_{'ppl' if is_people_mode else 'cmp'}", use_container_width=True):
                         track_event("single_replan_triggered", {"industry": ind_name, "country": country_input, "entity": entity_label})
                         with st.spinner(f"Re-generating partition plan for '{ind_name}'..."):
+                            # Clean up old slice cache for fresh download
+                            prefix = slugify(f"{ind_name}_{country_input}{plan_suffix}")
+                            dl_base = "downloads_people" if is_people_mode else "downloads"
+                            for d in glob.glob(f"{dl_base}/{prefix}*"):
+                                try:
+                                    if os.path.isdir(d):
+                                        shutil.rmtree(d)
+                                    elif os.path.isfile(d):
+                                        os.remove(d)
+                                except Exception:
+                                    pass
+                            
                             cmd = [sys.executable, "-u", plan_script, ind_name, country_input]
                             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
                             st.session_state["current_process"] = proc
                             proc.wait()
                             st.session_state["current_process"] = None
-                            st.success(f"Re-plan complete for '{ind_name}'!")
+                            st.success(f"Re-plan complete for '{ind_name}'! Slices refreshed.")
                             st.rerun()
                 with exp_c3:
                     if st.button(f"Download '{ind_name[:15]}...'", key=f"dl_{slugify(ind_name)}_{'ppl' if is_people_mode else 'cmp'}", type="primary", use_container_width=True):
@@ -808,33 +828,43 @@ with tab_download:
             
             logs = []
             tot_ind = len(selected_industries)
+            curr_ind_idx = 0
+            curr_ind_name = ""
             
             while True:
                 line = process.stdout.readline()
                 if not line and process.poll() is not None:
                     break
                 if line:
-                    logs.append(line.strip())
+                    stripped = line.strip()
+                    logs.append(stripped)
                     log_container.code("\n".join(logs[-20:]))
                     
-                    if os.path.exists(ledger_file):
-                        try:
-                            pdf_prog = load_ledger_dataframe(ledger_file)
-                            col_i = "industry" if "industry" in pdf_prog.columns else ("Industry" if "Industry" in pdf_prog.columns else None)
-                            if col_i:
-                                pdf_sel = pdf_prog[pdf_prog[col_i].isin(selected_industries)]
-                                done_count = len(pdf_sel)
-                                pct = min(1.0, done_count / max(1, tot_ind))
-                                dl_progress_bar.progress(pct)
-                                dl_status_text.text(f"Downloading: {done_count} of {tot_ind} selected industries complete ({int(pct*100)}%)")
-                        except Exception:
-                            pass
+                    # Track active industry: e.g. ===== [3/7] Civil Engineering  (~5,506) =====
+                    m_ind = re.search(r'\[(\d+)/(\d+)\]\s+([A-Za-z0-9\s,&-]+?)\s+\(~', stripped)
+                    if m_ind:
+                        curr_ind_idx = int(m_ind.group(1))
+                        curr_ind_name = m_ind.group(3).strip()
+                        pct = max(0.01, min(0.99, (curr_ind_idx - 1) / max(1, tot_ind)))
+                        dl_progress_bar.progress(pct)
+                        dl_status_text.text(f"Downloading [{curr_ind_idx}/{tot_ind}]: {curr_ind_name}...")
+                    
+                    # Track slice progress: e.g. [2/7] Civil_Engineering_India_st_...
+                    m_slice = re.search(r'\[(\d+)/(\d+)\]\s+([A-Za-z0-9_]+)', stripped)
+                    if m_slice and not m_ind and curr_ind_idx > 0:
+                        s_idx = int(m_slice.group(1))
+                        s_tot = int(m_slice.group(2))
+                        # Interpolate progress within current industry
+                        pct_ind = (s_idx - 1) / max(1, s_tot)
+                        pct = min(0.99, ((curr_ind_idx - 1) + pct_ind) / max(1, tot_ind))
+                        dl_progress_bar.progress(pct)
+                        dl_status_text.text(f"Downloading [{curr_ind_idx}/{tot_ind}] {curr_ind_name} — Slice {s_idx}/{s_tot}...")
                             
             process.wait()
             st.session_state["current_process"] = None
             if process.returncode == 0:
                 dl_progress_bar.progress(1.0)
-                dl_status_text.text("Step 3 Download complete.")
+                dl_status_text.text(f"Step 3 Download complete. All {tot_ind} industries downloaded & merged.")
                 st.success(f"Step 3 Download and Centralized Merge complete for {country_input} ({entity_label}).")
                 track_event("download_completed", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries)})
             else:
