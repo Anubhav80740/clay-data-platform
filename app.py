@@ -939,14 +939,21 @@ with tab_download:
             
             num_slices = 0
             gap = 0
-            is_planned = os.path.exists(pj) and os.path.getsize(pj) > 2
+            has_plan_file = os.path.exists(pj)
+            is_zero_count = (ind in counts_lookup) and (exp == 0)
+            is_planned = has_plan_file or is_zero_count
             status_str = "✅ Planned" if is_planned else "⏳ Pending Plan (Click Step 2)"
 
             if is_planned:
                 try:
-                    p_slices = json.load(open(pj))
-                    num_slices = len(p_slices)
-                    slice_sum = sum(safe_int(s.get("count")) for s in p_slices)
+                    if has_plan_file and os.path.getsize(pj) >= 2:
+                        p_slices = json.load(open(pj))
+                        num_slices = len(p_slices)
+                        slice_sum = sum(safe_int(s.get("count")) for s in p_slices)
+                    else:
+                        p_slices = []
+                        num_slices = 0
+                        slice_sum = 0
 
                     if exp == 0 and slice_sum > 0:
                         exp = slice_sum
@@ -969,12 +976,17 @@ with tab_download:
             if exp > 0 and reachable > exp:
                 reachable = exp
 
-            cov_pct = min(100.0, round(100 * reachable / max(1, exp), 1)) if exp and is_planned else (100.0 if is_planned else 0.0)
+            if exp == 0 and is_planned:
+                cov_pct = 100.0
+            elif exp > 0 and is_planned:
+                cov_pct = min(100.0, round(100 * reachable / max(1, exp), 1))
+            else:
+                cov_pct = 0.0
 
             planned_data.append({
                 "Industry": ind,
                 "Clay Target Count": exp,
-                "Estimated Reachable": reachable if is_planned else "Pending",
+                "Estimated Reachable": reachable if (is_planned and (exp > 0 or is_zero_count or has_plan_file)) else "Pending",
                 "Unreachable Gap": gap if is_planned else "-",
                 "Est Coverage %": f"{cov_pct}%" if is_planned else "Pending",
                 "Planned Slices": num_slices,
@@ -1022,6 +1034,9 @@ with tab_download:
                 badge = "⏳ Pending Generation"
                 target_str = f"{c_target:,}" if isinstance(c_target, (int, float)) else c_target
                 exp_title = f"{ind_name} | ⏳ Plan Pending ({target_str} Target Rows) | {badge}"
+            elif c_target == 0:
+                badge = "🟢 0 Rows in Country"
+                exp_title = f"{ind_name} | 0 Target Rows (100.0% Coverage) | {badge}"
             else:
                 badge = "🟢 High Coverage" if cov_num >= 95.0 else ("🟡 Partial Coverage" if cov_num >= 80.0 else "🔴 Gaps Identified")
                 reach_str = f"{c_reach:,}" if isinstance(c_reach, (int, float)) else c_reach
