@@ -494,28 +494,59 @@ DE_STATES = {
     "Bremen": ["Bremen", "Bremerhaven"],
 }
 
+# China: admin-1 = provinces / municipalities / autonomous regions / SARs.
+# Cities mapped to their province using standard English/Pinyin names accepted by LinkedIn/Clay.
+CN_PROVINCES = {
+    "Guangdong": ["Shenzhen", "Guangzhou", "Dongguan", "Foshan", "Zhongshan", "Huizhou", "Jiangmen", "Zhuhai", "Shantou", "Zhanjiang", "Baoan District", "Luohu District", "Longgang"],
+    "Zhejiang": ["Hangzhou", "Ningbo", "Wenzhou", "Jinhua", "Shaoxing", "Taizhou", "Jiaxing", "Huzhou", "Yiwu"],
+    "Jiangsu": ["Suzhou", "Nanjing", "Wuxi", "Changzhou", "Nantong", "Xuzhou", "Yangzhou", "Yancheng", "Taizhou", "Zhenjiang", "Lianyungang", "Kunshan", "Jiangyin"],
+    "Shanghai": ["Shanghai", "Pudong", "Minhang", "Baoshan", "Jiading", "Songjiang", "Qingpu", "Fengxian"],
+    "Beijing": ["Beijing", "Haidian", "Chaoyang", "Daxing", "Tongzhou", "Changping", "Fengtai"],
+    "Shandong": ["Qingdao", "Jinan", "Yantai", "Weifang", "Zibo", "Weihai", "Linyi", "Jining", "Heze"],
+    "Fujian": ["Xiamen", "Fuzhou", "Quanzhou", "Zhangzhou", "Putian"],
+    "Sichuan": ["Chengdu", "Mianyang", "Deyang", "Yibin", "Luzhou", "Qingbaijiang District"],
+    "Hubei": ["Wuhan", "Yichang", "Xiangyang", "Jingzhou", "Huangshi"],
+    "Hunan": ["Changsha", "Zhuzhou", "Xiangtan", "Yueyang", "Hengyang"],
+    "Henan": ["Zhengzhou", "Luoyang", "Xinxiang", "Nanyang", "Kaifeng"],
+    "Hebei": ["Shijiazhuang", "Tangshan", "Baoding", "Langfang", "Cangzhou", "Handan"],
+    "Tianjin": ["Tianjin", "Binhai"],
+    "Chongqing": ["Chongqing", "Yubei", "Jiulongpo", "Jiangbei"],
+    "Shaanxi": ["Xi'an", "Baoji", "Xianyang"],
+    "Liaoning": ["Dalian", "Shenyang", "Anshan"],
+    "Anhui": ["Hefei", "Wuhu", "Bengbu", "Chuzhou"],
+    "Jiangxi": ["Nanchang", "Ganzhou", "Jiujiang"],
+    "Guangxi": ["Nanning", "Guilin", "Liuzhou", "Chongzuo"],
+    "Yunnan": ["Kunming", "Qujing"],
+    "Heilongjiang": ["Harbin", "Daqing", "Heihe"],
+    "Jilin": ["Changchun", "Jilin"],
+    "Shanxi": ["Taiyuan", "Datong"],
+    "Guizhou": ["Guiyang", "Zunyi"],
+    "Inner Mongolia": ["Hohhot", "Baotou", "Ordos", "Xilingol League"],
+    "Xinjiang": ["Urumqi"],
+    "Gansu": ["Lanzhou"],
+    "Hainan": ["Haikou", "Sanya"],
+    "Ningxia": ["Yinchuan"],
+    "Qinghai": ["Xining"],
+    "Tibet": ["Lhasa"],
+    "Hong Kong": ["Hong Kong", "Kowloon", "Central"],
+    "Macau": ["Macau"],
+    "Taiwan": ["Taipei", "New Taipei", "Taichung", "Kaohsiung", "Hsinchu", "Taoyuan", "Tainan"],
+}
+
 GEO = {
     "United States": {"states": US_STATES, "postal": US_POSTAL},
     "Canada": {"states": CA_PROVINCES, "postal": CA_POSTAL},
     "Netherlands": {"states": NL_PROVINCES},
     "India": {"states": IN_STATES, "postal": IN_POSTAL},
+    "China": {"states": CN_PROVINCES, "fallback": ["size", "revenue"]},
     "United Kingdom": {
         "counties": UK_COUNTIES,"states": UK_NATIONS, "fallback": ["revenue", "size"]},
     "Germany": {"states": DE_STATES, "fallback": ["revenue", "size"]},
-    # Singapore: city-state, no admin-1 states. Split on the city itself so the
-    # cities_exclude remainder sweeps up the blank-location floor that size/revenue
-    # can't isolate -> 100% reachable when both slices fit under the export cap.
     "Singapore": {"cities": ["Singapore"], "fallback": ["size", "revenue"]},
     "Australia": {"states": AU_STATES, "postal": AU_POSTAL},
-    # UAE: no postal system; Dubai is the monolith (>5k in IT/Tech) but blank-size
-    # is ~0%, so the size-band fallback splits Dubai cleanly. Flat emirate cities +
-    # cities-exclude remainder; size-first fallback (default) for the dense cities.
     "United Arab Emirates": {"cities": [
         "Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah",
         "Fujairah", "Umm Al Quwain", "Al Ain"]},
-    # Sweden: no city exceeds the cap (Stockholm ~3.2k is the largest), so a flat
-    # city split + cities-exclude remainder covers it; Clay accepts English or
-    # accented spellings (Gothenburg, Malmö). size/revenue fallback for residual.
     "Sweden": {"cities": [
         "Stockholm", "Gothenburg", "Malmö", "Uppsala", "Västerås", "Örebro",
         "Linköping", "Helsingborg", "Jönköping", "Norrköping", "Lund", "Umeå",
@@ -523,9 +554,6 @@ GEO = {
         "Karlstad", "Sundsvall", "Solna", "Sollentuna", "Kista", "Nacka",
         "Lidingö", "Täby", "Kungsbacka", "Karlskrona", "Kalmar", "Luleå"],
      "fallback": ["size", "revenue"]},
-    # France: ~53% blank SIZE. The Île-de-France suburb long tail is split by
-    # region-postal (state_postal) so those size-blank companies are captured
-    # geographically; revenue-first fallback handles any residual.
     "France": {"states": FR_REGIONS, "postal": FR_POSTAL,
                "state_postal": FR_STATE_POSTAL, "fallback": ["revenue", "size"]},
     "Ireland": {"cities": ["Dublin", "Cork", "Galway", "Limerick", "Waterford"], "fallback": ["size", "revenue"]},

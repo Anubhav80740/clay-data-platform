@@ -206,9 +206,9 @@ if st.session_state["theme_mode"] == "dark":
             border: 1px solid #1f2937;
             text-align: center;
         }
-        .badge-green { background-color: #065f46; color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
-        .badge-orange { background-color: #92400e; color: #fbbf24; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
-        .badge-blue { background-color: #1e40af; color: #60a5fa; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+        .badge-green { background-color: #065f46; color: #34d399; padding: 4px 10px; border-radius: 6px; font-weight: 600; }
+        .badge-orange { background-color: #92400e; color: #fbbf24; padding: 4px 10px; border-radius: 6px; font-weight: 600; }
+        .badge-blue { background-color: #1e40af; color: #60a5fa; padding: 4px 10px; border-radius: 6px; font-weight: 600; }
         </style>
     """
 else:
@@ -217,7 +217,7 @@ else:
         header[data-testid="stHeader"] { display: none !important; }
         footer { display: none !important; }
         #MainMenu { visibility: hidden !important; }
-        .stApp { margin-top: -30px; background-color: #f8fafc; color: #0f172a; }
+        .stApp { margin-top: -30px; background-color: #f8fafc; color: #0f172a !important; }
         
         .top-navbar {
             background-color: #ffffff;
@@ -231,13 +231,82 @@ else:
             background-color: #ffffff;
             padding: 16px;
             border-radius: 8px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #cbd5e1;
             text-align: center;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-        .badge-green { background-color: #d1fae5; color: #065f46; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
-        .badge-orange { background-color: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
-        .badge-blue { background-color: #dbeafe; color: #1e40af; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+        .badge-green { background-color: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 6px; font-weight: 600; border: 1px solid #bbf7d0; }
+        .badge-orange { background-color: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 6px; font-weight: 600; border: 1px solid #fde68a; }
+        .badge-blue { background-color: #dbeafe; color: #1e40af; padding: 4px 10px; border-radius: 6px; font-weight: 600; border: 1px solid #bfdbfe; }
+        
+        /* High contrast light mode elements */
+        .stButton > button {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border: 1px solid #cbd5e1 !important;
+            font-weight: 500 !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+        }
+        .stButton > button:hover {
+            background-color: #f1f5f9 !important;
+            border-color: #94a3b8 !important;
+            color: #0284c7 !important;
+        }
+        .stButton > button[kind="primary"] {
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+            border: 1px solid #1d4ed8 !important;
+        }
+        .stButton > button[kind="primary"]:hover {
+            background-color: #1d4ed8 !important;
+            color: #ffffff !important;
+        }
+        div[data-baseweb="select"] > div {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
+        div[data-baseweb="select"] span {
+            color: #0f172a !important;
+        }
+        div[data-baseweb="tag"] {
+            background-color: #e2e8f0 !important;
+            color: #0f172a !important;
+        }
+        div[data-baseweb="tag"] span {
+            color: #0f172a !important;
+        }
+        .stAlert {
+            color: #0f172a !important;
+            border-radius: 8px !important;
+        }
+        .stAlert p {
+            color: #0f172a !important;
+        }
+        .stAlert[data-baseweb="notification"] {
+            background-color: #fef08a !important;
+            border: 1px solid #eab308 !important;
+        }
+        .stAlert[data-baseweb="notification"] p {
+            color: #713f12 !important;
+            font-weight: 500 !important;
+        }
+        div[data-testid="stMetricValue"] {
+            color: #0f172a !important;
+        }
+        div[data-testid="stMetricLabel"] {
+            color: #475569 !important;
+        }
+        div[data-testid="stExpander"] {
+            background-color: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 8px !important;
+        }
+        .stTextInput input, .stTextArea textarea {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
         </style>
     """
 
@@ -355,6 +424,26 @@ with nav_col4:
 
 st.divider()
 
+# Global Persistent Status Banner
+live_status = st.session_state.get("live_status")
+if live_status and live_status.get("active"):
+    pct_val = float(live_status.get("pct", 0.0))
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #ffffff; padding: 14px 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #3b82f6; box-shadow: 0 4px 12px rgba(37,99,235,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: #22c55e; box-shadow: 0 0 10px #22c55e;"></span>
+                <div>
+                    <strong style="font-size: 15px;">⏳ {live_status.get('title', 'Operation Active')}</strong>
+                    <div style="font-size: 13px; opacity: 0.92; margin-top: 2px;">{live_status.get('text', 'In progress...')}</div>
+                </div>
+            </div>
+            <div style="font-size: 18px; font-weight: bold; background: rgba(255,255,255,0.18); padding: 4px 12px; border-radius: 6px;">{int(pct_val * 100)}%</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.progress(pct_val)
+
 tab_download, tab_geo, tab_portfolio, tab_faq = st.tabs([
     "Run Data Extraction",
     "Country Division Settings",
@@ -381,8 +470,8 @@ with tab_download:
     with col_c:
         st.markdown("**1. Target Country Selection**")
         
-        # Country dropdown - STARTS EMPTY (No default Spain)
-        country_options = ["-- Select Target Country --"] + ALL_CLAY_COUNTRIES
+        # Country dropdown with Global option
+        country_options = ["-- Select Target Country --", "🌍 All Supported Countries (Global)"] + ALL_CLAY_COUNTRIES
         qp_c = st.query_params.get("c", "")
         default_c_idx = country_options.index(qp_c) if qp_c in country_options else 0
         
@@ -390,14 +479,19 @@ with tab_download:
             "Search and select country (218 countries available):",
             options=country_options,
             index=default_c_idx,
-            help="Select any country from the dropdown"
+            help="Select any country or choose Global to extract across all 17 supported countries."
         )
         
         custom_country_toggle = st.checkbox("Enter custom country name manually")
         if custom_country_toggle:
             country_input = st.text_input("Manual Country Name", qp_c if default_c_idx == 0 else "")
         else:
-            country_input = "" if selected_country_raw == "-- Select Target Country --" else selected_country_raw
+            if selected_country_raw == "-- Select Target Country --":
+                country_input = ""
+            elif selected_country_raw == "🌍 All Supported Countries (Global)":
+                country_input = "Global"
+            else:
+                country_input = selected_country_raw
             
         country_input = country_input.strip()
         if country_input:
@@ -406,15 +500,18 @@ with tab_download:
             del st.query_params["c"]
         
         if country_input:
-            geo_dict = getattr(clay_geo, "GEO", {})
-            has_geo = country_input in geo_dict
-            if has_geo:
-                g_cfg = geo_dict[country_input]
-                num_cities = len(g_cfg.get("cities", []))
-                num_states = len(g_cfg.get("states", []))
-                st.info(f"Geographic Division Active for {country_input}: {num_cities} Cities, {num_states} States/Regions.")
+            if country_input == "Global":
+                st.info("🌍 **Global Extraction Active**: Data will be extracted and compiled sequentially across all 17 configured countries, creating both per-country master files and unified Global delivery files.")
             else:
-                st.warning(f"Note: {country_input} has no custom city list defined. Default size/revenue fallbacks will be used.")
+                geo_dict = getattr(clay_geo, "GEO", {})
+                has_geo = country_input in geo_dict
+                if has_geo:
+                    g_cfg = geo_dict[country_input]
+                    num_cities = len(g_cfg.get("cities", []))
+                    num_states = len(g_cfg.get("states", []))
+                    st.info(f"Geographic Division Active for {country_input}: {num_cities} Cities, {num_states} States/Regions.")
+                else:
+                    st.warning(f"Note: {country_input} has no custom city list defined. Default size/revenue fallbacks will be used.")
         else:
             st.caption("Please select a target country above to get started.")
 
@@ -853,7 +950,9 @@ with tab_download:
                         curr_ind_name = m_ind.group(3).strip()
                         pct = max(0.01, min(0.99, (curr_ind_idx - 1) / max(1, tot_ind)))
                         dl_progress_bar.progress(pct)
-                        dl_status_text.text(f"Downloading [{curr_ind_idx}/{tot_ind}]: {curr_ind_name}...")
+                        status_msg = f"Downloading [{curr_ind_idx}/{tot_ind}]: {curr_ind_name}..."
+                        dl_status_text.text(status_msg)
+                        st.session_state["live_status"] = {"active": True, "title": f"Step 3 Download: {country_input} ({entity_label})", "text": status_msg, "pct": pct}
                     
                     # Track slice progress: e.g. [2/7] Civil_Engineering_India_st_...
                     m_slice = re.search(r'\[(\d+)/(\d+)\]\s+([A-Za-z0-9_]+)', stripped)
@@ -864,10 +963,13 @@ with tab_download:
                         pct_ind = (s_idx - 1) / max(1, s_tot)
                         pct = min(0.99, ((curr_ind_idx - 1) + pct_ind) / max(1, tot_ind))
                         dl_progress_bar.progress(pct)
-                        dl_status_text.text(f"Downloading [{curr_ind_idx}/{tot_ind}] {curr_ind_name} — Slice {s_idx}/{s_tot}...")
+                        status_msg = f"Downloading [{curr_ind_idx}/{tot_ind}] {curr_ind_name} — Slice {s_idx}/{s_tot}..."
+                        dl_status_text.text(status_msg)
+                        st.session_state["live_status"] = {"active": True, "title": f"Step 3 Download: {country_input} ({entity_label})", "text": status_msg, "pct": pct}
                             
             process.wait()
             st.session_state["current_process"] = None
+            st.session_state["live_status"] = {"active": False}
             if process.returncode == 0:
                 dl_progress_bar.progress(1.0)
                 dl_status_text.text(f"Step 3 Download complete. All {tot_ind} industries downloaded & merged.")
@@ -1014,9 +1116,18 @@ with tab_portfolio:
             
             selected_country_view = st.selectbox(f"Select a country to view individual delivered files ({portfolio_choice}):", sorted(countries))
             if selected_country_view:
-                st.markdown(f"#### Delivered Files in {delivery_dir}/{selected_country_view}/")
+                st.markdown(f"#### Delivered Files in `{delivery_dir}/{selected_country_view}/`")
                 cpath = os.path.join(delivery_dir, selected_country_view)
                 cfiles = sorted([f for f in os.listdir(cpath) if f.endswith(".csv")])
+                
+                search_query = st.text_input(
+                    "🔍 Search / filter files by industry name:",
+                    placeholder="e.g. Transportation, Retail, Software, Manufacturing...",
+                    key=f"search_port_{selected_country_view}_{'ppl' if 'People' in portfolio_choice else 'cmp'}"
+                )
+                if search_query.strip():
+                    cfiles = [f for f in cfiles if search_query.strip().lower() in f.lower().replace("-", " ")]
+                    st.caption(f"Showing {len(cfiles)} file(s) matching '{search_query}':")
                 
                 for cf in cfiles:
                     full_p = os.path.join(cpath, cf)

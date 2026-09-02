@@ -179,6 +179,35 @@ def record_ledger_progress(ledger_path, row_data):
 
 def main():
     country = sys.argv[1]
+    
+    if country.lower() in ("global", "all supported countries (global)", "all_countries", "all countries"):
+        import clay_geo
+        supported_countries = list(clay_geo.GEO.keys())
+        a = sys.argv[2:]
+        only = set(a[a.index("--only") + 1].split("|")) if "--only" in a else None
+        print(f"🌍 GLOBAL EXTRACTION: Running sequentially across {len(supported_countries)} countries...", flush=True)
+        for c_idx, c_name in enumerate(supported_countries, 1):
+            print(f"\n==========================================", flush=True)
+            print(f"🌍 [{c_idx}/{len(supported_countries)}] Processing Country: {c_name}", flush=True)
+            print(f"==========================================", flush=True)
+            cmd = [sys.executable, "run_nontech.py", c_name] + a
+            subprocess.call(cmd)
+            
+        # Centralized Global Union per industry
+        os.makedirs("delivery/Global", exist_ok=True)
+        if only:
+            for ind_target in only:
+                g_paths = []
+                for c_name in supported_countries:
+                    c_file = os.path.join("delivery", c_name, f"{c_name} Data [Clay] -{cl.slugify(ind_target)}.csv")
+                    if os.path.exists(c_file):
+                        g_paths.append(c_file)
+                if g_paths:
+                    g_out = os.path.join("delivery", "Global", f"Global Data [Clay] -{cl.slugify(ind_target)}.csv")
+                    u_count = cl.union_csvs(g_out, g_paths)
+                    print(f"🌍 [GLOBAL MASTER COMPILED] '{ind_target}': {u_count:,} unique companies across {len(g_paths)} countries -> {g_out}", flush=True)
+        return
+
     os.makedirs("data", exist_ok=True)
     c_fn = f"{cl.slugify(country)}_nontech_counts.csv"
     src = os.path.join("data", c_fn) if os.path.exists(os.path.join("data", c_fn)) else c_fn
