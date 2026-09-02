@@ -1424,8 +1424,24 @@ with tab_portfolio:
         st.info(f"No `{delivery_dir}/` directory created yet.")
 
 with tab_faq:
-    st.subheader("Centralized Store and Deduplication FAQ")
+    st.subheader("Platform FAQ & Teammate Setup Guide")
     
+    with st.expander("📖 Step-by-Step: How to Connect Your Clay Cookie (For Teammates)", expanded=True):
+        st.markdown("""
+        #### 1. Grab Your Cookie (Takes 30 seconds - Only done once!)
+        1. Open your regular browser (Chrome, Edge, Brave) where you are **logged into Clay** (`https://app.clay.com`).
+        2. Press **`F12`** (or right-click anywhere $\\rightarrow$ **Inspect**) to open Developer Tools.
+        3. Click the **Network** tab at the top, then refresh the Clay page (**`F5`**).
+        4. In the filter box, type `api.clay.com` or `my-workspaces`.
+        5. Click on any request in the list $\\rightarrow$ go to the **Headers** tab on the right $\\rightarrow$ scroll to **Request Headers** $\\rightarrow$ copy the **`cookie:`** text (or right click request $\\rightarrow$ **Copy as cURL**).
+
+        #### 2. Paste into Platform
+        1. In this web app, look at the **top right navigation bar** (next to your username).
+        2. Click the **`📝 Paste`** button.
+        3. Paste what you copied into the box and click **"Save & Verify Cookie"**.
+        4. Your badge will turn **`🟢 Cookie: Active`** and you are ready to download!
+        """)
+
     st.markdown("""
     ### Data Centralization & Incremental Merging
 
