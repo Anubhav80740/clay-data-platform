@@ -209,6 +209,20 @@ if st.session_state["theme_mode"] == "dark":
         .badge-green { background-color: #065f46; color: #34d399; padding: 4px 10px; border-radius: 6px; font-weight: 600; }
         .badge-orange { background-color: #92400e; color: #fbbf24; padding: 4px 10px; border-radius: 6px; font-weight: 600; }
         .badge-blue { background-color: #1e40af; color: #60a5fa; padding: 4px 10px; border-radius: 6px; font-weight: 600; }
+        
+        /* Dark Mode Dividers & Borders */
+        hr, div[data-testid="stDivider"] {
+            border: none !important;
+            border-top: 1px solid #334155 !important;
+            opacity: 1 !important;
+            margin: 20px 0 !important;
+        }
+        div[data-baseweb="tab-list"] {
+            border-bottom: 2px solid #1f2937 !important;
+        }
+        div[data-baseweb="tab-highlight"] {
+            background-color: #ef4444 !important;
+        }
         </style>
     """
 else:
@@ -238,6 +252,20 @@ else:
         .badge-green { background-color: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 6px; font-weight: 600; border: 1px solid #bbf7d0; }
         .badge-orange { background-color: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 6px; font-weight: 600; border: 1px solid #fde68a; }
         .badge-blue { background-color: #dbeafe; color: #1e40af; padding: 4px 10px; border-radius: 6px; font-weight: 600; border: 1px solid #bfdbfe; }
+        
+        /* High contrast divider and tab separator lines in light mode */
+        hr, div[data-testid="stDivider"] {
+            border: none !important;
+            border-top: 2px solid #cbd5e1 !important;
+            opacity: 1 !important;
+            margin: 20px 0 !important;
+        }
+        div[data-baseweb="tab-list"] {
+            border-bottom: 2px solid #cbd5e1 !important;
+        }
+        div[data-baseweb="tab-highlight"] {
+            background-color: #ef4444 !important;
+        }
         
         /* High contrast light mode elements */
         .stButton > button {
@@ -560,16 +588,27 @@ tab_download, tab_geo, tab_portfolio, tab_faq = st.tabs([
 with tab_download:
     st.subheader("Step A: Select Extraction Mode, Country, and Target Industries")
     
-    qp_mode = st.query_params.get("mode", "companies")
+    if "_init_mode_loaded" not in st.session_state:
+        st.session_state["_init_mode_loaded"] = True
+        qp_mode = st.query_params.get("mode", "companies")
+        st.session_state["search_mode_idx"] = 1 if qp_mode == "people" else 0
+        
+    def on_mode_change():
+        m_val = st.session_state.get("search_mode_widget")
+        st.session_state["search_mode_idx"] = 1 if "People" in str(m_val) else 0
+        st.query_params["mode"] = "people" if "People" in str(m_val) else "companies"
+
+    curr_mode_idx = st.session_state.get("search_mode_idx", 0)
     search_mode = st.radio(
         "Select Extraction Entity:",
         ["🏢 Companies Search", "👤 People Search"],
         horizontal=True,
-        index=1 if qp_mode == "people" else 0,
+        index=curr_mode_idx,
+        key="search_mode_widget",
+        on_change=on_mode_change,
         help="Choose whether to extract Company datasets (Domains, Employee sizes, LinkedIn) or People/Contacts datasets (Full Names, Job Titles, Locations, Profile URLs)"
     )
     is_people_mode = "People" in search_mode
-    st.query_params["mode"] = "people" if is_people_mode else "companies"
     
     col_c, col_i = st.columns([1, 2])
     
@@ -578,19 +617,44 @@ with tab_download:
         
         # Country dropdown with Global option
         country_options = ["-- Select Target Country --", "🌍 All Supported Countries (Global)"] + ALL_CLAY_COUNTRIES
-        qp_c = st.query_params.get("c", "")
-        default_c_idx = country_options.index(qp_c) if qp_c in country_options else 0
         
+        if "_init_country_loaded" not in st.session_state:
+            st.session_state["_init_country_loaded"] = True
+            qp_c = st.query_params.get("c", "")
+            if qp_c and qp_c in country_options:
+                st.session_state["sel_country_idx"] = country_options.index(qp_c)
+            elif qp_c == "Global":
+                st.session_state["sel_country_idx"] = 1
+            else:
+                st.session_state["sel_country_idx"] = 0
+                
+        def on_country_change():
+            chosen = st.session_state.get("country_select_widget")
+            if chosen and chosen in country_options:
+                st.session_state["sel_country_idx"] = country_options.index(chosen)
+                if chosen == "🌍 All Supported Countries (Global)":
+                    st.query_params["c"] = "Global"
+                elif chosen != "-- Select Target Country --":
+                    st.query_params["c"] = chosen
+                elif "c" in st.query_params:
+                    del st.query_params["c"]
+
+        curr_c_idx = st.session_state.get("sel_country_idx", 0)
+        if curr_c_idx >= len(country_options):
+            curr_c_idx = 0
+            
         selected_country_raw = st.selectbox(
             "Search and select country (218 countries available):",
             options=country_options,
-            index=default_c_idx,
+            index=curr_c_idx,
+            key="country_select_widget",
+            on_change=on_country_change,
             help="Select any country or choose Global to extract across all 17 supported countries."
         )
         
         custom_country_toggle = st.checkbox("Enter custom country name manually")
         if custom_country_toggle:
-            country_input = st.text_input("Manual Country Name", qp_c if default_c_idx == 0 else "")
+            country_input = st.text_input("Manual Country Name", "")
         else:
             if selected_country_raw == "-- Select Target Country --":
                 country_input = ""
