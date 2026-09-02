@@ -584,6 +584,299 @@ JP_PREFECTURES = {
     "Miyazaki": ["Miyazaki", "Miyakonojo", "Nobeoka"],
 }
 
+# Austria: 9 Federal States & Major Cities
+AT_STATES = {
+    "Vienna": ["Vienna"],
+    "Lower Austria": ["Sankt Pölten", "Wiener Neustadt", "Krems", "Baden", "Mödling", "Amstetten", "Klosterneuburg"],
+    "Upper Austria": ["Linz", "Wels", "Steyr", "Leonding", "Traun", "Vöcklabruck"],
+    "Styria": ["Graz", "Leoben", "Kapfenberg", "Bruck an der Mur", "Feldbach"],
+    "Tyrol": ["Innsbruck", "Kufstein", "Telfs", "Schwaz", "Hall in Tirol"],
+    "Carinthia": ["Klagenfurt", "Villach", "Wolfsberg", "Spittal an der Drau"],
+    "Salzburg": ["Salzburg", "Hallein", "Saalfelden", "Sankt Johann im Pongau"],
+    "Vorarlberg": ["Dornbirn", "Feldkirch", "Bregenz", "Lustenau", "Bludenz"],
+    "Burgenland": ["Eisenstadt", "Oberwart", "Mattersburg", "Neusiedl am See"],
+}
+
+# Italy: 20 Regions & Key Commercial Metros
+IT_REGIONS = {
+    "Lombardy": ["Milan", "Brescia", "Monza", "Bergamo", "Como", "Varese", "Pavia", "Cremona", "Lecco", "Mantua", "Lodi"],
+    "Lazio": ["Rome", "Latina", "Frosinone", "Viterbo", "Rieti"],
+    "Veneto": ["Venice", "Verona", "Padua", "Vicenza", "Treviso", "Rovigo", "Belluno"],
+    "Emilia-Romagna": ["Bologna", "Modena", "Parma", "Reggio Emilia", "Ravenna", "Rimini", "Ferrara", "Forli", "Piacenza", "Cesena"],
+    "Piedmont": ["Turin", "Novara", "Alessandria", "Asti", "Cuneo", "Vercelli", "Biella"],
+    "Tuscany": ["Florence", "Prato", "Livorno", "Pisa", "Arezzo", "Lucca", "Pistoia", "Siena", "Grosseto"],
+    "Campania": ["Naples", "Salerno", "Giugliano in Campania", "Caserta", "Torre del Greco", "Pozzuoli", "Avellino", "Benevento"],
+    "Sicily": ["Palermo", "Catania", "Messina", "Syracuse", "Marsala", "Gela", "Ragusa", "Trapani"],
+    "Puglia": ["Bari", "Taranto", "Foggia", "Andria", "Lecce", "Barletta", "Brindisi"],
+    "Liguria": ["Genoa", "La Spezia", "Savona", "Sanremo", "Imperia"],
+    "Friuli Venezia Giulia": ["Trieste", "Udine", "Pordenone", "Gorizia"],
+    "Marche": ["Ancona", "Pesaro", "Fano", "Ascoli Piceno", "San Benedetto del Tronto"],
+    "Trentino-Alto Adige": ["Trento", "Bolzano", "Merano", "Rovereto"],
+    "Umbria": ["Perugia", "Terni", "Foligno", "Citta di Castello"],
+    "Abruzzo": ["Pescara", "L'Aquila", "Chieti", "Teramo", "Montesilvano"],
+    "Sardinia": ["Cagliari", "Sassari", "Quartu Sant'Elena", "Olbia"],
+    "Calabria": ["Reggio Calabria", "Catanzaro", "Corigliano-Rossano", "Lamezia Terme", "Cosenza"],
+}
+
+# Brazil: Major Federative Units
+BR_STATES = {
+    "São Paulo": ["São Paulo", "Campinas", "Guarulhos", "São Bernardo do Campo", "Santo André", "Osasco", "São José dos Campos", "Ribeirão Preto", "Sorocaba", "Santos"],
+    "Rio de Janeiro": ["Rio de Janeiro", "São Gonçalo", "Duque de Caxias", "Nova Iguaçu", "Niterói", "Belford Roxo", "Campos dos Goytacazes", "Petrópolis"],
+    "Minas Gerais": ["Belo Horizonte", "Uberlândia", "Contagem", "Juiz de Fora", "Betim", "Montes Claros", "Uberaba"],
+    "Rio Grande do Sul": ["Porto Alegre", "Caxias do Sul", "Canoas", "Pelotas", "Santa Maria", "Gravataí"],
+    "Paraná": ["Curitiba", "Londrina", "Maringá", "Ponta Grossa", "Cascavel", "São José dos Pinhais", "Foz do Iguaçu"],
+    "Santa Catarina": ["Joinville", "Florianópolis", "Blumenau", "São José", "Chapecó", "Itajaí", "Criciúma"],
+    "Bahia": ["Salvador", "Feira de Santana", "Vitória da Conquista", "Camaçari", "Itabuna"],
+    "Federal District": ["Brasília", "Ceilândia", "Taguatinga", "Samambaia", "Plano Piloto"],
+    "Pernambuco": ["Recife", "Jaboatão dos Guararapes", "Olinda", "Caruaru", "Petrolina"],
+    "Ceará": ["Fortaleza", "Caucaia", "Juazeiro do Norte", "Maracanaú", "Sobral"],
+    "Goiás": ["Goiânia", "Aparecida de Goiânia", "Anápolis", "Rio Verde", "Luziânia"],
+    "Espírito Santo": ["Serra", "Vila Velha", "Cariacica", "Vitória", "Cachoeiro de Itapemirim"],
+}
+
+# Mexico: Major States & Metros
+MX_STATES = {
+    "Mexico City": ["Mexico City", "Iztapalapa", "Gustavo A. Madero", "Cuauhtémoc", "Miguel Hidalgo", "Benito Juárez", "Coyoacán", "Álvaro Obregón", "Tlalpan"],
+    "Jalisco": ["Guadalajara", "Zapopan", "Tlaquepaque", "Tonalá", "Tlajomulco de Zúñiga", "Puerto Vallarta"],
+    "Nuevo León": ["Monterrey", "Guadalupe", "San Nicolás de los Garza", "Apodaca", "General Escobedo", "Santa Catarina", "San Pedro Garza García"],
+    "State of Mexico": ["Ecatepec", "Nezahualcóyotl", "Naucalpan", "Toluca", "Tlalnepantla", "Chimalhuacán", "Cuautitlán Izcalli"],
+    "Guanajuato": ["León", "Irapuato", "Celaya", "Salamanca", "Silao", "Guanajuato", "San Miguel de Allende"],
+    "Puebla": ["Puebla", "Tehuacán", "San Martín Texmelucan", "San Andrés Cholula", "Atlixco"],
+    "Baja California": ["Tijuana", "Mexicali", "Ensenada", "Playas de Rosarito", "Tecate"],
+    "Querétaro": ["Querétaro", "San Juan del Río", "El Marqués", "Corregidora"],
+    "Yucatán": ["Mérida", "Kanasín", "Valladolid"],
+    "Coahuila": ["Saltillo", "Torreón", "Monclova", "Piedras Negras"],
+    "Sonora": ["Hermosillo", "Ciudad Obregón", "Nogales", "San Luis Río Colorado"],
+    "Quintana Roo": ["Cancún", "Playa del Carmen", "Chetumal", "Cozumel"],
+}
+
+# Poland: 16 Voivodeships
+PL_VOIVODESHIPS = {
+    "Masovian": ["Warsaw", "Radom", "Płock", "Siedlce", "Pruszków", "Legionowo", "Ostrołęka", "Piaseczno"],
+    "Silesian": ["Katowice", "Częstochowa", "Sosnowiec", "Gliwice", "Zabrze", "Bielsko-Biała", "Bytom", "Ruda Śląska", "Rybnik", "Tychy", "Dąbrowa Górnicza", "Chorzów"],
+    "Greater Poland": ["Poznań", "Kalisz", "Konin", "Piła", "Ostrów Wielkopolski", "Gniezno", "Leszno"],
+    "Lower Silesian": ["Wrocław", "Wałbrzych", "Legnica", "Jelenia Góra", "Lubin", "Głogów", "Świdnica"],
+    "Lesser Poland": ["Kraków", "Tarnów", "Nowy Sącz", "Oświęcim", "Chrzanów", "Olkusz", "Nowy Targ"],
+    "Pomeranian": ["Gdańsk", "Gdynia", "Słupsk", "Tczew", "Wejherowo", "Starogard Gdański", "Sopot"],
+    "Łódź": ["Łódź", "Piotrków Trybunalski", "Pabianice", "Tomaszów Mazowiecki", "Bełchatów", "Zgierz"],
+    "Kuyavian-Pomeranian": ["Bydgoszcz", "Toruń", "Włocławek", "Grudziądz", "Inowrocław"],
+    "West Pomeranian": ["Szczecin", "Koszalin", "Stargard", "Kołobrzeg", "Świnoujście"],
+    "Lublin": ["Lublin", "Zamość", "Chełm", "Biała Podlaska", "Puławy"],
+    "Podkarpackie": ["Rzeszów", "Przemyśl", "Stalowa Wola", "Mielec", "Tarnobrzeg", "Krosno"],
+    "Podlaskie": ["Białystok", "Suwałki", "Łomża", "Augustów"],
+}
+
+# Belgium: Regions
+BE_REGIONS = {
+    "Flanders": ["Antwerp", "Ghent", "Bruges", "Leuven", "Aalst", "Mechelen", "Hasselt", "Kortrijk", "Sint-Niklaas", "Ostend", "Genk", "Roeselare"],
+    "Wallonia": ["Charleroi", "Liège", "Namur", "Mons", "La Louvière", "Tournai", "Seraing", "Verviers", "Mouscron"],
+    "Brussels-Capital": ["Brussels", "Schaerbeek", "Anderlecht", "Ixelles", "Uccle", "Woluwe-Saint-Lambert", "Etterbeek"],
+}
+
+# South Korea: Provinces & Metropolitan Cities
+KR_PROVINCES = {
+    "Seoul": ["Seoul", "Gangnam", "Seocho", "Songpa", "Yeongdeungpo", "Mapo", "Jung-gu", "Jongno", "Yongsan", "Seongdong", "Guro", "Geumcheon"],
+    "Gyeonggi": ["Suwon", "Seongnam", "Yongin", "Goyang", "Bucheon", "Hwaseong", "Ansan", "Anyang", "Pyeongtaek", "Siheung", "Gimpo", "Paju", "Uijeongbu", "Gwangju", "Hanam"],
+    "Busan": ["Busan", "Haeundae", "Busanjin", "Sasang", "Saha", "Geumjeong"],
+    "Incheon": ["Incheon", "Songdo", "Bupyeong", "Namdong", "Seo-gu", "Yeonsu"],
+    "Daegu": ["Daegu", "Suseong", "Dalseo", "Buk-gu", "Dong-gu"],
+    "Daejeon": ["Daejeon", "Yuseong", "Seo-gu", "Daedeok"],
+    "Gwangju": ["Gwangju", "Buk-gu", "Gwangsan", "Seo-gu"],
+    "Ulsan": ["Ulsan", "Nam-gu", "Jung-gu", "Ulju"],
+    "South Gyeongsang": ["Changwon", "Gimhae", "Yangsan", "Jinju", "Geoje"],
+    "North Gyeongsang": ["Pohang", "Gumi", "Gyeongju", "Gyeongsan", "Andong"],
+    "South Chungcheong": ["Cheonan", "Asan", "Seosan", "Dangjin", "Nonsan"],
+    "North Chungcheong": ["Cheongju", "Chungju", "Jecheon"],
+}
+
+# Portugal: Districts
+PT_DISTRICTS = {
+    "Lisbon": ["Lisbon", "Sintra", "Cascais", "Loures", "Amadora", "Oeiras", "Odivelas", "Vila Franca de Xira"],
+    "Porto": ["Porto", "Vila Nova de Gaia", "Matosinhos", "Gondomar", "Maia", "Póvoa de Varzim", "Santo Tirso"],
+    "Braga": ["Braga", "Guimarães", "Vila Nova de Famalicão", "Barcelos"],
+    "Setúbal": ["Setúbal", "Almada", "Seixal", "Barreiro", "Moita", "Sesimbra"],
+    "Aveiro": ["Aveiro", "Santa Maria da Feira", "Oliveira de Azeméis", "Ovar"],
+    "Faro": ["Faro", "Portimão", "Loulé", "Albufeira", "Olhão", "Lagos"],
+    "Coimbra": ["Coimbra", "Figueira da Foz", "Cantanhede"],
+}
+
+# Finland: Regions
+FI_REGIONS = {
+    "Uusimaa": ["Helsinki", "Espoo", "Vantaa", "Porvoo", "Lohja", "Hyvinkää", "Järvenpää", "Nurmijärvi", "Kirkkonummi"],
+    "Pirkanmaa": ["Tampere", "Nokia", "Ylöjärvi", "Kangasala", "Lempäälä", "Valkeakoski"],
+    "Southwest Finland": ["Turku", "Salo", "Kaarina", "Raisio", "Naantali"],
+    "North Ostrobothnia": ["Oulu", "Raahe", "Kuusamo", "Ylivieska"],
+    "Central Finland": ["Jyväskylä", "Jämsä", "Äänekoski"],
+    "Pohjois-Savo": ["Kuopio", "Iisalmi", "Varkaus"],
+    "Päijät-Häme": ["Lahti", "Heinola", "Hollola"],
+}
+
+# Norway: Counties
+NO_COUNTIES = {
+    "Oslo": ["Oslo"],
+    "Viken": ["Bærum", "Drammen", "Asker", "Lillestrøm", "Fredrikstad", "Sarpsborg", "Lørenskog"],
+    "Vestland": ["Bergen", "Øygarden", "Askøy", "Alver"],
+    "Rogaland": ["Stavanger", "Sandnes", "Haugesund", "Karmøy", "Sola", "Time"],
+    "Trøndelag": ["Trondheim", "Stjørdal", "Steinkjer", "Levanger"],
+    "Innlandet": ["Ringsaker", "Gjøvik", "Hamar", "Lillehammer"],
+    "Agder": ["Kristiansand", "Arendal", "Grimstad"],
+}
+
+# Czech Republic: Regions
+CZ_REGIONS = {
+    "Prague": ["Prague"],
+    "Central Bohemian": ["Kladno", "Mladá Boleslav", "Příbram", "Kolín", "Kutná Hora"],
+    "South Moravian": ["Brno", "Znojmo", "Hodonín", "Břeclav"],
+    "Moravian-Silesian": ["Ostrava", "Havířov", "Opava", "Frýdek-Místek", "Karviná"],
+    "Plzeň": ["Plzeň", "Klatovy", "Rokycany"],
+    "Ústí nad Labem": ["Ústí nad Labem", "Most", "Děčín", "Teplice", "Chomutov"],
+    "Olomouc": ["Olomouc", "Prostějov", "Přerov", "Šumperk"],
+}
+
+# Greece: Regions
+GR_REGIONS = {
+    "Attica": ["Athens", "Piraeus", "Peristeri", "Kallithea", "Glyfada", "Marousi", "Chalandri", "Nea Smyrni", "Kifisia"],
+    "Central Macedonia": ["Thessaloniki", "Kalamaria", "Katerini", "Serres", "Veria", "Giannitsa"],
+    "Crete": ["Heraklion", "Chania", "Rethymno", "Agios Nikolaos"],
+    "Western Greece": ["Patras", "Agrinio", "Aigio"],
+    "Thessaly": ["Larissa", "Volos", "Trikala", "Karditsa"],
+}
+
+# Turkey: Major Provinces
+TR_PROVINCES = {
+    "Istanbul": ["Istanbul", "Kadıköy", "Beşiktaş", "Şişli", "Üsküdar", "Bakırköy", "Beyoğlu", "Maltepe", "Ataşehir", "Pendik", "Ümraniye", "Esenyurt"],
+    "Ankara": ["Ankara", "Çankaya", "Keçiören", "Yenimahalle", "Mamak", "Etimesgut", "Sincan"],
+    "Izmir": ["Izmir", "Konak", "Karşıyaka", "Bornova", "Buca", "Bayraklı", "Çiğli"],
+    "Bursa": ["Bursa", "Osmangazi", "Nilüfer", "Yıldırım", "İnegöl"],
+    "Antalya": ["Antalya", "Muratpaşa", "Kepez", "Konyaaltı", "Alanya", "Manavgat"],
+    "Kocaeli": ["Gebze", "İzmit", "Darıca", "Körfez", "Gölcük"],
+    "Adana": ["Adana", "Seyhan", "Yüreğir", "Çukurova"],
+}
+
+# Israel: Districts
+IL_DISTRICTS = {
+    "Tel Aviv": ["Tel Aviv", "Holon", "Bnei Brak", "Bat Yam", "Ramat Gan", "Herzliya", "Giv'atayim"],
+    "Central": ["Rishon LeZion", "Petah Tikva", "Netanya", "Rehovot", "Kfar Saba", "Ra'anana", "Lod", "Ramla", "Modi'in"],
+    "Jerusalem": ["Jerusalem", "Beit Shemesh"],
+    "Haifa": ["Haifa", "Hadera", "Kiryat Ata", "Kiryat Motzkin", "Kiryat Bialik"],
+    "Southern": ["Be'er Sheva", "Ashdod", "Ashkelon", "Eilat"],
+}
+
+# Saudi Arabia: Provinces
+SA_PROVINCES = {
+    "Riyadh": ["Riyadh", "Al Kharj", "Diriyah"],
+    "Makkah": ["Jeddah", "Mecca", "Taif"],
+    "Eastern Province": ["Dammam", "Khobar", "Dhahran", "Jubail", "Al Ahsa", "Qatif"],
+    "Madinah": ["Medina", "Yanbu"],
+}
+
+# South Africa: Provinces
+ZA_PROVINCES = {
+    "Gauteng": ["Johannesburg", "Pretoria", "Sandton", "Centurion", "Midrand", "Roodepoort", "Randburg", "Kempton Park", "Benoni", "Soweto"],
+    "Western Cape": ["Cape Town", "Stellenbosch", "George", "Paarl", "Somerset West", "Bellville"],
+    "KwaZulu-Natal": ["Durban", "Pietermaritzburg", "Pinetown", "Umhlanga", "Chatsworth", "Newcastle"],
+    "Eastern Cape": ["Port Elizabeth", "Gqeberha", "East London", "Uitenhage"],
+}
+
+# Indonesia: Provinces
+ID_PROVINCES = {
+    "Jakarta": ["Jakarta", "Central Jakarta", "South Jakarta", "West Jakarta", "East Jakarta", "North Jakarta"],
+    "West Java": ["Bandung", "Bekasi", "Depok", "Bogor", "Cimahi", "Tasikmalaya", "Cirebon"],
+    "East Java": ["Surabaya", "Malang", "Sidoarjo", "Kediri", "Gresik"],
+    "Central Java": ["Semarang", "Surakarta", "Solo", "Magelang", "Pekalongan"],
+    "Banten": ["Tangerang", "South Tangerang", "Serang", "Cilegon"],
+    "Bali": ["Denpasar", "Badung", "Kuta", "Ubud"],
+}
+
+# Malaysia: States
+MY_STATES = {
+    "Kuala Lumpur": ["Kuala Lumpur"],
+    "Selangor": ["Petaling Jaya", "Shah Alam", "Subang Jaya", "Klang", "Cyberjaya", "Puchong", "Ampang", "Kajang"],
+    "Penang": ["George Town", "Butterworth", "Bayan Lepas", "Bukit Mertajam"],
+    "Johor": ["Johor Bahru", "Iskandar Puteri", "Batu Pahat", "Muar", "Kulai"],
+    "Perak": ["Ipoh", "Taiping"],
+    "Sarawak": ["Kuching", "Miri"],
+    "Sabah": ["Kota Kinabalu", "Sandakan"],
+}
+
+# Philippines: Regions
+PH_REGIONS = {
+    "National Capital Region": ["Manila", "Quezon City", "Makati", "Taguig", "Pasig", "Mandaluyong", "Caloocan", "Parañaque", "Pasay", "Muntinlupa", "Las Piñas"],
+    "Calabarzon": ["Calamba", "Antipolo", "Dasmariñas", "Bacoor", "Santa Rosa", "Batangas City", "Imus"],
+    "Central Visayas": ["Cebu City", "Mandaue", "Lapu-Lapu", "Talay"],
+    "Davao Region": ["Davao City", "Tagum"],
+}
+
+# Thailand: Provinces
+TH_PROVINCES = {
+    "Bangkok": ["Bangkok"],
+    "Central": ["Nonthaburi", "Pak Kret", "Samut Prakan", "Pathum Thani", "Ayutthaya"],
+    "Eastern": ["Chonburi", "Pattaya", "Rayong", "Si Racha"],
+    "Northern": ["Chiang Mai", "Chiang Rai", "Phitsanulok", "Nakhon Sawan"],
+    "Southern": ["Phuket", "Hat Yai", "Surat Thani", "Koh Samui"],
+}
+
+# Vietnam: Provinces & Major Cities
+VN_PROVINCES = {
+    "Ho Chi Minh City": ["Ho Chi Minh City", "Thu Duc"],
+    "Hanoi": ["Hanoi"],
+    "Da Nang": ["Da Nang"],
+    "Hai Phong": ["Hai Phong"],
+    "Can Tho": ["Can Tho"],
+    "Binh Duong": ["Thu Dau Mot", "Di An", "Thuan An"],
+    "Dong Nai": ["Bien Hoa"],
+}
+
+# Argentina: Provinces
+AR_PROVINCES = {
+    "Buenos Aires": ["Buenos Aires", "La Plata", "Mar del Plata", "Bahía Blanca", "San Isidro", "Vicente López", "Tigre", "Avellaneda", "Quilmes", "Lanús"],
+    "Córdoba": ["Córdoba", "Villa María", "Río Cuarto", "Villa Carlos Paz"],
+    "Santa Fe": ["Rosario", "Santa Fe", "Rafaela", "Venado Tuerto"],
+    "Mendoza": ["Mendoza", "Godoy Cruz", "Guaymallén", "San Rafael"],
+}
+
+# Colombia: Departments
+CO_DEPARTMENTS = {
+    "Bogotá": ["Bogotá"],
+    "Antioquia": ["Medellín", "Bello", "Itagüí", "Envigado", "Rionegro"],
+    "Valle del Cauca": ["Cali", "Palmira", "Buenaventura", "Tuluá"],
+    "Atlántico": ["Barranquilla", "Soledad"],
+    "Santander": ["Bucaramanga", "Floridablanca", "Girón"],
+    "Bolívar": ["Cartagena"],
+}
+
+# Chile: Regions
+CL_REGIONS = {
+    "Santiago Metropolitan": ["Santiago", "Providencia", "Las Condes", "Vitacura", "Puente Alto", "Maipú", "La Florida", "Ñuñoa"],
+    "Valparaíso": ["Viña del Mar", "Valparaíso", "Quilpué", "Villa Alemana"],
+    "Biobío": ["Concepción", "Talcahuano", "San Pedro de la Paz", "Los Ángeles"],
+    "Antofagasta": ["Antofagasta", "Calama"],
+}
+
+# Egypt: Governorates
+EG_GOVERNORATES = {
+    "Cairo": ["Cairo", "New Cairo", "Nasr City", "Heliopolis", "Maadi", "Zamalek"],
+    "Giza": ["Giza", "6th of October City", "Sheikh Zayed", "Dokki", "Mohandessin"],
+    "Alexandria": ["Alexandria", "Borg El Arab"],
+}
+
+# Nigeria: States
+NG_STATES = {
+    "Lagos": ["Lagos", "Ikeja", "Lekki", "Victoria Island", "Ikoyi", "Surulere", "Yaba", "Apapa", "Ikorodu"],
+    "Abuja": ["Abuja", "Garki", "Wuse", "Maitama", "Asokoro"],
+    "Rivers": ["Port Harcourt"],
+    "Oyo": ["Ibadan"],
+    "Kano": ["Kano"],
+}
+
+# Pakistan: Provinces
+PK_PROVINCES = {
+    "Punjab": ["Lahore", "Faisalabad", "Rawalpindi", "Gujranwala", "Multan", "Sialkot"],
+    "Sindh": ["Karachi", "Hyderabad", "Sukkur"],
+    "Islamabad": ["Islamabad"],
+    "Khyber Pakhtunkhwa": ["Peshawar", "Mardan", "Abbottabad"],
+}
+
 GEO = {
     "United States": {"states": US_STATES, "postal": US_POSTAL},
     "Canada": {"states": CA_PROVINCES, "postal": CA_POSTAL},
@@ -591,26 +884,64 @@ GEO = {
     "India": {"states": IN_STATES, "postal": IN_POSTAL},
     "China": {"states": CN_PROVINCES, "fallback": ["size", "revenue"]},
     "Japan": {"states": JP_PREFECTURES, "fallback": ["size", "revenue"]},
-    "United Kingdom": {
-        "counties": UK_COUNTIES,"states": UK_NATIONS, "fallback": ["revenue", "size"]},
+    "United Kingdom": {"counties": UK_COUNTIES, "states": UK_NATIONS, "fallback": ["revenue", "size"]},
     "Germany": {"states": DE_STATES, "fallback": ["revenue", "size"]},
     "Singapore": {"cities": ["Singapore"], "fallback": ["size", "revenue"]},
     "Australia": {"states": AU_STATES, "postal": AU_POSTAL},
-    "United Arab Emirates": {"cities": [
-        "Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah",
-        "Fujairah", "Umm Al Quwain", "Al Ain"]},
-    "Sweden": {"cities": [
-        "Stockholm", "Gothenburg", "Malmö", "Uppsala", "Västerås", "Örebro",
-        "Linköping", "Helsingborg", "Jönköping", "Norrköping", "Lund", "Umeå",
-        "Gävle", "Borås", "Södertälje", "Eskilstuna", "Halmstad", "Växjö",
-        "Karlstad", "Sundsvall", "Solna", "Sollentuna", "Kista", "Nacka",
-        "Lidingö", "Täby", "Kungsbacka", "Karlskrona", "Kalmar", "Luleå"],
-     "fallback": ["size", "revenue"]},
-    "France": {"states": FR_REGIONS, "postal": FR_POSTAL,
-               "state_postal": FR_STATE_POSTAL, "fallback": ["revenue", "size"]},
+    "United Arab Emirates": {"cities": ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah", "Fujairah", "Umm Al Quwain", "Al Ain"]},
+    "Sweden": {"cities": ["Stockholm", "Gothenburg", "Malmö", "Uppsala", "Västerås", "Örebro", "Linköping", "Helsingborg", "Jönköping", "Norrköping", "Lund", "Umeå", "Gävle", "Borås", "Södertälje", "Eskilstuna", "Halmstad", "Växjö", "Karlstad", "Sundsvall", "Solna", "Sollentuna", "Kista", "Nacka", "Lidingö", "Täby", "Kungsbacka", "Karlskrona", "Kalmar", "Luleå"], "fallback": ["size", "revenue"]},
+    "France": {"states": FR_REGIONS, "postal": FR_POSTAL, "state_postal": FR_STATE_POSTAL, "fallback": ["revenue", "size"]},
     "Ireland": {"cities": ["Dublin", "Cork", "Galway", "Limerick", "Waterford"], "fallback": ["size", "revenue"]},
     "New Zealand": {"cities": ["Auckland", "Wellington", "Christchurch", "Hamilton", "Tauranga", "Dunedin"], "fallback": ["size", "revenue"]},
     "Denmark": {"cities": ["Copenhagen", "Aarhus", "Odense", "Aalborg", "Esbjerg"], "fallback": ["size", "revenue"]},
     "Spain": {"cities": ["Madrid", "Barcelona", "Valencia", "Seville", "Zaragoza", "Málaga", "Murcia", "Palma", "Bilbao", "Alicante", "Córdoba", "Valladolid", "Vigo", "Gijón", "Hospitalet de Llobregat", "Vitoria-Gasteiz", "A Coruña", "Elche", "Granada", "Badalona", "Oviedo", "Cartagena", "Terrassa", "Jerez de la Frontera", "Sabadell", "Santa Cruz de Tenerife", "Pamplona", "Almería", "Fuenlabrada", "Alcalá de Henares", "Leganés", "San Sebastián", "Getafe", "Burgos"], "fallback": ["size", "revenue"]},
-    "Switzerland": {"cities": [], "fallback": ["size", "revenue"]},
+    "Switzerland": {"cities": ["Zurich", "Geneva", "Basel", "Lausanne", "Bern", "Winterthur", "Lucerne", "St. Gallen", "Lugano", "Biel/Bienne"], "fallback": ["size", "revenue"]},
+    "Austria": {"states": AT_STATES, "fallback": ["size", "revenue"]},
+    "Italy": {"states": IT_REGIONS, "fallback": ["size", "revenue"]},
+    "Brazil": {"states": BR_STATES, "fallback": ["size", "revenue"]},
+    "Mexico": {"states": MX_STATES, "fallback": ["size", "revenue"]},
+    "Poland": {"states": PL_VOIVODESHIPS, "fallback": ["size", "revenue"]},
+    "Belgium": {"states": BE_REGIONS, "fallback": ["size", "revenue"]},
+    "South Korea": {"states": KR_PROVINCES, "fallback": ["size", "revenue"]},
+    "Israel": {"states": IL_DISTRICTS, "fallback": ["size", "revenue"]},
+    "Saudi Arabia": {"states": SA_PROVINCES, "fallback": ["size", "revenue"]},
+    "South Africa": {"states": ZA_PROVINCES, "fallback": ["size", "revenue"]},
+    "Turkey": {"states": TR_PROVINCES, "fallback": ["size", "revenue"]},
+    "Indonesia": {"states": ID_PROVINCES, "fallback": ["size", "revenue"]},
+    "Malaysia": {"states": MY_STATES, "fallback": ["size", "revenue"]},
+    "Philippines": {"states": PH_REGIONS, "fallback": ["size", "revenue"]},
+    "Thailand": {"states": TH_PROVINCES, "fallback": ["size", "revenue"]},
+    "Vietnam": {"states": VN_PROVINCES, "fallback": ["size", "revenue"]},
+    "Norway": {"states": NO_COUNTIES, "fallback": ["size", "revenue"]},
+    "Finland": {"states": FI_REGIONS, "fallback": ["size", "revenue"]},
+    "Portugal": {"states": PT_DISTRICTS, "fallback": ["size", "revenue"]},
+    "Czech Republic": {"states": CZ_REGIONS, "fallback": ["size", "revenue"]},
+    "Greece": {"states": GR_REGIONS, "fallback": ["size", "revenue"]},
+    "Argentina": {"states": AR_PROVINCES, "fallback": ["size", "revenue"]},
+    "Chile": {"states": CL_REGIONS, "fallback": ["size", "revenue"]},
+    "Colombia": {"states": CO_DEPARTMENTS, "fallback": ["size", "revenue"]},
+    "Egypt": {"states": EG_GOVERNORATES, "fallback": ["size", "revenue"]},
+    "Nigeria": {"states": NG_STATES, "fallback": ["size", "revenue"]},
+    "Pakistan": {"states": PK_PROVINCES, "fallback": ["size", "revenue"]},
+    "Hong Kong": {"cities": ["Hong Kong", "Kowloon", "Central", "Wan Chai", "Tsim Sha Tsui", "Kwun Tong", "Sha Tin", "Tsuen Wan", "Admiralty", "Causeway Bay"], "fallback": ["size", "revenue"]},
+    "Taiwan": {"cities": ["Taipei", "New Taipei", "Taichung", "Kaohsiung", "Hsinchu", "Taoyuan", "Tainan"], "fallback": ["size", "revenue"]},
+    "Luxembourg": {"cities": ["Luxembourg City", "Esch-sur-Alzette", "Differdange", "Dudelange"], "fallback": ["size", "revenue"]},
+    "Iceland": {"cities": ["Reykjavik", "Kopavogur", "Hafnarfjordur"], "fallback": ["size", "revenue"]},
+    "Malta": {"cities": ["Valletta", "Birkirkara", "Mosta", "Sliema"], "fallback": ["size", "revenue"]},
+    "Cyprus": {"cities": ["Nicosia", "Limassol", "Larnaca", "Paphos"], "fallback": ["size", "revenue"]},
+    "Qatar": {"cities": ["Doha", "Al Rayyan", "Al Wakrah", "Lusail"], "fallback": ["size", "revenue"]},
+    "Kuwait": {"cities": ["Kuwait City", "Al Ahmadi", "Hawalli", "Salmiya"], "fallback": ["size", "revenue"]},
+    "Oman": {"cities": ["Muscat", "Salalah", "Seeb", "Sohar"], "fallback": ["size", "revenue"]},
+    "Bahrain": {"cities": ["Manama", "Riffa", "Muharraq"], "fallback": ["size", "revenue"]},
+    "Kenya": {"cities": ["Nairobi", "Mombasa", "Kisumu", "Nakuru", "Eldoret"], "fallback": ["size", "revenue"]},
+    "Ghana": {"cities": ["Accra", "Kumasi", "Tamale", "Sekondi-Takoradi"], "fallback": ["size", "revenue"]},
+    "Morocco": {"cities": ["Casablanca", "Rabat", "Fes", "Tangier", "Marrakech", "Agadir"], "fallback": ["size", "revenue"]},
+    "Costa Rica": {"cities": ["San José", "Alajuela", "Cartago", "Heredia"], "fallback": ["size", "revenue"]},
+    "Panama": {"cities": ["Panama City", "San Miguelito", "David", "Colón"], "fallback": ["size", "revenue"]},
+    "Dominican Republic": {"cities": ["Santo Domingo", "Santiago de los Caballeros", "Santo Domingo Este"], "fallback": ["size", "revenue"]},
+    "Ecuador": {"cities": ["Guayaquil", "Quito", "Cuenca", "Santo Domingo"], "fallback": ["size", "revenue"]},
+    "Uruguay": {"cities": ["Montevideo", "Ciudad de la Costa", "Salto", "Paysandú"], "fallback": ["size", "revenue"]},
+    "Hungary": {"cities": ["Budapest", "Debrecen", "Szeged", "Miskolc", "Pécs", "Győr", "Nyíregyháza"], "fallback": ["size", "revenue"]},
+    "Romania": {"cities": ["Bucharest", "Cluj-Napoca", "Timișoara", "Iași", "Constanța", "Craiova", "Brașov"], "fallback": ["size", "revenue"]},
+    "Peru": {"cities": ["Lima", "Callao", "Arequipa", "Trujillo", "Chiclayo", "Piura", "Cusco"], "fallback": ["size", "revenue"]},
 }

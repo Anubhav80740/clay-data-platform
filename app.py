@@ -679,9 +679,12 @@ with tab_download:
                     g_cfg = geo_dict[country_input]
                     num_cities = len(g_cfg.get("cities", []))
                     num_states = len(g_cfg.get("states", []))
-                    st.info(f"Geographic Division Active for {country_input}: {num_cities} Cities, {num_states} States/Regions.")
+                    state_str = f"{num_states} States/Regions" if num_states else ""
+                    city_str = f"{num_cities} Cities" if num_cities else ""
+                    div_str = ", ".join(filter(None, [state_str, city_str]))
+                    st.info(f"🟢 **Geographic Partitioning Active for {country_input}**: {div_str} mapped for high-coverage extraction.")
                 else:
-                    st.warning(f"Note: {country_input} has no custom city list defined. Default size/revenue fallbacks will be used.")
+                    st.info(f"🌐 **Extraction Active for {country_input}**: Multi-Dimensional Partitioning (City, Keyword, Size, Revenue) Enabled.")
         else:
             st.caption("Please select a target country above to get started.")
 
