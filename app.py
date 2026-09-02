@@ -596,11 +596,10 @@ if live_status and live_status.get("active"):
     """, unsafe_allow_html=True)
     st.progress(pct_val)
 
-tab_download, tab_geo, tab_portfolio, tab_audit, tab_faq = st.tabs([
+tab_download, tab_geo, tab_portfolio, tab_faq = st.tabs([
     "Run Data Extraction",
     "Country Division Settings",
     "Delivered Portfolio",
-    "📋 Activity & Count Drift Logs",
     "Centralized Store & Deduplication FAQ"
 ])
 
@@ -1379,52 +1378,6 @@ with tab_portfolio:
             st.info(f"No country folders found in `{delivery_dir}/` yet.")
     else:
         st.info(f"No `{delivery_dir}/` directory created yet.")
-
-with tab_audit:
-    st.subheader("📋 Activity Log")
-    st.caption("Simple, centralized log of data extractions, counts, plans, and system activities.")
-    
-    df_act = clay_logger.get_activity_logs(limit=500)
-    
-    if not df_act.empty:
-        c_f1, c_f2 = st.columns([1, 2])
-        with c_f1:
-            filter_action = st.selectbox("Filter by Action:", ["All"] + sorted(list(df_act["Action"].unique())), key="act_filter_action_key")
-        with c_f2:
-            search_query = st.text_input("🔍 Search in Logs (Country, Industry, User):", placeholder="e.g. Austria, Software, team...", key="act_search_key")
-            
-        df_disp = df_act.copy()
-        if filter_action != "All":
-            df_disp = df_disp[df_disp["Action"] == filter_action]
-        if search_query.strip():
-            q = search_query.strip().lower()
-            df_disp = df_disp[
-                df_disp["Country"].astype(str).str.lower().str.contains(q) |
-                df_disp["Industries_JSON"].astype(str).str.lower().str.contains(q) |
-                df_disp["User"].astype(str).str.lower().str.contains(q) |
-                df_disp["Details"].astype(str).str.lower().str.contains(q)
-            ]
-            
-        df_disp.index = range(1, len(df_disp) + 1)
-        st.dataframe(df_disp, use_container_width=True)
-        
-        c_d1, c_d2 = st.columns([1, 3])
-        with c_d1:
-            if os.path.exists(clay_logger.LOG_FILE):
-                with open(clay_logger.LOG_FILE, "rb") as f_act:
-                    st.download_button(
-                        "📥 Download Activity Log (CSV)",
-                        data=f_act.read(),
-                        file_name="activity_log.csv",
-                        mime="text/csv",
-                        type="primary",
-                        key="dl_act_csv_btn"
-                    )
-        with c_d2:
-            st.caption("📂 Saved locally to `logs/activity_log.csv` and version-controlled on GitHub repository for centralized tracking.")
-    else:
-        st.info("No activity logged yet. Running counts, plans, or downloads will automatically populate this log.")
-
 
 with tab_faq:
     st.subheader("Centralized Store and Deduplication FAQ")
