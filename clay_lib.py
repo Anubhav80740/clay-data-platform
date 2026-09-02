@@ -210,23 +210,30 @@ def count_raw(filters):
 _COUNT_CACHE = {}
 
 
-def count(filters, retries=3):
+def count(filters, retries=6):
     """Exact companyCount (free, no 1M-cap impact). None on repeated failure."""
+    import random
     key = json.dumps(filters, sort_keys=True)
     if key in _COUNT_CACHE:
         return _COUNT_CACHE[key]
     for attempt in range(1, retries + 1):
         raw = count_raw({**filters, "limit": 1})
         try:
-            res = json.loads(raw).get("result")
-            if res is not None:
-                c = res.get("companyCount")
-                if c is None or isinstance(c, int):
-                    _COUNT_CACHE[key] = c
-                return c
+            if raw:
+                parsed = json.loads(raw)
+                res = parsed.get("result")
+                if res is not None:
+                    c = res.get("companyCount")
+                    if c is None or isinstance(c, int):
+                        _COUNT_CACHE[key] = c
+                    return c
+                # If rate limited (TooManyRequests), backoff longer
+                if parsed.get("type") == "TooManyRequests":
+                    time.sleep(2.0 * attempt + random.uniform(1.0, 3.0))
+                    continue
         except Exception:
             pass
-        time.sleep(1.5 * attempt)
+        time.sleep(min(15, 1.2 ** attempt + random.uniform(0.5, 1.5)))
     return None
 
 
@@ -709,6 +716,12 @@ def plan(base_filters, base_label, dims, count_fn, stats, depth=0, known_count=N
     if known_count is None:
         stats.count_calls += 1
         total = count_fn(base_filters)
+        if total is None:
+            for retry_att in range(3):
+                time.sleep(2 * (retry_att + 1))
+                total = count_fn(base_filters)
+                if total is not None:
+                    break
     else:
         total = known_count
 

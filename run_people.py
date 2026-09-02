@@ -149,21 +149,28 @@ def main():
     a = sys.argv[2:]
     only = set(a[a.index("--only") + 1].split("|")) if "--only" in a else None
     
-    if not os.path.exists(src):
-        if only:
-            counts = []
-            for ind in sorted(only):
-                cnt = cp.count_people({"location_countries_include": [country], "company_industries_include": [ind]})
-                counts.append({"Industry": ind, "Count": cnt or 0})
-            with open(src, "w", newline="", encoding="utf-8") as f:
-                w = csv.DictWriter(f, fieldnames=["Industry", "Count"])
-                w.writeheader()
-                w.writerows(counts)
-        else:
-            sh("count_people.py", country)
-        
-    with open(src, "r", encoding="utf-8") as f:
-        rows = [r for r in csv.DictReader(f) if r.get("Industry") and str(r.get("Count", "0")).isdigit() and int(r.get("Count", 0)) > 0]
+    rows = []
+    if os.path.exists(src):
+        with open(src, "r", encoding="utf-8") as f:
+            rows = [r for r in csv.DictReader(f) if r.get("Industry") and str(r.get("Count", "0")).isdigit() and int(r.get("Count", 0)) > 0]
+
+    if only:
+        have_ind = {r["Industry"] for r in rows}
+        for ind_target in only:
+            if ind_target and ind_target not in have_ind:
+                pf = f"{cp.PEOPLE_PLAN_DIR}/clicklist_{cl.slugify(f'{ind_target}_{country}_people')}.json"
+                c_val = None
+                if os.path.exists(pf):
+                    try:
+                        p_slices = json.load(open(pf))
+                        c_val = sum(int(s.get("count", 0)) for s in p_slices)
+                    except Exception:
+                        pass
+                if not c_val:
+                    c_val = cp.count_people({"location_countries_include": [country], "company_industries_include": [ind_target]})
+                if c_val and c_val > 0:
+                    rows.append({"Industry": ind_target, "Count": c_val})
+                    have_ind.add(ind_target)
         
     rows.sort(key=lambda r: -int(r["Count"]))
     if only:

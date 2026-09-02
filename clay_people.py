@@ -118,23 +118,29 @@ def count_people_raw(filters):
 _PEOPLE_COUNT_CACHE = {}
 
 
-def count_people(filters, retries=3):
+def count_people(filters, retries=6):
     """Exact peopleCount (free). None on repeated failure."""
+    import random
     key = json.dumps(filters, sort_keys=True)
     if key in _PEOPLE_COUNT_CACHE:
         return _PEOPLE_COUNT_CACHE[key]
     for attempt in range(1, retries + 1):
         raw = count_people_raw({**filters, "limit": 1})
         try:
-            res = json.loads(raw).get("result")
-            if res is not None:
-                cnt = res.get("peopleCount")
-                if cnt is not None and isinstance(cnt, int):
-                    _PEOPLE_COUNT_CACHE[key] = cnt
-                return cnt
+            if raw:
+                parsed = json.loads(raw)
+                res = parsed.get("result")
+                if res is not None:
+                    cnt = res.get("peopleCount")
+                    if cnt is not None and isinstance(cnt, int):
+                        _PEOPLE_COUNT_CACHE[key] = cnt
+                    return cnt
+                if parsed.get("type") == "TooManyRequests":
+                    time.sleep(2.0 * attempt + random.uniform(1.0, 3.0))
+                    continue
         except Exception:
             pass
-        time.sleep(1.5 * attempt)
+        time.sleep(min(15, 1.2 ** attempt + random.uniform(0.5, 1.5)))
     return None
 
 

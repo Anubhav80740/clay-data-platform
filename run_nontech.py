@@ -185,18 +185,39 @@ def main():
     l_fn = f"{cl.slugify(country)}_nontech_progress.csv"
     ledger = os.path.join("data", l_fn) if (os.path.exists(os.path.join("data", l_fn)) or not os.path.exists(l_fn)) else l_fn
 
-    with open(src) as f:
-        rows = [r for r in csv.DictReader(f)
-                if r.get("Industry") and str(r["Count"]).isdigit() and int(r["Count"]) > 0]
+    rows = []
+    if os.path.exists(src):
+        with open(src) as f:
+            rows = [r for r in csv.DictReader(f)
+                    if r.get("Industry") and str(r.get("Count", "")).isdigit() and int(r.get("Count", 0)) > 0]
+    
     a = sys.argv[2:]
+    only = set(a[a.index("--only") + 1].split("|")) if "--only" in a else None
+
+    if only:
+        have_ind = {r["Industry"] for r in rows}
+        for ind_target in only:
+            if ind_target and ind_target not in have_ind:
+                pf = f"{cl.PLAN_DIR}/clicklist_{cl.slugify(f'{ind_target}_{country}')}.json"
+                c_val = None
+                if os.path.exists(pf):
+                    try:
+                        p_slices = json.load(open(pf))
+                        c_val = sum(int(s.get("count", 0)) for s in p_slices)
+                    except Exception:
+                        pass
+                if not c_val:
+                    c_val = cl.count({"industries": [ind_target], "country_names": [country]})
+                if c_val and c_val > 0:
+                    rows.append({"Industry": ind_target, "Count": c_val})
+                    have_ind.add(ind_target)
+
     lo = int(a[a.index("--min") + 1]) if "--min" in a else 0
     hi = int(a[a.index("--max") + 1]) if "--max" in a else 10 ** 12
     # --shard i/n : run n of these side by side, each taking every n-th industry.
     # Each already plans one ahead of its own download, so n shards = n planners
     # + n downloads in flight, with no shared state beyond the append-only ledger.
     si, sn = (int(x) for x in a[a.index("--shard") + 1].split("/")) if "--shard" in a else (0, 1)
-
-    only = set(a[a.index("--only") + 1].split("|")) if "--only" in a else None
 
     force_rerun = "--force" in a or "--only" in a
     rows.sort(key=lambda r: -int(r["Count"]))                # largest first
