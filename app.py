@@ -922,11 +922,14 @@ with tab_download:
                                 st.dataframe(f_preview_disp, use_container_width=True)
                                 
                                 with open(fpath, "rb") as dl_f:
+                                    raw_csv_data = dl_f.read()
+                                    if not raw_csv_data.startswith(b"\xef\xbb\xbf"):
+                                        raw_csv_data = b"\xef\xbb\xbf" + raw_csv_data
                                     st.download_button(
                                         label=f"📥 Download Full Dataset: {os.path.basename(fpath)}",
-                                        data=dl_f.read(),
+                                        data=raw_csv_data,
                                         file_name=os.path.basename(fpath),
-                                        mime="text/csv",
+                                        mime="text/csv; charset=utf-8",
                                         type="primary",
                                         key=f"dl_btn_{cl.slugify(ind_lbl)}_{'ppl' if is_people_mode else 'cmp'}"
                                     )
@@ -1028,11 +1031,14 @@ with tab_portfolio:
                             st.dataframe(df_prev_disp, use_container_width=True)
                             
                             with open(full_p, "rb") as pf_f:
+                                raw_port_data = pf_f.read()
+                                if not raw_port_data.startswith(b"\xef\xbb\xbf"):
+                                    raw_port_data = b"\xef\xbb\xbf" + raw_port_data
                                 st.download_button(
                                     label=f"📥 Download Full Master Dataset: {cf}",
-                                    data=pf_f.read(),
+                                    data=raw_port_data,
                                     file_name=cf,
-                                    mime="text/csv",
+                                    mime="text/csv; charset=utf-8",
                                     type="primary",
                                     key=f"port_dl_{cl.slugify(cf)}_{'ppl' if 'People' in portfolio_choice else 'cmp'}"
                                 )
