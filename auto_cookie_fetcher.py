@@ -20,7 +20,7 @@ if hasattr(sys.stderr, "reconfigure"):
 COOKIE_FILE = os.path.join(os.path.dirname(__file__), ".clay_cookie.txt")
 USER_DATA_DIR = os.path.join(os.path.dirname(__file__), ".clay_user_data")
 WORKSPACE_ID = "744216"
-TEST_URL = f"https://api.clay.com/v3/workspaces/{WORKSPACE_ID}/actions/run-cpj-preview-enrichment"
+TEST_URL = "https://api.clay.com/v3/actions/run-cpj-preview-enrichment"
 
 DEFAULT_VERIFIED_COOKIE = "marketing_ajs_anonymous_id=DEBUG_B; _ga=GA1.1.203504950.1785217902; claysession=s%3AirV0NOBrZHfl0XdJLdsdYi1wECnh-nbR.gbhu3335fWNG72Zl0fH85wI%2FuoAJlM1SRP5oKr3%2FUFA; intercom-device-id-w28k1kwz=d424c801-aa75-4f80-bcfc-998b90dd88b6; _ga_NHFD0GLCLV=GS2.1.s1788176390$o6$g1$t1788176396$j54$l0$h0$dp_PDvBVKSoP-8tSn0HhEGiV26xiM4MPy3Q"
 
@@ -46,8 +46,8 @@ def verify_cookie(cookie_str=None):
         "cookie": c,
         "origin": "https://app.clay.com",
         "referer": "https://app.clay.com/",
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
-        "x-clay-frontend-version": "v20260830_143110Z_acbd7caddc"
+        "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+        "x-clay-frontend-version": "v20260815_170454z_6bd76386ec"
     }
     payload = {
         "enrichmentType": "find-lists-of-companies-with-mixrank-source-preview",
@@ -60,13 +60,13 @@ def verify_cookie(cookie_str=None):
         }
     }
     try:
-        resp = requests.post(TEST_URL, json=payload, headers=headers, timeout=10)
+        resp = requests.post(TEST_URL, json=payload, headers=headers, timeout=15)
         if resp.status_code == 200:
             data = resp.json()
             if "result" in data:
                 return True
     except Exception as e:
-        print(f"Verification request error: {e}")
+        pass
     return False
 
 def ensure_playwright_browsers():

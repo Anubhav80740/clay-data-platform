@@ -294,12 +294,17 @@ with nav_col1:
     st.title("Clay Data Platform")
     st.caption("Centralized Company Data Extraction, Deduplication and Portfolio Engine")
 
+@st.cache_data(ttl=120, show_spinner=False)
+def check_cookie_cached(cookie_token):
+    from auto_cookie_fetcher import verify_cookie
+    return verify_cookie(cookie_token)
+
 with nav_col_cookie:
     st.write("")
     try:
-        from auto_cookie_fetcher import verify_cookie, fetch_cookie, COOKIE_FILE
+        from auto_cookie_fetcher import fetch_cookie, COOKIE_FILE
         active_c = cl._cookie()
-        is_cookie_valid = verify_cookie(active_c)
+        is_cookie_valid = check_cookie_cached(active_c)
         if is_cookie_valid:
             st.markdown("<span class='badge-green'>🟢 Cookie: Active</span>", unsafe_allow_html=True)
         else:
@@ -310,6 +315,7 @@ with nav_col_cookie:
             with st.spinner("Refreshing Clay cookie..."):
                 new_c = fetch_cookie(timeout_seconds=90)
                 if new_c:
+                    st.cache_data.clear()
                     st.success("Cookie successfully verified & updated!")
                     track_event("cookie_refresh_completed", {"success": True})
                     st.rerun()
