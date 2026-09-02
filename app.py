@@ -247,9 +247,15 @@ else:
             font-weight: 500 !important;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
         }
+        .stButton > button * {
+            color: #0f172a !important;
+        }
         .stButton > button:hover {
             background-color: #f1f5f9 !important;
             border-color: #94a3b8 !important;
+            color: #0284c7 !important;
+        }
+        .stButton > button:hover * {
             color: #0284c7 !important;
         }
         .stButton > button[kind="primary"] {
@@ -257,40 +263,101 @@ else:
             color: #ffffff !important;
             border: 1px solid #1d4ed8 !important;
         }
+        .stButton > button[kind="primary"] * {
+            color: #ffffff !important;
+        }
         .stButton > button[kind="primary"]:hover {
             background-color: #1d4ed8 !important;
             color: #ffffff !important;
         }
+        
+        /* Tabs contrast in light mode */
+        button[data-baseweb="tab"] {
+            color: #475569 !important;
+            font-size: 15px !important;
+            font-weight: 600 !important;
+        }
+        button[data-baseweb="tab"] p, button[data-baseweb="tab"] span, button[data-baseweb="tab"] div {
+            color: #475569 !important;
+            font-weight: 600 !important;
+        }
+        button[data-baseweb="tab"][aria-selected="true"] {
+            color: #ef4444 !important;
+            border-bottom-color: #ef4444 !important;
+        }
+        button[data-baseweb="tab"][aria-selected="true"] p, button[data-baseweb="tab"][aria-selected="true"] span {
+            color: #ef4444 !important;
+            font-weight: 700 !important;
+        }
+        
+        /* Radio button labels in light mode */
+        div[data-testid="stRadio"] label, div[data-testid="stRadio"] label p, div[data-testid="stRadio"] label span {
+            color: #0f172a !important;
+            font-weight: 600 !important;
+        }
+        div[data-testid="stRadio"] div[role="radiogroup"] {
+            color: #0f172a !important;
+        }
+        
+        /* Selectboxes & Dropdowns in light mode */
         div[data-baseweb="select"] > div {
             background-color: #ffffff !important;
             color: #0f172a !important;
-            border-color: #cbd5e1 !important;
+            border: 1px solid #cbd5e1 !important;
         }
-        div[data-baseweb="select"] span {
+        div[data-baseweb="select"] input, div[data-baseweb="select"] span, div[data-baseweb="select"] div {
             color: #0f172a !important;
         }
+        div[data-baseweb="popover"], div[data-baseweb="menu"], div[role="listbox"], ul[role="listbox"] {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+        li[role="option"] {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+        }
+        li[role="option"] * {
+            color: #0f172a !important;
+        }
+        li[role="option"]:hover {
+            background-color: #f1f5f9 !important;
+        }
+        
+        /* Multiselect tags */
         div[data-baseweb="tag"] {
             background-color: #e2e8f0 !important;
             color: #0f172a !important;
+            border: 1px solid #cbd5e1 !important;
         }
         div[data-baseweb="tag"] span {
             color: #0f172a !important;
         }
+        
+        /* Checkbox */
+        div[data-testid="stCheckbox"] label, div[data-testid="stCheckbox"] label p, div[data-testid="stCheckbox"] label span {
+            color: #0f172a !important;
+            font-weight: 500 !important;
+        }
+        
+        /* Alerts */
         .stAlert {
             color: #0f172a !important;
             border-radius: 8px !important;
         }
-        .stAlert p {
+        .stAlert p, .stAlert span {
             color: #0f172a !important;
         }
-        .stAlert[data-baseweb="notification"] {
-            background-color: #fef08a !important;
-            border: 1px solid #eab308 !important;
+        div[data-testid="stAlert"] {
+            background-color: #fef9c3 !important;
+            border: 1px solid #fde047 !important;
         }
-        .stAlert[data-baseweb="notification"] p {
+        div[data-testid="stAlert"] p {
             color: #713f12 !important;
             font-weight: 500 !important;
         }
+        
+        /* Metrics & Typography */
         div[data-testid="stMetricValue"] {
             color: #0f172a !important;
         }
@@ -306,6 +373,12 @@ else:
             background-color: #ffffff !important;
             color: #0f172a !important;
             border-color: #cbd5e1 !important;
+        }
+        .stCaption, small {
+            color: #475569 !important;
+        }
+        label, p, span, h1, h2, h3, h4, h5, h6 {
+            color: #0f172a;
         }
         </style>
     """
@@ -424,10 +497,43 @@ with nav_col4:
 
 st.divider()
 
+# Fixed Floating Download Card Placeholder (visible on screen regardless of tab or scroll)
+global_card_placeholder = st.empty()
+
+def render_download_card(pct, title, subtitle):
+    global_card_placeholder.markdown(f"""
+    <div style="position: fixed; bottom: 24px; right: 24px; z-index: 999999; min-width: 320px; max-width: 440px; background: #0f172a; color: #ffffff; padding: 16px 20px; border-radius: 12px; border: 2px solid #3b82f6; box-shadow: 0 12px 30px rgba(0,0,0,0.5); font-family: sans-serif;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: #22c55e; box-shadow: 0 0 10px #22c55e;"></span>
+                <strong style="font-size: 14px; color: #f8fafc;">{title}</strong>
+            </div>
+            <span style="font-weight: bold; color: #60a5fa; font-size: 15px;">{int(pct * 100)}%</span>
+        </div>
+        <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            {subtitle}
+        </div>
+        <div style="background-color: #334155; border-radius: 9999px; height: 6px; width: 100%; overflow: hidden;">
+            <div style="background-color: #3b82f6; height: 100%; width: {int(pct * 100)}%; transition: width 0.3s ease;"></div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+def render_download_complete_card(msg):
+    global_card_placeholder.markdown(f"""
+    <div style="position: fixed; bottom: 24px; right: 24px; z-index: 999999; min-width: 320px; background: #064e3b; color: #ffffff; padding: 14px 20px; border-radius: 12px; border: 2px solid #10b981; box-shadow: 0 12px 30px rgba(0,0,0,0.4); font-family: sans-serif;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 16px;">✅</span>
+            <strong style="font-size: 14px; color: #ffffff;">{msg}</strong>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
 # Global Persistent Status Banner
 live_status = st.session_state.get("live_status")
 if live_status and live_status.get("active"):
     pct_val = float(live_status.get("pct", 0.0))
+    render_download_card(pct_val, live_status.get("title", "Operation Active"), live_status.get("text", "In progress..."))
     st.markdown(f"""
     <div style="background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #ffffff; padding: 14px 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #3b82f6; box-shadow: 0 4px 12px rgba(37,99,235,0.2);">
         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -890,6 +996,7 @@ with tab_download:
                     if st.button(f"Download '{ind_name[:15]}...'", key=f"dl_{slugify(ind_name)}_{'ppl' if is_people_mode else 'cmp'}", type="primary", use_container_width=True):
                         track_event("single_download_started", {"industry": ind_name, "country": country_input, "entity": entity_label})
                         st.markdown(f"Executing single-industry download for `{ind_name}`...")
+                        render_download_card(0.05, f"Starting '{ind_name}'...", f"Country: {country_input}")
                         cmd_run = [sys.executable, "-u", run_script, country_input, "--only", ind_name]
                         proc = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
                         st.session_state["current_process"] = proc
@@ -900,11 +1007,18 @@ with tab_download:
                             if not l and proc.poll() is not None:
                                 break
                             if l:
-                                logs_single.append(l.strip())
+                                stripped_l = l.strip()
+                                logs_single.append(stripped_l)
                                 log_box.code("\n".join(logs_single[-15:]))
+                                m_s = re.search(r'\[(\d+)/(\d+)\]', stripped_l)
+                                s_pct = 0.5
+                                if m_s:
+                                    s_pct = min(0.95, int(m_s.group(1)) / max(1, int(m_s.group(2))))
+                                render_download_card(s_pct, f"Downloading: {ind_name[:25]}", stripped_l[:45])
                         proc.wait()
                         st.session_state["current_process"] = None
                         track_event("single_download_completed", {"industry": ind_name, "country": country_input, "entity": entity_label})
+                        render_download_complete_card(f"Download complete: {ind_name}!")
                         st.success(f"Download complete for '{ind_name}'!")
 
     # Execute Step 3 Download with Progress Bar
@@ -921,6 +1035,7 @@ with tab_download:
             log_container = st.empty()
             dl_progress_bar = st.progress(0.0)
             dl_status_text = st.empty()
+            render_download_card(0.02, f"Starting {entity_label} Download", f"Country: {country_input} ({len(selected_industries)} industries)")
             
             cmd_run = [sys.executable, "-u", run_script, country_input]
             only_str = "|".join(selected_industries)
@@ -953,6 +1068,7 @@ with tab_download:
                         status_msg = f"Downloading [{curr_ind_idx}/{tot_ind}]: {curr_ind_name}..."
                         dl_status_text.text(status_msg)
                         st.session_state["live_status"] = {"active": True, "title": f"Step 3 Download: {country_input} ({entity_label})", "text": status_msg, "pct": pct}
+                        render_download_card(pct, f"[{curr_ind_idx}/{tot_ind}] {curr_ind_name[:24]}", f"{country_input} • {int(pct*100)}% complete")
                     
                     # Track slice progress: e.g. [2/7] Civil_Engineering_India_st_...
                     m_slice = re.search(r'\[(\d+)/(\d+)\]\s+([A-Za-z0-9_]+)', stripped)
@@ -966,6 +1082,7 @@ with tab_download:
                         status_msg = f"Downloading [{curr_ind_idx}/{tot_ind}] {curr_ind_name} — Slice {s_idx}/{s_tot}..."
                         dl_status_text.text(status_msg)
                         st.session_state["live_status"] = {"active": True, "title": f"Step 3 Download: {country_input} ({entity_label})", "text": status_msg, "pct": pct}
+                        render_download_card(pct, f"[{curr_ind_idx}/{tot_ind}] {curr_ind_name[:20]}", f"Slice {s_idx}/{s_tot} • {int(pct*100)}%")
                             
             process.wait()
             st.session_state["current_process"] = None
@@ -973,9 +1090,11 @@ with tab_download:
             if process.returncode == 0:
                 dl_progress_bar.progress(1.0)
                 dl_status_text.text(f"Step 3 Download complete. All {tot_ind} industries downloaded & merged.")
+                render_download_complete_card(f"Download complete: All {tot_ind} industries merged for {country_input}!")
                 st.success(f"Step 3 Download and Centralized Merge complete for {country_input} ({entity_label}).")
                 track_event("download_completed", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries)})
             else:
+                render_download_complete_card("Download stopped or completed.")
                 st.error("Download finished with errors or stopped.")
 
     if country_input and os.path.exists(ledger_file):
