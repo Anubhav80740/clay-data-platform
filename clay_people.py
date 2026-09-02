@@ -309,7 +309,7 @@ def dedupe_people_file(in_csv, out_csv):
                     
     new_added = len(deduped_rows) - initial_count
     os.makedirs(os.path.dirname(out_csv), exist_ok=True)
-    with open(out_csv, "w", newline="", encoding="utf-8") as f:
+    with open(out_csv, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
         if header:
             w.writerow(header)

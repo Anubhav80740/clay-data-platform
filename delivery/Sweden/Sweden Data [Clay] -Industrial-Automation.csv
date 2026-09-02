@@ -1,4 +1,4 @@
-Name,Description,Primary Industry,Size,Type,Location,Country,Domain,LinkedIn URL
+﻿Name,Description,Primary Industry,Size,Type,Location,Country,Domain,LinkedIn URL
 CEJN Group,"We provide the global market with high performance quick connect couplings for hydraulics, pneumatics, fluids and gases. With a view of total customer satisfaction our development focuses on innovative solutions, leading to a superior product. 
 
 We offer engineering solutions that are designed in cooperation with our customers. Our strength lies in our intelligent technical solutions, together with quality and efficiency. We, together with our customers, do not only develop what is in demand today, but also take unexpected inroads into future development.",Industrial Automation,"501-1,000 employees",Privately Held,"Skövde, 14, Sweden",Sweden,cejn.com,https://www.linkedin.com/company/cejn-ab
@@ -861,7 +861,9 @@ begcomm Communication AB,"begcomm mainly works with communication and drivers. W
 In addition to drivers, we have also been involved in various types of configuration interfaces such as wizards and for opc configuration. In the beginning, the interfaces were often written in VB6/C++ but today it is C#/WPF/Forms that applies.""",Industrial Automation,Self-employed,Public Company,"Gothenburg, 14, Sweden",Sweden,begcomm.com,https://www.linkedin.com/company/begcomm-communication-ab
 LooCon AB,Kommer inom kort.,Industrial Automation,Self-employed,Privately Held,"Västerås, 19, Sweden",Sweden,,https://www.linkedin.com/company/loocon-ab
 ELinstall AB,"ELinstall erbjuder ett säkert koncept med nära kontakt med kunden och våra leverantörer.
- Industri applikationer
+ 
+
+Industri applikationer
 Maskin Installationer
 Ställverks installationer / om & tillbyggnad av ställverk
 Apparat skåps byggnationer, om & tillbyggnad av apparat skåp. "" retrofit"" 

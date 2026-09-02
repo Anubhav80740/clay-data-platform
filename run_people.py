@@ -107,7 +107,7 @@ def merge_people_slices(prefix):
                 header = h
             rows.extend(list(r))
             
-    with open(out, "w", newline="", encoding="utf-8") as f:
+    with open(out, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
         if header:
             w.writerow(header)
@@ -129,7 +129,7 @@ def record_ledger_progress(ledger_path, row_data):
                     rows[line[0].strip()] = line
     rows[row_data[0].strip()] = row_data
     os.makedirs(os.path.dirname(ledger_path) or ".", exist_ok=True)
-    with open(ledger_path, "w", newline="", encoding="utf-8") as f:
+    with open(ledger_path, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
         w.writerow(header)
         for k, v in rows.items():

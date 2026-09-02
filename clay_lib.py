@@ -424,7 +424,7 @@ def export_download(table_id, view_id, slug, base_dir="downloads", poll_timeout=
     log(f"   export job {t1-t0:.1f}s | file transfer {t2-t1:.1f}s ({raw_size_mb:.2f} MB)")
     n = 0
     with open(raw, newline="", encoding="utf-8", errors="replace") as fin, \
-         open(final, "w", newline="", encoding="utf-8") as fout:
+         open(final, "w", newline="", encoding="utf-8-sig") as fout:
         w = csv.writer(fout)
         for i, row in enumerate(csv.reader(fin)):
             w.writerow(row[1:])
@@ -474,7 +474,7 @@ def union_csvs(out_path, paths):
                 if key is not None:
                     seen.add(key)
                 rows.append(row)
-    with open(out_path, "w", newline="", encoding="utf-8") as f:
+    with open(out_path, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
         if header:
             w.writerow(header)
@@ -496,7 +496,7 @@ def concat_slices(industry_safe, base="downloads"):
             header = header or h
             rows.extend(r)
     out = f"{base}/{industry_safe}_ALL.csv"
-    with open(out, "w", newline="", encoding="utf-8") as f:
+    with open(out, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
         if header:
             w.writerow(header)
