@@ -10,6 +10,7 @@ import os
 import sys
 
 import clay_lib as cl
+import clay_logger
 from clay_taxonomy import ALL_CLAY_INDUSTRIES
 
 def main():
@@ -37,18 +38,28 @@ def main():
             else:
                 industries = [r["Industry"].strip() for r in csv.DictReader(f) if r.get("Industry") and r["Industry"].strip()]
 
-    have = {}
+    have_prev = {}
     if os.path.exists(out):
-        with open(out, encoding="utf-8", errors="replace") as f:
-            have = {r["Industry"]: r["Count"] for r in csv.DictReader(f) if "Industry" in r and "Count" in r}
-        print(f"resuming: {len(have)} already counted", flush=True)
+        try:
+            with open(out, encoding="utf-8", errors="replace") as f:
+                have_prev = {r["Industry"]: r["Count"] for r in csv.DictReader(f) if "Industry" in r and "Count" in r}
+        except Exception:
+            pass
+
+    have = {}
+    print(f"Fetching fresh Clay counts for {len(industries)} industries in {country}...", flush=True)
+    clay_logger.log_activity("COUNT_STARTED", "Companies", country, details={"industries_count": len(industries)})
 
     for i, ind in enumerate(industries, 1):
-        if ind in have and str(have[ind]).isdigit():
-            continue
+        prev_val = have_prev.get(ind)
         c = cl.count({"industries": [ind], "country_names": [country]})
         have[ind] = "" if c is None else c
-        print(f"[{i}/{len(industries)}] {ind}: {c}", flush=True)
+        
+        # Log to permanent time-series count history
+        if c is not None:
+            clay_logger.log_count_observation("Companies", country, ind, new_count=c, previous_count=prev_val, notes="Step 1 Live Count")
+            
+        print(f"[{i}/{len(industries)}] {ind}: {c if c is not None else 0:,} (previous: {prev_val if prev_val is not None else 'N/A'})", flush=True)
         if i % 10 == 0:
             write(out, country, industries, have)
 
@@ -56,6 +67,8 @@ def main():
     nz = [i for i in industries if str(have.get(i, "")).isdigit() and int(have[i]) > 0]
     total = sum(int(have[i]) for i in nz)
     failed = [i for i in industries if have.get(i) == ""]
+    
+    clay_logger.log_activity("COUNT_COMPLETED", "Companies", country, status="SUCCESS" if not failed else "PARTIAL", details={"total_rows": total, "industries_count": len(industries), "failed": len(failed)})
     print(f"\n{len(industries)} industries | {len(nz)} with count>0 | total {total:,} rows")
     if failed:
         print(f"COUNT FAILED (re-run to retry): {len(failed)} -> {failed[:5]}")
@@ -65,7 +78,7 @@ def main():
 def write(out, country, industries, have):
     done = [i for i in industries if i in have]
     done.sort(key=lambda i: -(int(have[i]) if str(have[i]).isdigit() else -1))
-    with open(out, "w", newline="", encoding="utf-8") as f:
+    with open(out, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
         w.writerow(["Industry", "Category", "Count", "Country"])
         for i in done:
@@ -74,3 +87,4 @@ def write(out, country, industries, have):
 
 if __name__ == "__main__":
     main()
+

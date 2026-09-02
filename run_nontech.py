@@ -327,6 +327,18 @@ def main():
 
         record_ledger_progress(ledger, [ind, expected, rows_dl, total_unique, cov, existing_cnt, new_added_cnt, dst])
         print(f"DELIVERED {rows_dl:,} rows | Existing: {existing_cnt:,} | Added: +{new_added_cnt:,} | Total Master: {total_unique:,} -> {dst}", flush=True)
+        try:
+            import clay_logger
+            clay_logger.log_activity("INDUSTRY_DELIVERED", "Companies", country, ind, details={
+                "clay_expected": expected,
+                "rows_downloaded": rows_dl,
+                "new_added": new_added_cnt,
+                "total_master": total_unique,
+                "coverage_pct": cov,
+                "output_file": dst
+            })
+        except Exception:
+            pass
         if cov != "" and cov < ALERT_MIN:
             alert(country, "downloaded", ind, cov,
                   f"{uniq:,} unique of {expected:,} on Clay")

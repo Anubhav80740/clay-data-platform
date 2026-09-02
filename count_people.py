@@ -11,6 +11,7 @@ import sys
 import time
 
 import clay_lib as cl
+import clay_logger
 import clay_people as cp
 from clay_taxonomy import ALL_CLAY_INDUSTRIES
 
@@ -31,26 +32,43 @@ def main():
     os.makedirs("data", exist_ok=True)
     out_file = os.path.join("data", f"{cl.slugify(country)}_people_counts.csv")
     print(f"Counting People for {len(industries)} industries in {country} -> {out_file}...")
+    clay_logger.log_activity("COUNT_STARTED", "People", country, details={"industries_count": len(industries)})
     
+    have_prev = {}
+    if os.path.exists(out_file):
+        try:
+            with open(out_file, encoding="utf-8", errors="replace") as f:
+                have_prev = {r["Industry"]: r["Count"] for r in csv.DictReader(f) if "Industry" in r and "Count" in r}
+        except Exception:
+            pass
+
     counts = []
     tot = len(industries)
     for i, ind in enumerate(industries, 1):
+        prev_val = have_prev.get(ind)
         filters = {
             "location_countries_include": [country],
             "company_industries_include": [ind]
         }
         cnt = cp.count_people(filters)
-        print(f"[{i}/{tot}] {ind}: {cnt if cnt is not None else 0:,} people", flush=True)
-        counts.append({"Industry": ind, "Count": cnt if cnt is not None else 0})
+        val = cnt if cnt is not None else 0
+        print(f"[{i}/{tot}] {ind}: {val:,} people (previous: {prev_val if prev_val is not None else 'N/A'})", flush=True)
+        counts.append({"Industry": ind, "Count": val})
+        
+        # Log to permanent time-series count history
+        clay_logger.log_count_observation("People", country, ind, new_count=val, previous_count=prev_val, notes="Step 1 People Live Count")
         time.sleep(0.2)
         
     counts.sort(key=lambda x: -x["Count"])
-    with open(out_file, "w", newline="", encoding="utf-8") as f:
+    with open(out_file, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.DictWriter(f, fieldnames=["Industry", "Count"])
         w.writeheader()
         w.writerows(counts)
         
-    print(f"Count complete! Total People in {country}: {sum(c['Count'] for c in counts):,} across {len(counts)} industries.")
+    tot_people = sum(c['Count'] for c in counts)
+    clay_logger.log_activity("COUNT_COMPLETED", "People", country, status="SUCCESS", details={"total_people": tot_people, "industries_count": len(counts)})
+    print(f"Count complete! Total People in {country}: {tot_people:,} across {len(counts)} industries.")
 
 if __name__ == "__main__":
     main()
+

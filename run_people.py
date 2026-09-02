@@ -233,6 +233,17 @@ def main():
         
         record_ledger_progress(ledger, [ind, expected, total_unique, total_unique, cov, existing_cnt, new_added_cnt, dst])
         print(f"DELIVERED PEOPLE DATA: Existing: {existing_cnt:,} | Added: +{new_added_cnt:,} | Total Master Unique: {total_unique:,} -> {dst}", flush=True)
+        try:
+            import clay_logger
+            clay_logger.log_activity("INDUSTRY_DELIVERED", "People", country, ind, details={
+                "clay_expected": expected,
+                "new_added": new_added_cnt,
+                "total_master": total_unique,
+                "coverage_pct": cov,
+                "output_file": dst
+            })
+        except Exception:
+            pass
         
     if only:
         ind_label = ", ".join(sorted(only))
