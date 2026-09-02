@@ -757,9 +757,9 @@ def _sig(filters, exclude_key):
                         if k != exclude_key and v not in (None, [], "")))
 
 
-def consolidate(leaves, cap=EXPORT_LIMIT):
+def consolidate(leaves, cap=3500, max_items=5):
     """Merge sibling leaves (identical except one include-dimension) into single
-    exports using multi-value filter arrays, greedily bin-packed to <= cap."""
+    exports using multi-value filter arrays, safely bin-packed to <= cap and <= max_items."""
     leaves = list(leaves)
     for key in DIM_INCLUDE_KEYS:
         groups, passthrough = {}, []
@@ -776,7 +776,7 @@ def consolidate(leaves, cap=EXPORT_LIMIT):
             bins = []
             for l in group:
                 for b in bins:
-                    if b["total"] + l.count <= cap:
+                    if b["total"] + l.count <= cap and len(b["vals"]) + len(l.filters[key]) <= max_items:
                         b["vals"].extend(l.filters[key]); b["total"] += l.count; break
                 else:
                     bins.append({"vals": list(l.filters[key]), "total": l.count,
