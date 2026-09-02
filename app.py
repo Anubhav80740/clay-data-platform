@@ -431,85 +431,116 @@ else:
 
 st.markdown(theme_css, unsafe_allow_html=True)
 
-# Shared Single-Login Authentication
-TEAM_USER_ID = os.environ.get("CLAY_USER_ID", "team")
-TEAM_PASSWORD = os.environ.get("CLAY_PASSWORD", "clay2026")
-
-try:
-    if "CLAY_USER_ID" in st.secrets:
-        TEAM_USER_ID = str(st.secrets["CLAY_USER_ID"]).strip()
-    if "CLAY_PASSWORD" in st.secrets:
-        TEAM_PASSWORD = str(st.secrets["CLAY_PASSWORD"]).strip()
-except Exception:
-    pass
-
-# Persistent Session Restore via Query Params
-if st.query_params.get("auth") == "1":
-    st.session_state["authenticated"] = True
-    if "user_id" not in st.session_state:
-        st.session_state["user_id"] = st.query_params.get("uid", TEAM_USER_ID)
+# Multi-User Authentication via clay_users
+import clay_users
 
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
+# Persistent Session Restore via Query Params
+if st.query_params.get("auth") == "1" and st.query_params.get("uid"):
+    st.session_state["authenticated"] = True
+    st.session_state["user_id"] = st.query_params.get("uid")
+
 def login_screen():
-    st.markdown("### Clay Data Platform - Team Login")
-    st.caption("Please enter your team credentials to access the extraction workspace.")
+    st.markdown("### Clay Data Platform - Team Access")
+    st.caption("Sign in to your team workspace or register your account to start data extraction.")
     
-    col_login, _ = st.columns([1, 2])
+    col_login, _ = st.columns([1.2, 1.8])
     with col_login:
-        user_id = st.text_input("User ID")
-        password = st.text_input("Password", type="password")
-        if st.button("Login", type="primary", use_container_width=True):
-            if user_id.strip() == TEAM_USER_ID and password.strip() == TEAM_PASSWORD:
-                st.session_state["authenticated"] = True
-                st.session_state["user_id"] = user_id.strip()
-                st.query_params["auth"] = "1"
-                st.query_params["uid"] = user_id.strip()
-                track_event("user_login", {"user_id": user_id.strip()})
-                st.rerun()
-            else:
-                st.error("Invalid User ID or Password.")
+        tab_signin, tab_signup = st.tabs(["🔑 Log In", "✨ Sign Up / Register"])
+        
+        with tab_signin:
+            user_id = st.text_input("Username", key="login_user_input")
+            password = st.text_input("Password", type="password", key="login_pw_input")
+            if st.button("Log In", type="primary", use_container_width=True):
+                if clay_users.authenticate_user(user_id, password):
+                    st.session_state["authenticated"] = True
+                    st.session_state["user_id"] = user_id.strip().lower()
+                    st.query_params["auth"] = "1"
+                    st.query_params["uid"] = user_id.strip().lower()
+                    track_event("user_login", {"user_id": user_id.strip().lower()})
+                    st.rerun()
+                else:
+                    st.error("Invalid Username or Password.")
+                    
+        with tab_signup:
+            new_user = st.text_input("Choose Username", key="signup_user_input")
+            new_pw = st.text_input("Choose Password", type="password", key="signup_pw_input")
+            if st.button("Create Account & Sign In", type="primary", use_container_width=True):
+                ok, msg = clay_users.register_user(new_user, new_pw)
+                if ok:
+                    st.session_state["authenticated"] = True
+                    st.session_state["user_id"] = new_user.strip().lower()
+                    st.query_params["auth"] = "1"
+                    st.query_params["uid"] = new_user.strip().lower()
+                    track_event("user_registered", {"user_id": new_user.strip().lower()})
+                    st.success(msg)
+                    st.rerun()
+                else:
+                    st.error(msg)
 
 if not st.session_state["authenticated"]:
     login_screen()
     st.stop()
 
-# Fixed Top Navigation Bar (Logo, Cookie Status, Theme Toggle, Stop Button, Logout)
-nav_col1, nav_col_cookie, nav_col2, nav_col3, nav_col4 = st.columns([3.5, 1.8, 1.1, 1.1, 0.9])
+current_user = st.session_state.get("user_id", "team")
+
+def make_env():
+    env = os.environ.copy()
+    env["CLAY_USER_ID"] = current_user
+    return env
+
+# Fixed Top Navigation Bar (Logo, User Status, Cookie Status, Theme Toggle, Stop Button, Logout)
+nav_col1, nav_col_user, nav_col_cookie, nav_col2, nav_col3, nav_col4 = st.columns([3.0, 1.2, 2.0, 1.0, 1.0, 0.8])
 
 with nav_col1:
     st.title("Clay Data Platform")
     st.caption("Centralized Company Data Extraction, Deduplication and Portfolio Engine")
 
-@st.cache_data(ttl=120, show_spinner=False)
-def check_cookie_cached(cookie_token):
+with nav_col_user:
+    st.write("")
+    st.markdown(f"<div style='font-size: 13px; padding-top: 8px;'><span style='color:#64748b;'>User:</span> <b>{current_user}</b></div>", unsafe_allow_html=True)
+
+@st.cache_data(ttl=60, show_spinner=False)
+def check_cookie_cached(cookie_token, username):
     from auto_cookie_fetcher import verify_cookie
-    return verify_cookie(cookie_token)
+    return verify_cookie(cookie_token, username=username)
 
 with nav_col_cookie:
     st.write("")
     try:
-        from auto_cookie_fetcher import fetch_cookie, COOKIE_FILE
-        active_c = cl._cookie()
-        is_cookie_valid = check_cookie_cached(active_c)
+        from auto_cookie_fetcher import fetch_cookie
+        active_c = cl._cookie(user_id=current_user)
+        is_cookie_valid = check_cookie_cached(active_c, current_user)
         if is_cookie_valid:
-            st.markdown("<span class='badge-green'>🟢 Cookie: Active</span>", unsafe_allow_html=True)
+            st.markdown(f"<span class='badge-green'>🟢 Cookie: Active ({current_user})</span>", unsafe_allow_html=True)
         else:
-            st.markdown("<span class='badge-orange'>🔴 Cookie: Expired</span>", unsafe_allow_html=True)
+            st.markdown(f"<span class='badge-orange'>🔴 Cookie: Expired ({current_user})</span>", unsafe_allow_html=True)
         
-        if st.button("🍪 Refresh Cookie (Auto)", use_container_width=True, help="Launches automated browser to refresh Clay session cookie"):
-            track_event("cookie_refresh_started", {"user_id": st.session_state.get("user_id", "team_user")})
-            with st.spinner("Refreshing Clay cookie..."):
-                new_c = fetch_cookie(timeout_seconds=90)
-                if new_c:
-                    st.cache_data.clear()
-                    st.success("Cookie successfully verified & updated!")
-                    track_event("cookie_refresh_completed", {"success": True})
-                    st.rerun()
-                else:
-                    st.error("Failed to capture new cookie. Using default active session.")
-                    track_event("cookie_refresh_completed", {"success": False})
+        c_btn_a, c_btn_b = st.columns([1.5, 1.0])
+        with c_btn_a:
+            if st.button("🍪 Auto-Refresh", use_container_width=True, help=f"Launches automated browser for '{current_user}' profile"):
+                track_event("cookie_refresh_started", {"user_id": current_user})
+                with st.spinner(f"Refreshing Clay cookie for '{current_user}'..."):
+                    new_c = fetch_cookie(username=current_user, timeout_seconds=90)
+                    if new_c:
+                        st.cache_data.clear()
+                        st.success("Cookie verified & saved!")
+                        track_event("cookie_refresh_completed", {"success": True})
+                        st.rerun()
+                    else:
+                        st.error("Failed to capture new cookie.")
+                        track_event("cookie_refresh_completed", {"success": False})
+        with c_btn_b:
+            with st.popover("📝 Paste"):
+                manual_cookie = st.text_area("Paste Clay Cookie Header:", value=active_c or "", placeholder="claysession=...")
+                if st.button("Save Cookie", type="primary", use_container_width=True):
+                    if manual_cookie.strip():
+                        clay_users.save_user_cookie(current_user, manual_cookie)
+                        st.cache_data.clear()
+                        st.success("Saved!")
+                        st.rerun()
     except Exception as e:
         st.caption(f"Cookie status: {e}")
 
@@ -818,8 +849,8 @@ with tab_download:
             count_status = st.empty()
             count_status.text(f"Starting {entity_label} count for {len(selected_industries)} industries in {country_input}...")
             
-            cmd = [sys.executable, "-u", count_script, country_input, "--industries-file", ind_file]
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+            cmd = [sys.executable, "-u", count_script, country_input, "--industries-file", ind_file, "--user", current_user]
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=make_env())
             st.session_state["current_process"] = proc
             
             total_to_count = len(selected_industries)
@@ -878,12 +909,12 @@ with tab_download:
             for idx, ind in enumerate(selected_industries, 1):
                 plan_status.text(f"Planning {idx} of {tot_p}: {ind} ({entity_label})...")
                 cmd = [sys.executable, "-u", plan_script, ind, country_input]
-                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=make_env())
                 st.session_state["current_process"] = proc
                 stdout_out, _ = proc.communicate()
                 if proc.returncode != 0:
                     time.sleep(1)
-                    proc_retry = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+                    proc_retry = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=make_env())
                     st.session_state["current_process"] = proc_retry
                     proc_retry.communicate()
                 plan_progress_bar.progress(idx / tot_p)
@@ -1086,8 +1117,7 @@ with tab_download:
                                     pass
                             
                             cmd = [sys.executable, "-u", plan_script, ind_name, country_input]
-                            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-                            st.session_state["current_process"] = proc
+                            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=make_env())
                             proc.wait()
                             st.session_state["current_process"] = None
                             st.success(f"Re-plan complete for '{ind_name}'! Slices refreshed.")
@@ -1097,8 +1127,8 @@ with tab_download:
                         track_event("single_download_started", {"industry": ind_name, "country": country_input, "entity": entity_label})
                         st.markdown(f"Executing single-industry download for `{ind_name}`...")
                         render_download_card(0.05, f"Starting '{ind_name}'...", f"Country: {country_input}")
-                        cmd_run = [sys.executable, "-u", run_script, country_input, "--only", ind_name]
-                        proc = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+                        cmd_run = [sys.executable, "-u", run_script, country_input, "--only", ind_name, "--user", current_user]
+                        proc = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=make_env())
                         st.session_state["current_process"] = proc
                         log_box = st.empty()
                         logs_single = []
@@ -1139,9 +1169,9 @@ with tab_download:
             
             cmd_run = [sys.executable, "-u", run_script, country_input]
             only_str = "|".join(selected_industries)
-            cmd_run.extend(["--only", only_str])
+            cmd_run.extend(["--only", only_str, "--user", current_user])
 
-            process = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+            process = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=make_env())
             st.session_state["current_process"] = process
             
             logs = []

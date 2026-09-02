@@ -141,6 +141,12 @@ def main():
         sys.exit(1)
         
     country = sys.argv[1]
+    user_id = os.environ.get("CLAY_USER_ID", "team")
+    if "--user" in sys.argv:
+        u_idx = sys.argv.index("--user")
+        if u_idx + 1 < len(sys.argv):
+            user_id = sys.argv[u_idx + 1]
+            os.environ["CLAY_USER_ID"] = user_id
     
     if country.lower() in ("global", "all supported countries (global)", "all_countries", "all countries"):
         import clay_geo

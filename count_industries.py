@@ -19,6 +19,12 @@ def main():
         sys.exit(1)
         
     country = sys.argv[1]
+    user_id = os.environ.get("CLAY_USER_ID", "team")
+    if "--user" in sys.argv:
+        u_idx = sys.argv.index("--user")
+        if u_idx + 1 < len(sys.argv):
+            user_id = sys.argv[u_idx + 1]
+            os.environ["CLAY_USER_ID"] = user_id
     os.makedirs("data", exist_ok=True)
     out = os.path.join("data", f"{cl.slugify(country)}_nontech_counts.csv")
     

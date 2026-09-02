@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 Automated Clay Cookie Fetcher using Playwright.
-Maintains persistent browser session and intercepts live session cookies from api.clay.com/v3/.
-Saves verified working cookie to .clay_cookie.txt and supports automatic Chromium binary installation.
+Maintains persistent per-user browser sessions and intercepts live session cookies from api.clay.com/v3/.
+Saves verified working cookie to data/.clay_cookie_<username>.txt without hardcoding any personal tokens.
 """
 
 import os
@@ -12,30 +12,20 @@ import argparse
 import subprocess
 import requests
 
+import clay_users
+
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-COOKIE_FILE = os.path.join(os.path.dirname(__file__), ".clay_cookie.txt")
-USER_DATA_DIR = os.path.join(os.path.dirname(__file__), ".clay_user_data")
-WORKSPACE_ID = "744216"
-TEST_URL = "https://api.clay.com/v3/actions/run-cpj-preview-enrichment"
-
-DEFAULT_VERIFIED_COOKIE = "marketing_ajs_anonymous_id=DEBUG_B; _ga=GA1.1.203504950.1785217902; claysession=s%3AirV0NOBrZHfl0XdJLdsdYi1wECnh-nbR.gbhu3335fWNG72Zl0fH85wI%2FuoAJlM1SRP5oKr3%2FUFA; intercom-device-id-w28k1kwz=d424c801-aa75-4f80-bcfc-998b90dd88b6; _ga_NHFD0GLCLV=GS2.1.s1788176390$o6$g1$t1788176396$j54$l0$h0$dp_PDvBVKSoP-8tSn0HhEGiV26xiM4MPy3Q"
-
-def verify_cookie(cookie_str=None):
-    """Tests cookie against Clay Workspaces API (instant, lightweight, non-rate-limited)."""
+def verify_cookie(cookie_str=None, username=None):
+    """Tests cookie dynamically against Clay Workspaces API."""
     c = cookie_str
+    if not c and username:
+        c = clay_users.get_user_cookie(username)
     if not c:
-        if os.path.exists(COOKIE_FILE):
-            try:
-                with open(COOKIE_FILE, "r", encoding="utf-8") as f:
-                    c = f.read().strip()
-            except Exception:
-                pass
-    if not c:
-        c = DEFAULT_VERIFIED_COOKIE
+        c = clay_users.get_user_cookie("team")
 
     if not c or "claysession=" not in c:
         return False
@@ -48,12 +38,14 @@ def verify_cookie(cookie_str=None):
         "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
         "x-clay-frontend-version": "v20260815_170454z_6bd76386ec"
     }
-    url = f"https://api.clay.com/v3/workspaces/{WORKSPACE_ID}"
+    url = "https://api.clay.com/v3/workspaces"
     try:
         resp = requests.get(url, headers=headers, timeout=10)
         if resp.status_code == 200:
             data = resp.json()
-            if data.get("id") == int(WORKSPACE_ID) or "name" in data:
+            if isinstance(data, list) and len(data) > 0:
+                return True
+            if isinstance(data, dict) and ("id" in data or "name" in data):
                 return True
     except Exception:
         pass
@@ -76,18 +68,21 @@ def ensure_playwright_browsers():
         print(f"Error during browser install: {e}")
         return False
 
-def fetch_cookie(headless=None, timeout_seconds=120):
-    """Launches browser, intercepts request headers to api.clay.com, and extracts active cookie."""
+def fetch_cookie(username="team", headless=None, timeout_seconds=120):
+    """Launches browser for specific user, intercepts request headers to api.clay.com, and extracts active cookie."""
     from playwright.sync_api import sync_playwright
+    
+    u = (username or "team").strip().lower()
+    user_data_dir = clay_users.get_user_data_dir(u)
     
     # In cloud Linux (Streamlit Cloud), default to headless
     if headless is None:
         headless = sys.platform != "win32" and "DISPLAY" not in os.environ
 
-    os.makedirs(USER_DATA_DIR, exist_ok=True)
+    os.makedirs(user_data_dir, exist_ok=True)
     captured_cookie = None
 
-    print(f"[*] Starting Clay Auto-Cookie Fetcher (headless={headless})...")
+    print(f"[*] Starting Clay Auto-Cookie Fetcher for user '{u}' (headless={headless}, dir={user_data_dir})...")
     
     # Auto-download chromium if missing
     ensure_playwright_browsers()
@@ -95,7 +90,7 @@ def fetch_cookie(headless=None, timeout_seconds=120):
     with sync_playwright() as p:
         try:
             context = p.chromium.launch_persistent_context(
-                user_data_dir=USER_DATA_DIR,
+                user_data_dir=user_data_dir,
                 headless=headless,
                 viewport={"width": 1280, "height": 800},
                 args=["--disable-blink-features=AutomationControlled", "--no-sandbox", "--disable-setuid-sandbox"]
@@ -104,7 +99,7 @@ def fetch_cookie(headless=None, timeout_seconds=120):
             print(f"Launch failed ({e}), installing chromium...")
             subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], check=True)
             context = p.chromium.launch_persistent_context(
-                user_data_dir=USER_DATA_DIR,
+                user_data_dir=user_data_dir,
                 headless=headless,
                 viewport={"width": 1280, "height": 800},
                 args=["--disable-blink-features=AutomationControlled", "--no-sandbox", "--disable-setuid-sandbox"]
@@ -136,10 +131,9 @@ def fetch_cookie(headless=None, timeout_seconds=120):
         while time.time() - start_time < timeout_seconds:
             if captured_cookie:
                 print("[*] Testing captured cookie against Clay live API...")
-                if verify_cookie(captured_cookie):
-                    print("[OK] COOKIE VERIFICATION SUCCESSFUL!")
-                    with open(COOKIE_FILE, "w", encoding="utf-8") as f:
-                        f.write(captured_cookie)
+                if verify_cookie(captured_cookie, username=u):
+                    print(f"[OK] COOKIE VERIFICATION SUCCESSFUL FOR USER '{u}'!")
+                    clay_users.save_user_cookie(u, captured_cookie)
                     context.close()
                     return captured_cookie
                 else:
@@ -148,31 +142,27 @@ def fetch_cookie(headless=None, timeout_seconds=120):
 
         context.close()
 
-    # Fallback to verified default if available
-    if verify_cookie(DEFAULT_VERIFIED_COOKIE):
-        with open(COOKIE_FILE, "w", encoding="utf-8") as f:
-            f.write(DEFAULT_VERIFIED_COOKIE)
-        return DEFAULT_VERIFIED_COOKIE
-
     return None
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automated Clay Cookie Fetcher")
+    parser.add_argument("--user", type=str, default="team", help="Username for user-specific cookie profile")
     parser.add_argument("--headless", action="store_true", help="Run browser in headless mode")
     parser.add_argument("--timeout", type=int, default=120, help="Timeout in seconds")
     parser.add_argument("--verify-only", action="store_true", help="Only verify existing cookie")
     args = parser.parse_args()
 
     if args.verify_only:
-        if verify_cookie():
-            print("[OK] Current cookie is ACTIVE and VALID.")
+        if verify_cookie(username=args.user):
+            print(f"[OK] Cookie for user '{args.user}' is ACTIVE and VALID.")
             sys.exit(0)
         else:
-            print("[X] Current cookie is EXPIRED or INVALID.")
+            print(f"[X] Cookie for user '{args.user}' is EXPIRED or INVALID.")
             sys.exit(1)
 
-    result = fetch_cookie(headless=args.headless, timeout_seconds=args.timeout)
+    result = fetch_cookie(username=args.user, headless=args.headless, timeout_seconds=args.timeout)
     if result:
         sys.exit(0)
     else:
         sys.exit(1)
+

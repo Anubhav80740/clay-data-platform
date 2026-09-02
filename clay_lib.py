@@ -35,6 +35,8 @@ csv.field_size_limit(2147483647)
 # ---------------------------------------------------------------------------
 # Config / auth
 # ---------------------------------------------------------------------------
+import clay_users
+
 WORKSPACE_ID = "744216"
 COOKIE_FILE = ".clay_cookie.txt"
 PLAN_DIR = "plans"          # clicklist_*.json/.csv live here (see archive/ for junk)
@@ -56,6 +58,40 @@ HEADERS = [
     "user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
 ]
+
+_CACHED_WORKSPACES = {}
+
+def get_active_workspace_id(cookie_str=None, user_id=None):
+    """Dynamically resolves the active Clay workspace ID from API without hardcoded IDs."""
+    c = cookie_str or _cookie(user_id=user_id)
+    if not c:
+        return os.environ.get("CLAY_WORKSPACE_ID", WORKSPACE_ID)
+    if c in _CACHED_WORKSPACES:
+        return _CACHED_WORKSPACES[c]
+    try:
+        headers_dict = {
+            "accept": "application/json, text/plain, */*",
+            "cookie": c,
+            "origin": "https://app.clay.com",
+            "referer": "https://app.clay.com/",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+            "x-clay-frontend-version": FRONTEND_VERSION
+        }
+        import requests
+        r = requests.get("https://api.clay.com/v3/workspaces", headers=headers_dict, timeout=10)
+        if r.status_code == 200:
+            data = r.json()
+            if isinstance(data, list) and len(data) > 0:
+                wid = str(data[0].get("id", WORKSPACE_ID))
+                _CACHED_WORKSPACES[c] = wid
+                return wid
+            elif isinstance(data, dict) and "id" in data:
+                wid = str(data.get("id", WORKSPACE_ID))
+                _CACHED_WORKSPACES[c] = wid
+                return wid
+    except Exception:
+        pass
+    return os.environ.get("CLAY_WORKSPACE_ID", WORKSPACE_ID)
 
 # Full inputs template captured from the UI; we override only the filter keys.
 INPUTS_TEMPLATE = {
@@ -98,40 +134,48 @@ BASIC_FIELDS = [
         {"id": "71629641-412f-49e3-9c02-625791077afa", "text": "11-50 employees", "color": "green"},
         {"id": "7dcb1b9d-b74c-4c3c-98c4-f9af47f601b0", "text": "51-200 employees", "color": "red"},
         {"id": "7947eadf-58f3-4f18-bd61-1bd70e3b411c", "text": "201-500 employees", "color": "violet"},
-        {"id": "2034ec6e-1978-48be-b81a-5d9ffb21f870", "text": "501-1,000 employees", "color": "grey"},
-        {"id": "db88beb1-f4f5-40a2-925c-d626af73a858", "text": "1,001-5,000 employees", "color": "orange"},
-        {"id": "61d44f95-e4e5-4ae2-96e2-bb330f9be87a", "text": "5,001-10,000 employees", "color": "pink"},
-        {"id": "5f3bcc21-bdd6-4795-a069-3bdfdd422088", "text": "10,001+ employees", "color": "yellow"},
-    ], "formulaText": "{{source}}.size"},
+        {"id": "31548545-c496-4180-a616-24d1fc0d17e7", "text": "501-1000 employees", "color": "orange"},
+        {"id": "b182cb69-fba5-4f4a-9b48-31ea67cb8cf8", "text": "1001-5000 employees", "color": "pink"},
+        {"id": "c71be68b-5777-400e-8fbf-a23bf045ca69", "text": "5001-10000 employees", "color": "gray"},
+        {"id": "e21c37b1-21e1-4560-afcf-b96fa155e884", "text": "10001+ employees", "color": "yellow"},
+    ]},
     {"name": "Type", "dataType": "text", "formulaText": "{{source}}.type"},
     {"name": "Location", "dataType": "text", "formulaText": "{{source}}.location"},
     {"name": "Country", "dataType": "text", "formulaText": "{{source}}.country"},
-    {"name": "Domain", "dataType": "url", "formulaText": "{{source}}.domain"},
-    {"name": "LinkedIn URL", "dataType": "url", "formulaText": "{{source}}.linkedin_url",
-     "isDedupeField": True},
+    {"name": "Domain", "dataType": "text", "formulaText": "{{source}}.domain"},
+    {"name": "LinkedIn URL", "dataType": "text", "formulaText": "{{source}}.linkedin_url"},
 ]
 
 
-DEFAULT_VERIFIED_COOKIE = "marketing_ajs_anonymous_id=DEBUG_B; _ga=GA1.1.203504950.1785217902; claysession=s%3AirV0NOBrZHfl0XdJLdsdYi1wECnh-nbR.gbhu3335fWNG72Zl0fH85wI%2FuoAJlM1SRP5oKr3%2FUFA; intercom-device-id-w28k1kwz=d424c801-aa75-4f80-bcfc-998b90dd88b6; _ga_NHFD0GLCLV=GS2.1.s1788176390$o6$g1$t1788176396$j54$l0$h0$dp_PDvBVKSoP-8tSn0HhEGiV26xiM4MPy3Q"
-
-def _cookie():
-    if os.environ.get("CLAY_COOKIE"):
-        return os.environ.get("CLAY_COOKIE").strip()
-    if os.path.exists(COOKIE_FILE):
+def _cookie(user_id=None):
+    uid = user_id or os.environ.get("CLAY_USER_ID")
+    if not uid:
         try:
-            with open(COOKIE_FILE, encoding="utf-8", errors="replace") as f:
-                c = f.read().strip()
-                if c:
-                    return c
+            import streamlit as st
+            uid = st.session_state.get("user_id")
         except Exception:
             pass
+
+    # 1. User specific cookie
+    if uid:
+        user_c = clay_users.get_user_cookie(uid)
+        if user_c:
+            return user_c
+
+    # 2. Environment variable
+    if os.environ.get("CLAY_COOKIE"):
+        return os.environ.get("CLAY_COOKIE").strip()
+
+    # 3. Streamlit secrets
     try:
         import streamlit as st
         if "CLAY_COOKIE" in st.secrets:
             return str(st.secrets["CLAY_COOKIE"]).strip()
     except Exception:
         pass
-    return DEFAULT_VERIFIED_COOKIE
+
+    # 4. Fallback default file
+    return clay_users.get_user_cookie("team")
 
 
 def _post(url, body, retries=3, timeout=30):
@@ -263,7 +307,7 @@ def create_table(filters, name="Companies Search", limit=5000):
     inputs["limit"] = limit
     inputs.pop("result_count", None)
     body = {
-        "workspaceId": WORKSPACE_ID, "workbookName": name, "workbookId": None,
+        "workspaceId": get_active_workspace_id(), "workbookName": name, "workbookId": None,
         "conversationId": CONVERSATION_ID, "assignedFieldId": "f_companies_search",
         "cpjConfig": {
             "type": "companies",

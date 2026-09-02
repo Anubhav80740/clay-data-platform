@@ -165,7 +165,7 @@ def create_people_table(filters, name="People Search", limit=5000):
     inputs["limit"] = limit
     inputs.pop("result_count", None)
     body = {
-        "workspaceId": cl.WORKSPACE_ID,
+        "workspaceId": cl.get_active_workspace_id(),
         "workbookName": name,
         "workbookId": None,
         "conversationId": "",

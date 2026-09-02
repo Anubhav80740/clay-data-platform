@@ -16,8 +16,11 @@ delivery/
 *.csv
 !logs/activity_log.csv
 
-# Sensitive authentication cookies
-.clay_cookie.txt
+# Sensitive authentication cookies & browser profiles
+.clay_cookie*.txt
+data/.clay_cookie*.txt
+.clay_user_data*/
+!data/users.json
 
 # OS & Editor files
 .DS_Store

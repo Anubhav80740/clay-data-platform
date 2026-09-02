@@ -21,6 +21,12 @@ def main():
         sys.exit(1)
         
     country = sys.argv[1]
+    user_id = os.environ.get("CLAY_USER_ID", "team")
+    if "--user" in sys.argv:
+        u_idx = sys.argv.index("--user")
+        if u_idx + 1 < len(sys.argv):
+            user_id = sys.argv[u_idx + 1]
+            os.environ["CLAY_USER_ID"] = user_id
     industries = ALL_CLAY_INDUSTRIES
     
     if "--industries-file" in sys.argv:
