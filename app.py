@@ -181,6 +181,7 @@ posthog_js = f"""
     
     posthog.register(webProps);
     posthog.capture('$pageview', webProps);
+    {f"posthog.identify('{st.session_state.get('user_id')}', {{ username: '{st.session_state.get('user_id')}' }});" if st.session_state.get('user_id') else ""}
 </script>
 """
 components.html(posthog_js, height=0, width=0)
