@@ -124,6 +124,8 @@ def log_activity(action, entity="Companies", country="", industries=None, total_
             }
         }
         _send_posthog_event(ph_event, str(user_id or "team"), ph_props)
+        if "download" in ph_event and num_ind <= 1:
+            _send_posthog_event("industry_download_completed", str(user_id or "team"), ph_props)
     except Exception as e:
         print(f"[LOGGER ERROR] {e}")
 
