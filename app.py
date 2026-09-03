@@ -1302,7 +1302,7 @@ with tab_download:
                     except Exception:
                         pass
                 
-                track_event("batch_download_completed", {
+                track_event("download_completed", {
                     "entity": entity_label,
                     "country": country_input,
                     "industries_count": tot_ind,

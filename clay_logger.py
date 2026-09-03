@@ -94,7 +94,7 @@ def log_activity(action, entity="Companies", country="", industries=None, total_
         # PostHog Telemetry
         ph_event = str(action).lower().strip()
         if "download" in ph_event:
-            ph_event = "industry_download_completed" if num_ind == 1 else "download_completed"
+            ph_event = "download_completed"
         elif "count" in ph_event:
             ph_event = "count_completed"
         elif "plan" in ph_event:
