@@ -858,6 +858,7 @@ with tab_download:
                     st.info("No active count process.")
 
         if btn_count:
+            t0_count = time.time()
             track_event("count_started", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries)})
             with open(ind_file, "w", encoding="utf-8") as f:
                 json.dump(selected_industries, f)
@@ -889,13 +890,35 @@ with tab_download:
             
             proc.wait()
             st.session_state["current_process"] = None
+            dur_count = round(time.time() - t0_count, 1)
             if proc.returncode == 0:
                 count_progress_bar.progress(1.0)
                 count_status.text("Counting complete.")
                 st.success(f"Step 1 Count complete for {entity_label}.")
-                track_event("count_completed", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries)})
+                total_cnt = 0
+                if os.path.exists(counts_file):
+                    try:
+                        with open(counts_file, encoding="utf-8") as f:
+                            total_cnt = sum(int(r.get("Count", 0)) for r in csv.DictReader(f) if str(r.get("Count", "")).isdigit())
+                    except Exception:
+                        pass
+                track_event("count_completed", {
+                    "entity": entity_label,
+                    "country": country_input,
+                    "industries_count": len(selected_industries),
+                    "total_available_records": total_cnt,
+                    "duration_seconds": dur_count,
+                    "status": "SUCCESS"
+                })
             else:
                 st.error("Step 1 Count failed or stopped.")
+                track_event("count_failed", {
+                    "entity": entity_label,
+                    "country": country_input,
+                    "industries_count": len(selected_industries),
+                    "duration_seconds": dur_count,
+                    "status": "FAILED"
+                })
 
     # ----------------------------------------------------
     # STEP 2: PLAN & ESTIMATE COVERAGE
@@ -917,6 +940,7 @@ with tab_download:
                     st.info("No active plan process.")
 
         if btn_plan:
+            t0_plan = time.time()
             track_event("plan_started", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries)})
             with open(ind_file, "w", encoding="utf-8") as f:
                 json.dump(selected_industries, f)
@@ -939,9 +963,16 @@ with tab_download:
                 plan_progress_bar.progress(idx / tot_p)
                 
             st.session_state["current_process"] = None
+            dur_plan = round(time.time() - t0_plan, 1)
             plan_status.text("Planning complete.")
             st.success("Step 2 Planning complete. Review estimated coverage below.")
-            track_event("plan_completed", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries)})
+            track_event("plan_completed", {
+                "entity": entity_label,
+                "country": country_input,
+                "industries_count": len(selected_industries),
+                "duration_seconds": dur_plan,
+                "status": "SUCCESS"
+            })
 
     # ----------------------------------------------------
     # STEP 3: DOWNLOAD & DELIVER WITH PROGRESS BAR
@@ -1143,6 +1174,7 @@ with tab_download:
                             st.rerun()
                 with exp_c3:
                     if st.button(f"Download '{ind_name[:15]}...'", key=f"dl_{slugify(ind_name)}_{'ppl' if is_people_mode else 'cmp'}", type="primary", use_container_width=True):
+                        t0_single = time.time()
                         track_event("single_download_started", {"industry": ind_name, "country": country_input, "entity": entity_label})
                         st.markdown(f"Executing single-industry download for `{ind_name}`...")
                         render_download_card(0.05, f"Starting '{ind_name}'...", f"Country: {country_input}")
@@ -1166,7 +1198,14 @@ with tab_download:
                                 render_download_card(s_pct, f"Downloading: {ind_name[:25]}", stripped_l[:45])
                         proc.wait()
                         st.session_state["current_process"] = None
-                        track_event("single_download_completed", {"industry": ind_name, "country": country_input, "entity": entity_label})
+                        dur_single = round(time.time() - t0_single, 1)
+                        track_event("single_download_completed", {
+                            "industry": ind_name,
+                            "country": country_input,
+                            "entity": entity_label,
+                            "duration_seconds": dur_single,
+                            "status": "SUCCESS"
+                        })
                         render_download_complete_card(f"Download complete: {ind_name}!")
                         st.success(f"Download complete for '{ind_name}'!")
 
@@ -1175,6 +1214,7 @@ with tab_download:
         if not plan_approved:
             st.warning("Please check the approval box in Step 3 to confirm plan approval before downloading.")
         else:
+            t0_dl = time.time()
             st.markdown(f"### Executing Live Step 3 Download for {country_input} ({entity_label})...")
             track_event("download_started", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries), "industries": selected_industries})
             
@@ -1236,15 +1276,52 @@ with tab_download:
             process.wait()
             st.session_state["current_process"] = None
             st.session_state["live_status"] = {"active": False}
+            dur_dl = round(time.time() - t0_dl, 1)
             if process.returncode == 0:
                 dl_progress_bar.progress(1.0)
                 dl_status_text.text(f"Step 3 Download complete. All {tot_ind} industries downloaded & merged.")
                 render_download_complete_card(f"Download complete: All {tot_ind} industries merged for {country_input}!")
                 st.success(f"Step 3 Download and Centralized Merge complete for {country_input} ({entity_label}).")
-                track_event("download_completed", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries)})
+                
+                # Fetch master totals from ledger
+                sum_total = 0
+                sum_new = 0
+                if country_input and os.path.exists(ledger_file):
+                    try:
+                        ldf = load_ledger_dataframe(ledger_file)
+                        col_ind = "industry" if "industry" in ldf.columns else ("Industry" if "Industry" in ldf.columns else None)
+                        col_u = "unique_companies" if "unique_companies" in ldf.columns else ("unique_people" if "unique_people" in ldf.columns else None)
+                        col_n = "new_added" if "new_added" in ldf.columns else None
+                        if col_ind and col_u:
+                            ldf_last = ldf.drop_duplicates(subset=[col_ind], keep="last")
+                            if selected_industries:
+                                ldf_last = ldf_last[ldf_last[col_ind].isin(selected_industries)]
+                            sum_total = int(pd.to_numeric(ldf_last[col_u], errors="coerce").sum())
+                            if col_n:
+                                sum_new = int(pd.to_numeric(ldf_last[col_n], errors="coerce").sum())
+                    except Exception:
+                        pass
+                
+                track_event("batch_download_completed", {
+                    "entity": entity_label,
+                    "country": country_input,
+                    "industries_count": tot_ind,
+                    "industries": selected_industries,
+                    "total_master_records": sum_total,
+                    "new_records_added": sum_new,
+                    "duration_seconds": dur_dl,
+                    "status": "SUCCESS"
+                })
             else:
                 render_download_complete_card("Download stopped or completed.")
                 st.error("Download finished with errors or stopped.")
+                track_event("batch_download_failed", {
+                    "entity": entity_label,
+                    "country": country_input,
+                    "industries_count": tot_ind,
+                    "duration_seconds": dur_dl,
+                    "status": "FAILED"
+                })
 
     if country_input and os.path.exists(ledger_file):
         st.markdown(f"### 📦 Delivered Master Datasets & Incremental Merge Ledger ({country_input} - {entity_label})")

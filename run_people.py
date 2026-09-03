@@ -246,7 +246,21 @@ def main():
         print(f"DELIVERED PEOPLE DATA: Existing: {existing_cnt:,} | Added: +{new_added_cnt:,} | Total Master Unique: {total_unique:,} -> {dst}", flush=True)
         try:
             import clay_logger
-            clay_logger.log_activity("DOWNLOAD", "People", country, industries=[ind], total_rows=total_unique, status="SUCCESS", details=f"Delivered People Data: +{new_added_cnt:,} new added ({cov}% coverage)")
+            clay_logger.log_activity(
+                action="DOWNLOAD",
+                entity="People",
+                country=country,
+                industries=[ind],
+                total_rows=total_unique,
+                new_added=new_added_cnt,
+                existing_rows=existing_cnt,
+                rows_pulled=total_unique,
+                coverage_pct=float(cov) if cov != "" else 100.0,
+                expected_rows=expected,
+                status="SUCCESS",
+                details=f"Delivered People Data: +{new_added_cnt:,} new added ({cov}% coverage)",
+                user_id=user_id
+            )
         except Exception:
             pass
         
