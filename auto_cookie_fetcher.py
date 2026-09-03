@@ -24,11 +24,11 @@ def verify_cookie(cookie_str=None, username=None):
     c = cookie_str
     if not c and username:
         c = clay_users.get_user_cookie(username)
-    if not c:
-        c = clay_users.get_user_cookie("team")
 
-    if c:
-        c = clay_users.extract_clean_cookie(c)
+    if not c:
+        return False
+
+    c = clay_users.extract_clean_cookie(c)
 
     if not c or "claysession=" not in c:
         return False
@@ -58,8 +58,12 @@ def verify_cookie(cookie_str=None, username=None):
 
 def seed_browser_cookies(username, cookie_str):
     """Injects a valid cookie string into the user's persistent Playwright profile so future Auto-Refreshes work automatically."""
+    if not username or not cookie_str:
+        return
     from playwright.sync_api import sync_playwright
-    u = (username or "team").strip().lower()
+    u = username.strip().lower()
+    if not u:
+        return
     user_data_dir = clay_users.get_user_data_dir(u)
     os.makedirs(user_data_dir, exist_ok=True)
     
@@ -114,9 +118,13 @@ def ensure_playwright_browsers():
         print(f"Error during browser install: {e}")
         return False
 
-def fetch_cookie(username="team", headless=None, timeout_seconds=60):
+def fetch_cookie(username=None, headless=None, timeout_seconds=60):
     """Launches browser for specific user, intercepts request headers and cookie jars from api.clay.com."""
-    u = (username or "team").strip().lower()
+    if not username:
+        return None
+    u = username.strip().lower()
+    if not u:
+        return None
 
     # 1. Fast Check: If the user's saved cookie is ALREADY valid & active, return instantly!
     existing_c = clay_users.get_user_cookie(u)

@@ -459,6 +459,7 @@ def login_screen():
                     st.session_state["user_id"] = user_id.strip().lower()
                     st.query_params["auth"] = "1"
                     st.query_params["uid"] = user_id.strip().lower()
+                    st.cache_data.clear()
                     track_event("user_login", {"user_id": user_id.strip().lower()})
                     st.rerun()
                 else:
@@ -474,17 +475,18 @@ def login_screen():
                     st.session_state["user_id"] = new_user.strip().lower()
                     st.query_params["auth"] = "1"
                     st.query_params["uid"] = new_user.strip().lower()
+                    st.cache_data.clear()
                     track_event("user_registered", {"user_id": new_user.strip().lower()})
                     st.success(msg)
                     st.rerun()
                 else:
                     st.error(msg)
 
-if not st.session_state["authenticated"]:
+if not st.session_state.get("authenticated") or not st.session_state.get("user_id"):
     login_screen()
     st.stop()
 
-current_user = st.session_state.get("user_id", "team")
+current_user = st.session_state["user_id"].strip().lower()
 
 def make_env():
     env = os.environ.copy()
@@ -583,7 +585,10 @@ with nav_col4:
     st.write("")
     if st.button("Logout", type="secondary", use_container_width=True):
         st.session_state["authenticated"] = False
+        st.session_state.pop("user_id", None)
+        st.session_state.pop("current_process", None)
         st.query_params.clear()
+        st.cache_data.clear()
         st.rerun()
 
 st.divider()

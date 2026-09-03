@@ -147,6 +147,11 @@ def main():
         if u_idx + 1 < len(sys.argv):
             user_id = sys.argv[u_idx + 1]
             os.environ["CLAY_USER_ID"] = user_id
+            
+    import clay_users
+    if not clay_users.get_user_cookie(user_id):
+        print(f"❌ [AUTH ERROR] User '{user_id}' has not configured a Clay cookie! Please configure your cookie in the platform navbar before running downloads.", flush=True)
+        sys.exit(1)
     
     if country.lower() in ("global", "all supported countries (global)", "all_countries", "all countries"):
         import clay_geo

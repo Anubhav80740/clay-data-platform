@@ -57,11 +57,15 @@ def authenticate_user(username, password):
     return False
 
 def get_user_cookie_path(username):
-    u = (username or "team").strip().lower()
+    if not username:
+        return ""
+    u = username.strip().lower()
     return os.path.join(DATA_DIR, f".clay_cookie_{u}.txt")
 
 def get_user_data_dir(username):
-    u = (username or "team").strip().lower()
+    if not username:
+        return ""
+    u = username.strip().lower()
     return os.path.join(os.getcwd(), f".clay_user_data_{u}")
 
 import re
@@ -107,24 +111,25 @@ def extract_clean_cookie(raw_input):
     return s
 
 def save_user_cookie(username, cookie_str):
-    u = (username or "team").strip().lower()
+    if not username:
+        return ""
+    u = username.strip().lower()
+    if not u:
+        return ""
     clean_cookie = extract_clean_cookie(cookie_str)
     cp = get_user_cookie_path(u)
     with open(cp, "w", encoding="utf-8") as f:
         f.write(clean_cookie.strip())
-    fallback_cp = os.path.join(os.getcwd(), ".clay_cookie.txt")
-    if not os.path.exists(fallback_cp):
-        try:
-            with open(fallback_cp, "w", encoding="utf-8") as f:
-                f.write(clean_cookie.strip())
-        except Exception:
-            pass
     return cp
 
 def get_user_cookie(username):
-    u = (username or "team").strip().lower()
+    if not username:
+        return ""
+    u = username.strip().lower()
+    if not u:
+        return ""
     cp = get_user_cookie_path(u)
-    if os.path.exists(cp):
+    if cp and os.path.exists(cp):
         try:
             with open(cp, "r", encoding="utf-8", errors="replace") as f:
                 val = f.read().strip()
@@ -132,15 +137,4 @@ def get_user_cookie(username):
                     return val
         except Exception:
             pass
-
-    fallback_cp = os.path.join(os.getcwd(), ".clay_cookie.txt")
-    if os.path.exists(fallback_cp):
-        try:
-            with open(fallback_cp, "r", encoding="utf-8", errors="replace") as f:
-                val = f.read().strip()
-                if val:
-                    return val
-        except Exception:
-            pass
-
     return ""

@@ -176,6 +176,8 @@ def _cookie(*args, **kwargs):
         user_c = clay_users.get_user_cookie(uid)
         if user_c:
             return user_c
+        # Specific user has no cookie configured -> do NOT leak another user's cookie!
+        return ""
 
     # 2. Environment variable
     if os.environ.get("CLAY_COOKIE"):
@@ -189,8 +191,8 @@ def _cookie(*args, **kwargs):
     except Exception:
         pass
 
-    # 4. Fallback default file
-    return clay_users.get_user_cookie("team")
+    # No fallback to other users
+    return ""
 
 
 def _post(url, body, retries=3, timeout=30):
