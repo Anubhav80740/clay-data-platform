@@ -377,23 +377,23 @@ def wait_populated(source_id, expected, timeout=600):
     exporting there yields a 1-row CSV that looks like a successful slice.
     Far from target we demand a much longer plateau before giving up."""
     last, stable, zero = -1, 0, 0
-    for _ in range(timeout // 3):
+    for _ in range(timeout // 2):
         _, n = source_records(source_id)
         if expected and n >= expected:
             return n
         # A table stuck at ZERO never trips the stability rule below (it requires
         # n > 0), so it burned the whole timeout -- 10 minutes on a 1-row slice.
         zero = zero + 1 if n == 0 else 0
-        if zero >= 20:                      # 60s of nothing: it is not coming
+        if zero >= 20:                      # 36s of nothing: it is not coming
             log("   populate stalled at 0 -- giving up on this slice")
             return 0
         stable = stable + 1 if (n == last and n > 0) else 0
-        if stable >= (3 if (not expected or n >= 0.9 * expected) else 20):
+        if stable >= (3 if (not expected or n >= 0.9 * expected) else 15):
             if expected and n < 0.9 * expected:
                 log(f"   WARN populate plateaued at {n}/{expected}")
             return n
         last = n
-        time.sleep(3)
+        time.sleep(1.8)
     return last
 
 
@@ -855,7 +855,7 @@ def _sig(filters, exclude_key):
                         if k != exclude_key and v not in (None, [], "")))
 
 
-def consolidate(leaves, cap=3500, max_items=5):
+def consolidate(leaves, cap=4200, max_items=5):
     """Merge sibling leaves (identical except one include-dimension) into single
     exports using multi-value filter arrays, safely bin-packed to <= cap and <= max_items."""
     leaves = list(leaves)

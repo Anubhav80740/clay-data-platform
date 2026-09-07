@@ -182,6 +182,21 @@ posthog_js = f"""
     posthog.register(webProps);
     posthog.capture('$pageview', webProps);
     {f"posthog.identify('{st.session_state.get('user_id')}', {{ username: '{st.session_state.get('user_id')}' }});" if st.session_state.get('user_id') else ""}
+
+    // Background Keep-Alive Worker to prevent browser from freezing the tab or closing WebSockets
+    try {{
+        var workerCode = "setInterval(function() {{ postMessage('keepalive'); }}, 1500);";
+        var workerBlob = new Blob([workerCode], {{ type: 'application/javascript' }});
+        var bgWorker = new Worker(URL.createObjectURL(workerBlob));
+        bgWorker.onmessage = function() {{}};
+    }} catch(e) {{}}
+
+    // Request WakeLock to prevent OS/browser sleep during active runs
+    if ('wakeLock' in navigator) {{
+        try {{
+            navigator.wakeLock.request('screen').catch(function() {{}});
+        }} catch(e) {{}}
+    }}
 </script>
 """
 components.html(posthog_js, height=0, width=0)
@@ -948,19 +963,39 @@ with tab_download:
                 
             plan_progress_bar = st.progress(0.0)
             plan_status = st.empty()
+            plan_log_container = st.empty()
             tot_p = len(selected_industries)
+            plan_logs = []
             
             for idx, ind in enumerate(selected_industries, 1):
-                plan_status.text(f"Planning {idx} of {tot_p}: {ind} ({entity_label})...")
+                plan_status.text(f"Planning [{idx}/{tot_p}]: {ind} ({entity_label}) — partitioning slices...")
                 cmd = [sys.executable, "-u", plan_script, ind, country_input]
-                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=make_env())
+                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=make_env())
                 st.session_state["current_process"] = proc
-                stdout_out, _ = proc.communicate()
-                if proc.returncode != 0:
-                    time.sleep(1)
-                    proc_retry = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=make_env())
-                    st.session_state["current_process"] = proc_retry
-                    proc_retry.communicate()
+                t_ind_start = time.time()
+                
+                # Stream logs in real-time with per-industry timeout safeguard (max 180s)
+                while True:
+                    if time.time() - t_ind_start > 180:
+                        try:
+                            proc.terminate()
+                            time.sleep(0.5)
+                            if proc.poll() is None:
+                                proc.kill()
+                        except Exception:
+                            pass
+                        plan_logs.append(f"[{ind}] Planning exceeded 3m timeout — moving forward with available partition slices.")
+                        plan_log_container.code("\n".join(plan_logs[-12:]))
+                        break
+                    line = proc.stdout.readline()
+                    if not line and proc.poll() is not None:
+                        break
+                    if line:
+                        stripped_l = line.strip()
+                        plan_logs.append(f"[{ind[:18]}] {stripped_l}")
+                        plan_log_container.code("\n".join(plan_logs[-12:]))
+                
+                proc.wait()
                 plan_progress_bar.progress(idx / tot_p)
                 
             st.session_state["current_process"] = None

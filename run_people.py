@@ -198,7 +198,7 @@ def main():
         have_ind = {r["Industry"] for r in rows}
         for ind_target in only:
             if ind_target and ind_target not in have_ind:
-                pf = f"{cp.PEOPLE_PLAN_DIR}/clicklist_{cl.slugify(f'{ind_target}_{country}_people')}.json"
+                pf = f"{cl.PLAN_DIR}/clicklist_{cl.slugify(f'{ind_target}_{country}_people')}.json"
                 c_val = None
                 if os.path.exists(pf):
                     try:

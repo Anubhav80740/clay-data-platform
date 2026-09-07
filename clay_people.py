@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 
 import clay_lib as cl
 
+PEOPLE_PLAN_DIR = cl.PLAN_DIR
 PEOPLE_ENRICHMENT = "find-lists-of-people-with-mixrank-source-preview"
 
 # Full filter object captured verbatim from Clay UI
