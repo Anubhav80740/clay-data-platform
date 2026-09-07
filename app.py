@@ -972,28 +972,15 @@ with tab_download:
                 cmd = [sys.executable, "-u", plan_script, ind, country_input]
                 proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=make_env())
                 st.session_state["current_process"] = proc
-                t_ind_start = time.time()
-                
-                # Stream logs in real-time with per-industry timeout safeguard (max 180s)
+                # Stream logs in real-time until full plan completes (no timeout)
                 while True:
-                    if time.time() - t_ind_start > 180:
-                        try:
-                            proc.terminate()
-                            time.sleep(0.5)
-                            if proc.poll() is None:
-                                proc.kill()
-                        except Exception:
-                            pass
-                        plan_logs.append(f"[{ind}] Planning exceeded 3m timeout — moving forward with available partition slices.")
-                        plan_log_container.code("\n".join(plan_logs[-12:]))
-                        break
                     line = proc.stdout.readline()
                     if not line and proc.poll() is not None:
                         break
                     if line:
                         stripped_l = line.strip()
                         plan_logs.append(f"[{ind[:18]}] {stripped_l}")
-                        plan_log_container.code("\n".join(plan_logs[-12:]))
+                        plan_log_container.code("\n".join(plan_logs[-15:]))
                 
                 proc.wait()
                 plan_progress_bar.progress(idx / tot_p)
