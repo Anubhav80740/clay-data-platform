@@ -435,14 +435,14 @@ def export_download(table_id, view_id, slug, base_dir="downloads", poll_timeout=
             try:
                 j = json.loads(b)
             except Exception:      # transient poll failure -> keep polling
-                time.sleep(2)
+                time.sleep(1.5)
                 continue
             if j.get("downloadUrl") and j.get("status") == "FINISHED":
                 exported = j.get("recordsExportedCount") or 0
                 if exported:
                     dl = j["downloadUrl"]
                 break
-            time.sleep(2)
+            time.sleep(1.5)
         if dl:
             break
         log(f"   export returned 0 records (view lagging) -- retry {attempt + 2}/4")
@@ -855,7 +855,7 @@ def _sig(filters, exclude_key):
                         if k != exclude_key and v not in (None, [], "")))
 
 
-def consolidate(leaves, cap=4200, max_items=5):
+def consolidate(leaves, cap=4500, max_items=6):
     """Merge sibling leaves (identical except one include-dimension) into single
     exports using multi-value filter arrays, safely bin-packed to <= cap and <= max_items."""
     leaves = list(leaves)

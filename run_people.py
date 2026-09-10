@@ -81,7 +81,9 @@ def download_people_slices(prefix):
             if n:
                 downloaded += 1
         finally:
-            cl.delete_table(t_id)
+            if t_id:
+                import threading
+                threading.Thread(target=cl.delete_table, args=(t_id,), daemon=True).start()
             
     print(f"DONE: {downloaded} downloaded, {skipped} skipped of {len(slices)} slices.", flush=True)
     return downloaded + skipped
