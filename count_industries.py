@@ -38,17 +38,17 @@ def main():
                 industries = json.load(f)
     elif len(sys.argv) > 2 and os.path.exists(sys.argv[2]):
         path = sys.argv[2]
-        with open(path, encoding="utf-8") as f:
+        with open(path, encoding="utf-8-sig", errors="replace") as f:
             if path.endswith(".json"):
                 industries = json.load(f)
             else:
-                industries = [r["Industry"].strip() for r in csv.DictReader(f) if r.get("Industry") and r["Industry"].strip()]
+                industries = [(r.get("Industry") or r.get("\ufeffIndustry")).strip() for r in csv.DictReader(f) if (r.get("Industry") or r.get("\ufeffIndustry")) and (r.get("Industry") or r.get("\ufeffIndustry")).strip()]
 
     have_prev = {}
     if os.path.exists(out):
         try:
-            with open(out, encoding="utf-8", errors="replace") as f:
-                have_prev = {r["Industry"]: r["Count"] for r in csv.DictReader(f) if "Industry" in r and "Count" in r}
+            with open(out, encoding="utf-8-sig", errors="replace") as f:
+                have_prev = {(r.get("Industry") or r.get("\ufeffIndustry")): r["Count"] for r in csv.DictReader(f) if (r.get("Industry") or r.get("\ufeffIndustry")) and "Count" in r}
         except Exception:
             pass
 

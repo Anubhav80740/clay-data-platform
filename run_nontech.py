@@ -226,10 +226,19 @@ def main():
     ledger = os.path.join("data", l_fn) if (os.path.exists(os.path.join("data", l_fn)) or not os.path.exists(l_fn)) else l_fn
 
     rows = []
+    zero_ind = set()
     if os.path.exists(src):
-        with open(src) as f:
-            rows = [r for r in csv.DictReader(f)
-                    if r.get("Industry") and str(r.get("Count", "")).isdigit() and int(r.get("Count", 0)) > 0]
+        with open(src, "r", encoding="utf-8-sig", errors="replace") as f:
+            for r in csv.DictReader(f):
+                ind_name = r.get("Industry") or r.get("\ufeffIndustry")
+                if not ind_name:
+                    continue
+                cnt_str = str(r.get("Count", "0")).strip()
+                cnt_val = int(cnt_str) if cnt_str.isdigit() else 0
+                if cnt_val > 0:
+                    rows.append({"Industry": ind_name, "Count": cnt_val})
+                else:
+                    zero_ind.add(ind_name)
     
     a = sys.argv[2:]
     only = set(a[a.index("--only") + 1].split("|")) if "--only" in a else None
@@ -237,26 +246,34 @@ def main():
     if only:
         have_ind = {r["Industry"] for r in rows}
         for ind_target in only:
-            if ind_target and ind_target not in have_ind:
-                pf = f"{cl.PLAN_DIR}/clicklist_{cl.slugify(f'{ind_target}_{country}')}.json"
-                c_val = None
-                if os.path.exists(pf):
-                    try:
-                        p_slices = json.load(open(pf))
-                        c_val = sum(int(s.get("count", 0)) for s in p_slices)
-                    except Exception:
-                        pass
-                if not c_val:
-                    c_val = cl.count({"industries": [ind_target], "country_names": [country]})
-                if c_val and c_val > 0:
-                    rows.append({"Industry": ind_target, "Count": c_val})
-                    have_ind.add(ind_target)
+            if not ind_target or ind_target in have_ind or ind_target in zero_ind:
+                continue
+            pf = f"{cl.PLAN_DIR}/clicklist_{cl.slugify(f'{ind_target}_{country}')}.json"
+            c_val = None
+            if os.path.exists(pf):
+                try:
+                    p_slices = json.load(open(pf, encoding="utf-8"))
+                    c_val = sum(int(s.get("count", 0)) for s in p_slices)
+                except Exception:
+                    pass
+            if not c_val:
+                print(f"   [counting] '{ind_target}' not found in count cache, checking Clay...", flush=True)
+                c_val = cl.count({"industries": [ind_target], "country_names": [country]})
+            if c_val and c_val > 0:
+                rows.append({"Industry": ind_target, "Count": c_val})
+                have_ind.add(ind_target)
+            else:
+                zero_ind.add(ind_target)
+
+        # Pre-record any zero-count industries into ledger so they are marked completed
+        for z_ind in only:
+            if z_ind in zero_ind:
+                dst_zero = os.path.join("delivery", delivery_name(country, z_ind))
+                record_ledger_progress(ledger, [z_ind, 0, 0, 0, 100.0, 0, 0, dst_zero])
 
     lo = int(a[a.index("--min") + 1]) if "--min" in a else 0
     hi = int(a[a.index("--max") + 1]) if "--max" in a else 10 ** 12
     # --shard i/n : run n of these side by side, each taking every n-th industry.
-    # Each already plans one ahead of its own download, so n shards = n planners
-    # + n downloads in flight, with no shared state beyond the append-only ledger.
     si, sn = (int(x) for x in a[a.index("--shard") + 1].split("/")) if "--shard" in a else (0, 1)
 
     force_rerun = "--force" in a or "--only" in a
@@ -268,26 +285,29 @@ def main():
     print(f"{country}: {len(rows)} industries selected in [{lo:,}, {hi:,}), "
           f"~{sum(int(r['Count']) for r in rows):,} target rows", flush=True)
 
-    ahead = start_plan(country, rows[0]["Industry"]) if rows else None
-
     for i, r in enumerate(rows, 1):
         ind, expected = r["Industry"], int(r["Count"])
         prefix = cl.slugify(f"{ind}_{country}")
         dst = os.path.join("delivery", delivery_name(country, ind))
         print(f"\n===== [{i}/{len(rows)}] {ind}  (~{expected:,}) =====", flush=True)
 
-        if ahead is not None:                    # this industry's plan-ahead job
-            if ahead.poll() is None:
-                print(f"   Waiting for background plan calculation to complete for {ind}...", flush=True)
-            ahead.wait(); ahead = None
-        if not planned(country, ind) and sh("generate_clicklist.py", ind, country) != 0:
-            print(f"PLAN FAILED: {ind}", flush=True); continue
+        if expected <= 0:
+            print(f"   [skip 0-record] '{ind}' has 0 matching records in {country}. Skipping download.", flush=True)
+            record_ledger_progress(ledger, [ind, 0, 0, 0, 100.0, 0, 0, dst])
+            continue
+
+        if not planned(country, ind):
+            print(f"   [planning] Calculating plan for {ind}...", flush=True)
+            if sh("generate_clicklist.py", ind, country) != 0:
+                print(f"PLAN FAILED: {ind}", flush=True)
+                continue
         # A transient count() failure aborts a branch and can yield an EMPTY plan
         # that still reports 100% coverage. Delivering it writes a 0-row file, and
         # the resume check would then skip this industry forever. Bin it and retry.
         pf = f"{cl.PLAN_DIR}/clicklist_{prefix}.json"
-        if not json.load(open(pf)):
-            os.remove(pf)
+        if not os.path.exists(pf) or not json.load(open(pf, encoding="utf-8")):
+            if os.path.exists(pf):
+                os.remove(pf)
             print(f"EMPTY PLAN (counts failed) -- discarded, will re-plan: {ind}", flush=True)
             continue
 
@@ -295,10 +315,6 @@ def main():
         if pcov < ALERT_MIN:
             alert(country, "plan", ind, pcov,
                   f"{gap:,} of {expected:,} unreachable (blank size+revenue)")
-
-        # plan the NEXT industry while this one downloads (planning is free)
-        if i < len(rows):
-            ahead = start_plan(country, rows[i]["Industry"])
 
         # A slice lost to CREATE FAILED (Clay throttling the preview call) writes no
         # CSV, so it retries on the next download pass -- but delivering marks the
@@ -313,7 +329,7 @@ def main():
             time.sleep(5)
         if missing:
             alert(country, "incomplete", ind, "",
-                  f"{missing} of {len(json.load(open(pf)))} slices never downloaded")
+                  f"{missing} of {len(json.load(open(pf, encoding='utf-8')))} slices never downloaded")
         sh("clay_pipeline.py", "merge", prefix)
 
         out = f"downloads/{prefix}_ALL.csv"

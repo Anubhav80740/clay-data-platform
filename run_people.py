@@ -192,27 +192,47 @@ def main():
     only = set(a[a.index("--only") + 1].split("|")) if "--only" in a else None
     
     rows = []
+    zero_ind = set()
     if os.path.exists(src):
-        with open(src, "r", encoding="utf-8") as f:
-            rows = [r for r in csv.DictReader(f) if r.get("Industry") and str(r.get("Count", "0")).isdigit() and int(r.get("Count", 0)) > 0]
+        with open(src, "r", encoding="utf-8-sig", errors="replace") as f:
+            for r in csv.DictReader(f):
+                ind_name = r.get("Industry") or r.get("\ufeffIndustry")
+                if not ind_name:
+                    continue
+                cnt_str = str(r.get("Count", "0")).strip()
+                cnt_val = int(cnt_str) if cnt_str.isdigit() else 0
+                if cnt_val > 0:
+                    rows.append({"Industry": ind_name, "Count": cnt_val})
+                else:
+                    zero_ind.add(ind_name)
 
     if only:
         have_ind = {r["Industry"] for r in rows}
         for ind_target in only:
-            if ind_target and ind_target not in have_ind:
-                pf = f"{cl.PLAN_DIR}/clicklist_{cl.slugify(f'{ind_target}_{country}_people')}.json"
-                c_val = None
-                if os.path.exists(pf):
-                    try:
-                        p_slices = json.load(open(pf))
-                        c_val = sum(int(s.get("count", 0)) for s in p_slices)
-                    except Exception:
-                        pass
-                if not c_val:
-                    c_val = cp.count_people({"location_countries_include": [country], "company_industries_include": [ind_target]})
-                if c_val and c_val > 0:
-                    rows.append({"Industry": ind_target, "Count": c_val})
-                    have_ind.add(ind_target)
+            if not ind_target or ind_target in have_ind or ind_target in zero_ind:
+                continue
+            pf = f"{cl.PLAN_DIR}/clicklist_{cl.slugify(f'{ind_target}_{country}_people')}.json"
+            c_val = None
+            if os.path.exists(pf):
+                try:
+                    p_slices = json.load(open(pf, encoding="utf-8"))
+                    c_val = sum(int(s.get("count", 0)) for s in p_slices)
+                except Exception:
+                    pass
+            if not c_val:
+                print(f"   [counting] '{ind_target}' not found in count cache, checking Clay...", flush=True)
+                c_val = cp.count_people({"location_countries_include": [country], "company_industries_include": [ind_target]})
+            if c_val and c_val > 0:
+                rows.append({"Industry": ind_target, "Count": c_val})
+                have_ind.add(ind_target)
+            else:
+                zero_ind.add(ind_target)
+
+        # Pre-record any zero-count industries into ledger so they are marked completed
+        for z_ind in only:
+            if z_ind in zero_ind:
+                dst_zero = os.path.join(DELIVERY_DIR, delivery_name(country, z_ind))
+                record_ledger_progress(ledger, [z_ind, 0, 0, 0, 100.0, 0, 0, dst_zero])
         
     rows.sort(key=lambda r: -int(r["Count"]))
     if only:
@@ -225,6 +245,11 @@ def main():
         prefix = cl.slugify(f"{ind}_{country}_people")
         dst = os.path.join(DELIVERY_DIR, delivery_name(country, ind))
         print(f"\n===== [{i}/{len(rows)}] {ind} (People) (~{expected:,}) =====", flush=True)
+
+        if expected <= 0:
+            print(f"   [skip 0-record] '{ind}' has 0 matching people records in {country}. Skipping download.", flush=True)
+            record_ledger_progress(ledger, [ind, 0, 0, 0, 100.0, 0, 0, dst])
+            continue
         
         # 1. Plan if not planned
         plan_path = f"{cl.PLAN_DIR}/clicklist_{prefix}.json"

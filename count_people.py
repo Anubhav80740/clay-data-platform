@@ -43,8 +43,8 @@ def main():
     have_prev = {}
     if os.path.exists(out_file):
         try:
-            with open(out_file, encoding="utf-8", errors="replace") as f:
-                have_prev = {r["Industry"]: r["Count"] for r in csv.DictReader(f) if "Industry" in r and "Count" in r}
+            with open(out_file, encoding="utf-8-sig", errors="replace") as f:
+                have_prev = {(r.get("Industry") or r.get("\ufeffIndustry")): r["Count"] for r in csv.DictReader(f) if (r.get("Industry") or r.get("\ufeffIndustry")) and "Count" in r}
         except Exception:
             pass
 

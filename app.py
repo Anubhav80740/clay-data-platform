@@ -55,6 +55,42 @@ def load_ledger_dataframe(filepath):
         except Exception:
             return pd.DataFrame()
 
+SHORT_COUNTRY_DELIVERY = {"United States": "USA", "United Arab Emirates": "UAE", "United Kingdom": "UK"}
+
+def get_delivery_path(country, industry, is_people=False):
+    label = SHORT_COUNTRY_DELIVERY.get(country, country)
+    base_dir = "delivery_people" if is_people else "delivery"
+    if is_people:
+        fn = f"{label} People [Clay] -{cl.slugify(industry)}.csv"
+    else:
+        clean_ind = re.sub(r'[^A-Za-z0-9]+', '-', industry).strip('-')
+        fn = f"{label} Data [Clay] -{clean_ind}.csv"
+    return os.path.join(base_dir, label, fn)
+
+def record_ledger_row(ledger_path, row_data, is_people=False):
+    if not ledger_path:
+        return
+    rows = {}
+    col_uniq = "unique_people" if is_people else "unique_companies"
+    header = ["industry", "clay_count", "rows_downloaded", col_uniq, "coverage_pct", "existing_in_file", "new_added", "file"]
+    if os.path.exists(ledger_path):
+        try:
+            with open(ledger_path, "r", encoding="utf-8-sig", errors="replace") as f:
+                r = csv.reader(f)
+                h = next(r, None)
+                for line in r:
+                    if line and len(line) >= 1 and line[0].strip():
+                        rows[line[0].strip()] = line
+        except Exception:
+            pass
+    rows[str(row_data[0]).strip()] = [str(x) for x in row_data]
+    os.makedirs(os.path.dirname(ledger_path) or ".", exist_ok=True)
+    with open(ledger_path, "w", newline="", encoding="utf-8-sig") as f:
+        w = csv.writer(f)
+        w.writerow(header)
+        for k, v in rows.items():
+            w.writerow(v)
+
 # Import taxonomy and geo dict
 try:
     from clay_taxonomy import ALL_CLAY_INDUSTRIES, ALL_CLAY_COUNTRIES, TECH_INDUSTRIES, NON_TECH_INDUSTRIES
@@ -1839,7 +1875,7 @@ with tab_download:
             total_cnt = 0
             if os.path.exists(counts_file):
                 try:
-                    with open(counts_file, encoding="utf-8") as f:
+                    with open(counts_file, "r", encoding="utf-8-sig", errors="replace") as f:
                         total_cnt = sum(int(r.get("Count", 0)) for r in csv.DictReader(f) if str(r.get("Count", "")).isdigit())
                 except Exception:
                     pass
@@ -1998,6 +2034,22 @@ with tab_download:
                     key=f"plan_approved_check_{'ppl' if is_people_mode else 'cmp'}",
                 )
 
+                def _cb_start_download():
+                    st.session_state["is_downloading"] = True
+                    st.session_state["download_trigger"] = True
+
+                def _cb_stop_download():
+                    proc = st.session_state.get("current_process")
+                    if proc and proc.poll() is None:
+                        try:
+                            proc.terminate()
+                        except Exception:
+                            pass
+                    st.session_state["current_process"] = None
+                    st.session_state["is_downloading"] = False
+                    st.session_state["download_trigger"] = False
+                    st.session_state["live_status"] = {"active": False}
+
                 is_dl_active = bool(
                     st.session_state.get("is_downloading")
                     or (st.session_state.get("current_process") and st.session_state["current_process"].poll() is None)
@@ -2008,22 +2060,31 @@ with tab_download:
 
                 dl1, dl2 = st.columns([3, 1])
                 with dl1:
-                    dl_btn_label = "⏳ Downloading in progress..." if is_dl_active else "Start download"
-                    btn_download = st.button(
-                        dl_btn_label, type="primary", use_container_width=True,
-                        disabled=is_dl_active or not plan_approved or not country_input or not selected_industries,
-                    )
+                    if is_dl_active:
+                        st.button(
+                            "⏳ Downloading in progress...",
+                            type="primary",
+                            use_container_width=True,
+                            disabled=True,
+                            key=f"btn_dl_active_{'ppl' if is_people_mode else 'cmp'}",
+                        )
+                    else:
+                        st.button(
+                            "Start download",
+                            type="primary",
+                            use_container_width=True,
+                            disabled=not plan_approved or not country_input or not selected_industries,
+                            key=f"btn_dl_start_{'ppl' if is_people_mode else 'cmp'}",
+                            on_click=_cb_start_download,
+                        )
                 with dl2:
-                    if st.button("Stop", key="stop_step3_btn", type="secondary", use_container_width=True):
-                        proc = st.session_state.get("current_process")
-                        if proc and proc.poll() is None:
-                            proc.terminate()
-                            st.session_state["current_process"] = None
-                            st.session_state["is_downloading"] = False
-                            st.warning("Download stopped.")
-                        else:
-                            st.session_state["is_downloading"] = False
-                            st.info("No active download process.")
+                    st.button(
+                        "Stop",
+                        key=f"stop_step3_btn_{'ppl' if is_people_mode else 'cmp'}",
+                        type="secondary",
+                        use_container_width=True,
+                        on_click=_cb_stop_download,
+                    )
 
         if not step4_open:
             wf_hide("wf_step4")
@@ -2032,7 +2093,8 @@ with tab_download:
     # STEP 5 -- DOWNLOAD
     # ==================================================================
     ledger_exists = bool(country_input and ledger_file and os.path.exists(ledger_file))
-    step5_open = (forced == 5) or bool(btn_download) or ledger_exists
+    run_dl_trigger = bool(st.session_state.get("download_trigger"))
+    step5_open = (forced == 5) or is_dl_active or run_dl_trigger or ledger_exists
     step5_state = "active" if (step5_open and not ledger_exists) else ("done" if ledger_exists else "todo")
 
     with st.container(border=True):
@@ -2041,10 +2103,12 @@ with tab_download:
                 if not step5_open else "")
 
         with st.container(key="wf_step5"):
-            # ---------- DOWNLOAD EXECUTION (unchanged handler) ----------
-            if btn_download:
+            # ---------- DOWNLOAD EXECUTION ----------
+            if run_dl_trigger:
+                st.session_state["download_trigger"] = False
                 if not plan_approved:
                     st.warning("Please approve the plan above before downloading.")
+                    st.session_state["is_downloading"] = False
                 else:
                     st.session_state["is_downloading"] = True
                     t0_dl = time.time()
@@ -2054,20 +2118,47 @@ with tab_download:
                     with open(ind_file, "w", encoding="utf-8") as f:
                         json.dump(selected_industries, f)
 
+                    # Filter zero-record industries if count cache exists
+                    active_industries = []
+                    zero_count_industries = []
+                    if os.path.exists(counts_file):
+                        try:
+                            cdf = pd.read_csv(counts_file, encoding="utf-8-sig")
+                            col_ind = "Industry" if "Industry" in cdf.columns else cdf.columns[0]
+                            col_cnt = "Count" if "Count" in cdf.columns else cdf.columns[2]
+                            cnt_map = dict(zip(cdf[col_ind].astype(str), pd.to_numeric(cdf[col_cnt], errors="coerce").fillna(0).astype(int)))
+                            for ind in selected_industries:
+                                if cnt_map.get(ind, 1) > 0:
+                                    active_industries.append(ind)
+                                else:
+                                    zero_count_industries.append(ind)
+                        except Exception:
+                            active_industries = list(selected_industries)
+                    else:
+                        active_industries = list(selected_industries)
+
+                    # Mark zero-record industries directly in ledger so they appear completed
+                    if zero_count_industries and ledger_file:
+                        for z_ind in zero_count_industries:
+                            dst_zero = get_delivery_path(country_input, z_ind, is_people=is_people_mode)
+                            record_ledger_row(ledger_file, [z_ind, 0, 0, 0, 100.0, 0, 0, dst_zero], is_people=is_people_mode)
+
+                    dl_targets = active_industries if active_industries else selected_industries
+
                     log_container = st.empty()
                     dl_progress_bar = st.progress(0.0)
                     dl_status_text = st.empty()
-                    render_download_card(0.02, f"Starting {entity_label} Download", f"Country: {country_input} ({len(selected_industries)} industries)")
+                    render_download_card(0.02, f"Starting {entity_label} Download", f"Country: {country_input} ({len(dl_targets)} active industries)")
 
                     cmd_run = [sys.executable, "-u", run_script, country_input]
-                    only_str = "|".join(selected_industries)
+                    only_str = "|".join(dl_targets)
                     cmd_run.extend(["--only", only_str, "--user", current_user])
 
                     process = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=make_env())
                     st.session_state["current_process"] = process
 
                     logs = []
-                    tot_ind = len(selected_industries)
+                    tot_ind = len(dl_targets)
                     curr_ind_idx = 0
                     curr_ind_name = ""
 

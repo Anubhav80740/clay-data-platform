@@ -386,6 +386,8 @@ def wait_populated(source_id, expected, timeout=600):
     size: a throttled populate can sit at 1 record for several polls, and
     exporting there yields a 1-row CSV that looks like a successful slice.
     Far from target we demand a much longer plateau before giving up."""
+    if expected is not None and expected <= 0:
+        return 0
     last, stable, zero = -1, 0, 0
     t0_pop = time.time()
     for poll_idx in range(timeout // 2):
@@ -426,7 +428,7 @@ def export_raw(table_id, view_id, body="{}", retries=3):
     return ""
 
 
-def export_download(table_id, view_id, slug, base_dir="downloads", poll_timeout=120):
+def export_download(table_id, view_id, slug, base_dir="downloads", poll_timeout=45):
     """Trigger export, wait, download CSV into its own folder, drop Clay's empty
     leading title column. Returns (record_count, path)."""
     t0 = time.time()
@@ -435,7 +437,7 @@ def export_download(table_id, view_id, slug, base_dir="downloads", poll_timeout=
     # records, but the export runs against the view, which can still be empty.
     # That yields a FINISHED job with recordsExportedCount=0 and a header-only
     # CSV. Re-trigger the export until the view catches up.
-    for attempt in range(4):
+    for attempt in range(2):
         resp = export_raw(table_id, view_id)
         try:
             job = json.loads(resp[resp.find("{"):resp.rfind("}") + 1])
@@ -445,14 +447,19 @@ def export_download(table_id, view_id, slug, base_dir="downloads", poll_timeout=
         if not jid:
             return None, None
         exported = 0
-        for poll_idx in range(poll_timeout // 2):
+        actual_limit = min(poll_timeout, 45) // 2
+        for poll_idx in range(actual_limit):
             _, b = _get(POLL_URL.format(id=jid))
             try:
                 j = json.loads(b)
             except Exception:      # transient poll failure -> keep polling
                 time.sleep(1.5)
                 continue
-            if j.get("downloadUrl") and j.get("status") == "FINISHED":
+            status = j.get("status")
+            if status in ("FAILED", "ERROR", "CANCELED"):
+                log(f"   [export] Clay export job ended with status: {status}")
+                break
+            if j.get("downloadUrl") and status == "FINISHED":
                 exported = j.get("recordsExportedCount") or 0
                 if exported:
                     dl = j["downloadUrl"]
@@ -463,8 +470,9 @@ def export_download(table_id, view_id, slug, base_dir="downloads", poll_timeout=
             time.sleep(1.5)
         if dl:
             break
-        log(f"   export returned 0 records (view lagging) -- retry {attempt + 2}/4")
-        time.sleep(5 * (attempt + 1))
+        if attempt < 1:
+            log(f"   export returned 0 records (view lagging) -- retry 2/2 in 3s...")
+            time.sleep(3)
     if not dl:
         return None, None
     t1 = time.time()

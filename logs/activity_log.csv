@@ -17,3 +17,5 @@
 2026-09-10 16:50:53,anubhav,COUNT_COMPLETED,Companies,Spain,0,[],0,SUCCESS,
 2026-09-10 17:05:57,team_user,APP_LOADED,Companies,-,0,[],0,SUCCESS,
 2026-09-10 17:06:28,anubhav,USER_LOGIN,Companies,-,0,[],0,SUCCESS,
+2026-09-15 00:12:51,team_user,APP_LOADED,Companies,-,0,[],0,SUCCESS,
+2026-09-15 00:37:45,team,DOWNLOAD,Companies,Netherlands,1,"[""Aviation & Aerospace""]",102,SUCCESS,"Delivered 102 rows, +102 new added (100.0% coverage)"
