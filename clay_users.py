@@ -23,6 +23,13 @@ _RUNTIME_COOKIES = {}
 def _hash_pw(password):
     return hashlib.sha256(password.encode("utf-8")).hexdigest()
 
+def _is_streamlit_running():
+    try:
+        import streamlit as st
+        return bool(hasattr(st, "runtime") and st.runtime.exists())
+    except Exception:
+        return False
+
 def _load_users():
     users = {}
     # 1. Base users from disk (if present)
@@ -53,19 +60,20 @@ def _load_users():
     # 2. Add users created at runtime
     users.update(_RUNTIME_USERS)
 
-    # 3. Streamlit Cloud Secrets (if configured)
-    try:
-        import streamlit as st
-        if hasattr(st, "secrets") and "users" in st.secrets:
-            for u, p_or_hash in st.secrets["users"].items():
-                u_clean = str(u).strip().lower()
-                p_str = str(p_or_hash).strip()
-                if len(p_str) == 64 and all(c in "0123456789abcdefABCDEF" for c in p_str):
-                    users[u_clean] = p_str.lower()
-                else:
-                    users[u_clean] = _hash_pw(p_str)
-    except Exception:
-        pass
+    # 3. Streamlit Cloud Secrets (if configured and in Streamlit runtime)
+    if _is_streamlit_running():
+        try:
+            import streamlit as st
+            if hasattr(st, "secrets") and "users" in st.secrets:
+                for u, p_or_hash in st.secrets["users"].items():
+                    u_clean = str(u).strip().lower()
+                    p_str = str(p_or_hash).strip()
+                    if len(p_str) == 64 and all(c in "0123456789abcdefABCDEF" for c in p_str):
+                        users[u_clean] = p_str.lower()
+                    else:
+                        users[u_clean] = _hash_pw(p_str)
+        except Exception:
+            pass
 
     return users
 
@@ -103,14 +111,15 @@ def authenticate_user(username, password):
         return True
 
     # 2. Check secret team password
-    try:
-        import streamlit as st
-        if hasattr(st, "secrets"):
-            if "team_password" in st.secrets and p == str(st.secrets["team_password"]).strip():
-                _RUNTIME_USERS[u] = _hash_pw(p)
-                return True
-    except Exception:
-        pass
+    if _is_streamlit_running():
+        try:
+            import streamlit as st
+            if hasattr(st, "secrets"):
+                if "team_password" in st.secrets and p == str(st.secrets["team_password"]).strip():
+                    _RUNTIME_USERS[u] = _hash_pw(p)
+                    return True
+        except Exception:
+            pass
 
     # 3. Standard user check
     users = _load_users()
@@ -207,12 +216,13 @@ def save_user_cookie(username, cookie_str):
     os.environ["CLAY_COOKIE"] = clean_cookie
 
     # 5. Cache in active Streamlit session if running in UI
-    try:
-        import streamlit as st
-        st.session_state["active_clay_cookie"] = clean_cookie
-        st.session_state[f"_clay_cookie_{u}"] = clean_cookie
-    except Exception:
-        pass
+    if _is_streamlit_running():
+        try:
+            import streamlit as st
+            st.session_state["active_clay_cookie"] = clean_cookie
+            st.session_state[f"_clay_cookie_{u}"] = clean_cookie
+        except Exception:
+            pass
 
     return cp
 
@@ -226,18 +236,19 @@ def get_user_cookie(username=None):
             candidates_to_try.append(fb)
 
     # 1. Check Streamlit session_state
-    try:
-        import streamlit as st
-        if u and st.session_state.get(f"_clay_cookie_{u}"):
-            c = str(st.session_state[f"_clay_cookie_{u}"]).strip()
-            if c:
-                return c
-        if st.session_state.get("active_clay_cookie"):
-            c = str(st.session_state["active_clay_cookie"]).strip()
-            if c:
-                return c
-    except Exception:
-        pass
+    if _is_streamlit_running():
+        try:
+            import streamlit as st
+            if u and st.session_state.get(f"_clay_cookie_{u}"):
+                c = str(st.session_state[f"_clay_cookie_{u}"]).strip()
+                if c:
+                    return c
+            if st.session_state.get("active_clay_cookie"):
+                c = str(st.session_state["active_clay_cookie"]).strip()
+                if c:
+                    return c
+        except Exception:
+            pass
 
     # 2. Check runtime in-memory cache
     for cand in candidates_to_try:
@@ -272,22 +283,23 @@ def get_user_cookie(username=None):
         except Exception:
             pass
 
-    # 6. Check Streamlit Secrets
-    try:
-        import streamlit as st
-        if hasattr(st, "secrets"):
-            if "cookies" in st.secrets:
-                for cand in candidates_to_try:
-                    if cand in st.secrets["cookies"]:
-                        val = str(st.secrets["cookies"][cand]).strip()
+    # 6. Check Streamlit Secrets (if in Streamlit runtime)
+    if _is_streamlit_running():
+        try:
+            import streamlit as st
+            if hasattr(st, "secrets"):
+                if "cookies" in st.secrets:
+                    for cand in candidates_to_try:
+                        if cand in st.secrets["cookies"]:
+                            val = str(st.secrets["cookies"][cand]).strip()
+                            if val:
+                                return extract_clean_cookie(val)
+                for key in ["CLAY_COOKIE", "clay_cookie", "COOKIE", "cookie"]:
+                    if key in st.secrets:
+                        val = str(st.secrets[key]).strip()
                         if val:
                             return extract_clean_cookie(val)
-            for key in ["CLAY_COOKIE", "clay_cookie", "COOKIE", "cookie"]:
-                if key in st.secrets:
-                    val = str(st.secrets[key]).strip()
-                    if val:
-                        return extract_clean_cookie(val)
-    except Exception:
-        pass
+        except Exception:
+            pass
 
     return ""

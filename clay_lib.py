@@ -153,9 +153,17 @@ BASIC_FIELDS = [
 ]
 
 
+def _is_streamlit_running():
+    try:
+        import streamlit as st
+        return bool(hasattr(st, "runtime") and st.runtime.exists())
+    except Exception:
+        return False
+
+
 def _cookie(*args, **kwargs):
     uid = None
-    if args:
+    if args and len(args) > 0 and isinstance(args[0], str):
         uid = args[0]
     elif "user_id" in kwargs:
         uid = kwargs["user_id"]
@@ -164,7 +172,7 @@ def _cookie(*args, **kwargs):
 
     if not uid:
         uid = os.environ.get("CLAY_USER_ID")
-    if not uid:
+    if not uid and _is_streamlit_running():
         try:
             import streamlit as st
             uid = st.session_state.get("user_id")
@@ -180,13 +188,14 @@ def _cookie(*args, **kwargs):
     if os.environ.get("CLAY_COOKIE"):
         return os.environ.get("CLAY_COOKIE").strip()
 
-    # 3. Streamlit secrets
-    try:
-        import streamlit as st
-        if hasattr(st, "secrets") and "CLAY_COOKIE" in st.secrets:
-            return str(st.secrets["CLAY_COOKIE"]).strip()
-    except Exception:
-        pass
+    # 3. Streamlit secrets (if in Streamlit runtime)
+    if _is_streamlit_running():
+        try:
+            import streamlit as st
+            if hasattr(st, "secrets") and "CLAY_COOKIE" in st.secrets:
+                return str(st.secrets["CLAY_COOKIE"]).strip()
+        except Exception:
+            pass
 
     return ""
 
@@ -310,7 +319,10 @@ def preview(filters, retries=7):
                 return o["taskId"], (o.get("result") or {}).get("companyCount")
         except Exception:
             pass
-        time.sleep(min(30, 2 * (attempt + 1) ** 2))
+        sleep_sec = min(30, 2 * (attempt + 1) ** 2)
+        if attempt < retries - 1:
+            print(f"   [rate limit] Clay preview throttled (null taskId), retrying in {sleep_sec}s (attempt {attempt + 1}/{retries})...", flush=True)
+        time.sleep(sleep_sec)
     return None, None
 
 
@@ -375,7 +387,8 @@ def wait_populated(source_id, expected, timeout=600):
     exporting there yields a 1-row CSV that looks like a successful slice.
     Far from target we demand a much longer plateau before giving up."""
     last, stable, zero = -1, 0, 0
-    for _ in range(timeout // 2):
+    t0_pop = time.time()
+    for poll_idx in range(timeout // 2):
         _, n = source_records(source_id)
         if expected and n >= expected:
             return n
@@ -391,6 +404,10 @@ def wait_populated(source_id, expected, timeout=600):
                 log(f"   WARN populate plateaued at {n}/{expected}")
             return n
         last = n
+        if poll_idx > 0 and poll_idx % 3 == 0:
+            el = int(time.time() - t0_pop)
+            exp_str = f"{expected:,}" if expected else "target"
+            print(f"   [populating] {n:,}/{exp_str} records in Clay table... ({el}s)", flush=True)
         time.sleep(1.8)
     return last
 
@@ -428,7 +445,7 @@ def export_download(table_id, view_id, slug, base_dir="downloads", poll_timeout=
         if not jid:
             return None, None
         exported = 0
-        for _ in range(poll_timeout // 2):
+        for poll_idx in range(poll_timeout // 2):
             _, b = _get(POLL_URL.format(id=jid))
             try:
                 j = json.loads(b)
@@ -440,6 +457,9 @@ def export_download(table_id, view_id, slug, base_dir="downloads", poll_timeout=
                 if exported:
                     dl = j["downloadUrl"]
                 break
+            if poll_idx > 0 and poll_idx % 3 == 0:
+                el = int(time.time() - t0)
+                print(f"   [exporting] waiting for Clay export job... ({el}s)", flush=True)
             time.sleep(1.5)
         if dl:
             break

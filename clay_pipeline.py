@@ -46,8 +46,10 @@ def download(prefix, limit=5000, max_slices=None, order="desc"):
             cl.wait_populated(sid, min(cnt or s["count"] or 0, limit))
             got, path = cl.export_download(tid, vid, slug)
             if tid:
-                import threading
-                threading.Thread(target=cl.delete_table, args=(tid,), daemon=True).start()
+                try:
+                    cl.delete_table(tid)
+                except Exception:
+                    pass
             if not path:
                 print("   EXPORT FAILED (will retry next run)", flush=True)
                 continue

@@ -819,9 +819,23 @@ if not st.session_state.get("authenticated") or not st.session_state.get("user_i
 
 current_user = st.session_state["user_id"].strip().lower()
 
+def is_ignorable_warning(line_str):
+    if not line_str:
+        return False
+    lower = str(line_str).lower()
+    if "scriptruncontext" in lower:
+        return True
+    if "session_state_proxy" in lower or "session state does not function" in lower:
+        return True
+    if "warning streamlit" in lower or "streamlit.runtime" in lower:
+        return True
+    return False
+
 def make_env():
     env = os.environ.copy()
     env["CLAY_USER_ID"] = current_user
+    env["PYTHONWARNINGS"] = "ignore"
+    env["STREAMLIT_LOG_LEVEL"] = "error"
     active_c_env = clay_users.get_user_cookie(current_user)
     if active_c_env:
         env["CLAY_COOKIE"] = active_c_env
@@ -1562,6 +1576,29 @@ with tab_download:
                 else:
                     _counted_total = sum(counts_lookup.get(i, 0) for i in selected_industries)
                     st.success(f"Count complete — {_counted_total:,} matching {entity_label.lower()} across {len(selected_industries)} industries.")
+                    if country_input and os.path.exists(counts_file):
+                        try:
+                            cdf_raw = pd.read_csv(counts_file)
+                            if selected_industries:
+                                cdf_show = cdf_raw[cdf_raw["Industry"].isin(selected_industries)].copy()
+                            else:
+                                cdf_show = cdf_raw.copy()
+                            if not cdf_show.empty:
+                                if "Count" in cdf_show.columns:
+                                    cdf_show["Count"] = pd.to_numeric(cdf_show["Count"], errors="coerce").fillna(0).astype(int)
+                                    cdf_show = cdf_show.sort_values(by="Count", ascending=False)
+                                cdf_show.index = range(1, len(cdf_show) + 1)
+                                cols_to_display = [c for c in ["Industry", "Count", "Category"] if c in cdf_show.columns]
+                                if not cols_to_display:
+                                    cols_to_display = cdf_show.columns.tolist()
+                                st.markdown(f"##### Matching {entity_label} per Industry ({country_input})")
+                                st.dataframe(
+                                    cdf_show[cols_to_display],
+                                    use_container_width=True,
+                                    height=min(320, 38 * (len(cdf_show) + 1))
+                                )
+                        except Exception:
+                            pass
 
                 # ---------- 3b. PLAN ----------
                 if counts_ready and not all_planned:
@@ -1724,6 +1761,8 @@ with tab_download:
                                                 break
                                             if l:
                                                 stripped_l = l.strip()
+                                                if is_ignorable_warning(stripped_l):
+                                                    continue
                                                 logs_single.append(stripped_l)
                                                 log_box.code("\n".join(logs_single[-15:]))
                                                 m_s = re.search(r'\[(\d+)/(\d+)\]', stripped_l)
@@ -1779,8 +1818,11 @@ with tab_download:
             if not line and proc.poll() is not None:
                 break
             if line:
-                count_logs.append(line.strip())
-                m = re.search(r'\[(\d+)/(\d+)\]', line)
+                stripped_line = line.strip()
+                if is_ignorable_warning(stripped_line):
+                    continue
+                count_logs.append(stripped_line)
+                m = re.search(r'\[(\d+)/(\d+)\]', stripped_line)
                 if m:
                     current_i = int(m.group(1))
                     tot_i = int(m.group(2))
@@ -1865,7 +1907,7 @@ with tab_download:
                     break
                 if line:
                     stripped = line.strip()
-                    if "ScriptRunContext" in stripped:
+                    if is_ignorable_warning(stripped):
                         continue
                     plan_logs.append(stripped)
                     plan_log_box.code("\n".join(plan_logs[-10:]))
@@ -1882,7 +1924,7 @@ with tab_download:
                         break
                     if line:
                         stripped = line.strip()
-                        if "ScriptRunContext" in stripped:
+                        if is_ignorable_warning(stripped):
                             continue
                         plan_logs.append(stripped)
                         plan_log_box.code("\n".join(plan_logs[-10:]))
@@ -1956,11 +1998,20 @@ with tab_download:
                     key=f"plan_approved_check_{'ppl' if is_people_mode else 'cmp'}",
                 )
 
+                is_dl_active = bool(
+                    st.session_state.get("is_downloading")
+                    or (st.session_state.get("current_process") and st.session_state["current_process"].poll() is None)
+                )
+
+                if is_dl_active:
+                    st.info(f"⏳ **Download in progress for {country_input}** ({len(selected_industries)} industries). Live progress and terminal output are streaming in Step 5 below.")
+
                 dl1, dl2 = st.columns([3, 1])
                 with dl1:
+                    dl_btn_label = "⏳ Downloading in progress..." if is_dl_active else "Start download"
                     btn_download = st.button(
-                        "Start download", type="primary", use_container_width=True,
-                        disabled=not plan_approved or not country_input or not selected_industries,
+                        dl_btn_label, type="primary", use_container_width=True,
+                        disabled=is_dl_active or not plan_approved or not country_input or not selected_industries,
                     )
                 with dl2:
                     if st.button("Stop", key="stop_step3_btn", type="secondary", use_container_width=True):
@@ -1968,8 +2019,10 @@ with tab_download:
                         if proc and proc.poll() is None:
                             proc.terminate()
                             st.session_state["current_process"] = None
+                            st.session_state["is_downloading"] = False
                             st.warning("Download stopped.")
                         else:
+                            st.session_state["is_downloading"] = False
                             st.info("No active download process.")
 
         if not step4_open:
@@ -1993,6 +2046,7 @@ with tab_download:
                 if not plan_approved:
                     st.warning("Please approve the plan above before downloading.")
                 else:
+                    st.session_state["is_downloading"] = True
                     t0_dl = time.time()
                     st.markdown(f"### Executing Live Download for {country_input} ({entity_label})...")
                     track_event("download_started", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries), "industries": selected_industries})
@@ -2017,41 +2071,46 @@ with tab_download:
                     curr_ind_idx = 0
                     curr_ind_name = ""
 
-                    while True:
-                        line = process.stdout.readline()
-                        if not line and process.poll() is not None:
-                            break
-                        if line:
-                            stripped = line.strip()
-                            logs.append(stripped)
-                            log_container.code("\n".join(logs[-20:]))
+                    try:
+                        while True:
+                            line = process.stdout.readline()
+                            if not line and process.poll() is not None:
+                                break
+                            if line:
+                                stripped = line.strip()
+                                if is_ignorable_warning(stripped):
+                                    continue
+                                logs.append(stripped)
+                                log_container.code("\n".join(logs[-20:]))
 
-                            m_ind = re.search(r'\[(\d+)/(\d+)\]\s+([A-Za-z0-9\s,&-]+?)\s+\(~', stripped)
-                            if m_ind:
-                                curr_ind_idx = int(m_ind.group(1))
-                                curr_ind_name = m_ind.group(3).strip()
-                                pct = max(0.01, min(0.99, (curr_ind_idx - 1) / max(1, tot_ind)))
-                                dl_progress_bar.progress(pct)
-                                status_msg = f"Downloading [{curr_ind_idx}/{tot_ind}]: {curr_ind_name}..."
-                                dl_status_text.text(status_msg)
-                                st.session_state["live_status"] = {"active": True, "title": f"Download: {country_input} ({entity_label})", "text": status_msg, "pct": pct}
-                                render_download_card(pct, f"[{curr_ind_idx}/{tot_ind}] {curr_ind_name[:24]}", f"{country_input} • {int(pct*100)}% complete")
+                                m_ind = re.search(r'\[(\d+)/(\d+)\]\s+([A-Za-z0-9\s,&-]+?)\s+\(~', stripped)
+                                if m_ind:
+                                    curr_ind_idx = int(m_ind.group(1))
+                                    curr_ind_name = m_ind.group(3).strip()
+                                    pct = max(0.01, min(0.99, (curr_ind_idx - 1) / max(1, tot_ind)))
+                                    dl_progress_bar.progress(pct)
+                                    status_msg = f"Downloading [{curr_ind_idx}/{tot_ind}]: {curr_ind_name}..."
+                                    dl_status_text.text(status_msg)
+                                    st.session_state["live_status"] = {"active": True, "title": f"Download: {country_input} ({entity_label})", "text": status_msg, "pct": pct}
+                                    render_download_card(pct, f"[{curr_ind_idx}/{tot_ind}] {curr_ind_name[:24]}", f"{country_input} • {int(pct*100)}% complete")
 
-                            m_slice = re.search(r'\[(\d+)/(\d+)\]\s+([A-Za-z0-9_]+)', stripped)
-                            if m_slice and not m_ind and curr_ind_idx > 0:
-                                s_idx = int(m_slice.group(1))
-                                s_tot = int(m_slice.group(2))
-                                pct_ind = (s_idx - 1) / max(1, s_tot)
-                                pct = min(0.99, ((curr_ind_idx - 1) + pct_ind) / max(1, tot_ind))
-                                dl_progress_bar.progress(pct)
-                                status_msg = f"Downloading [{curr_ind_idx}/{tot_ind}] {curr_ind_name} — Slice {s_idx}/{s_tot}..."
-                                dl_status_text.text(status_msg)
-                                st.session_state["live_status"] = {"active": True, "title": f"Download: {country_input} ({entity_label})", "text": status_msg, "pct": pct}
-                                render_download_card(pct, f"[{curr_ind_idx}/{tot_ind}] {curr_ind_name[:20]}", f"Slice {s_idx}/{s_tot} • {int(pct*100)}%")
+                                m_slice = re.search(r'\[(\d+)/(\d+)\]\s+([A-Za-z0-9_]+)', stripped)
+                                if m_slice and not m_ind and curr_ind_idx > 0:
+                                    s_idx = int(m_slice.group(1))
+                                    s_tot = int(m_slice.group(2))
+                                    pct_ind = (s_idx - 1) / max(1, s_tot)
+                                    pct = min(0.99, ((curr_ind_idx - 1) + pct_ind) / max(1, tot_ind))
+                                    dl_progress_bar.progress(pct)
+                                    status_msg = f"Downloading [{curr_ind_idx}/{tot_ind}] {curr_ind_name} — Slice {s_idx}/{s_tot}..."
+                                    dl_status_text.text(status_msg)
+                                    st.session_state["live_status"] = {"active": True, "title": f"Download: {country_input} ({entity_label})", "text": status_msg, "pct": pct}
+                                    render_download_card(pct, f"[{curr_ind_idx}/{tot_ind}] {curr_ind_name[:20]}", f"Slice {s_idx}/{s_tot} • {int(pct*100)}%")
 
-                    process.wait()
-                    st.session_state["current_process"] = None
-                    st.session_state["live_status"] = {"active": False}
+                        process.wait()
+                    finally:
+                        st.session_state["current_process"] = None
+                        st.session_state["is_downloading"] = False
+                        st.session_state["live_status"] = {"active": False}
                     dur_dl = round(time.time() - t0_dl, 1)
                     if process.returncode == 0:
                         dl_progress_bar.progress(1.0)

@@ -277,6 +277,8 @@ def main():
         print(f"\n===== [{i}/{len(rows)}] {ind}  (~{expected:,}) =====", flush=True)
 
         if ahead is not None:                    # this industry's plan-ahead job
+            if ahead.poll() is None:
+                print(f"   Waiting for background plan calculation to complete for {ind}...", flush=True)
             ahead.wait(); ahead = None
         if not planned(country, ind) and sh("generate_clicklist.py", ind, country) != 0:
             print(f"PLAN FAILED: {ind}", flush=True); continue
@@ -301,12 +303,14 @@ def main():
         # A slice lost to CREATE FAILED (Clay throttling the preview call) writes no
         # CSV, so it retries on the next download pass -- but delivering marks the
         # industry done and it never gets one. Retry here, before that happens.
+        import time
         for attempt in range(3):
             sh("clay_pipeline.py", "download", prefix)
             missing = missing_slices(prefix)
             if not missing:
                 break
-            print(f"   {missing} slice(s) still missing -- retry pass {attempt + 2}", flush=True)
+            print(f"   {missing} slice(s) still missing -- retry pass {attempt + 2} in 5s...", flush=True)
+            time.sleep(5)
         if missing:
             alert(country, "incomplete", ind, "",
                   f"{missing} of {len(json.load(open(pf)))} slices never downloaded")
