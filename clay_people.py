@@ -138,7 +138,9 @@ def count_people(filters, retries=6):
                         _PEOPLE_COUNT_CACHE[key] = cnt
                     return cnt
                 if parsed.get("type") == "TooManyRequests":
-                    time.sleep(2.0 * attempt + random.uniform(1.0, 3.0))
+                    backoff = 2.0 * attempt + random.uniform(1.0, 3.0)
+                    cl.log(f"Clay rate limit encountered, pausing {round(backoff, 1)}s...")
+                    time.sleep(backoff)
                     continue
         except Exception:
             pass

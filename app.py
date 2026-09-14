@@ -1820,19 +1820,52 @@ with tab_download:
         st.markdown("#### Calculating coverage")
         plan_progress_bar = st.progress(0.0)
         plan_status = st.empty()
+        plan_log_box = st.empty()
         tot_p = len(selected_industries)
 
         for idx, ind in enumerate(selected_industries, 1):
+            prefix = slugify(f"{ind}_{country_input}{plan_suffix}")
+            pj = f"plans/clicklist_{prefix}.json"
+            if os.path.exists(pj) and os.path.getsize(pj) > 2:
+                try:
+                    num_existing = len(json.load(open(pj, encoding="utf-8")))
+                    plan_status.text(f"[{idx}/{tot_p}] '{ind}' already planned ({num_existing} slices). Skipping.")
+                    plan_progress_bar.progress(idx / tot_p)
+                    continue
+                except Exception:
+                    pass
+
             plan_status.text(f"Planning {idx} of {tot_p}: {ind} ({entity_label})...")
             cmd = [sys.executable, "-u", plan_script, ind, country_input]
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=make_env())
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=make_env())
             st.session_state["current_process"] = proc
-            stdout_out, _ = proc.communicate()
+
+            plan_logs = []
+            while True:
+                line = proc.stdout.readline()
+                if not line and proc.poll() is not None:
+                    break
+                if line:
+                    stripped = line.strip()
+                    plan_logs.append(stripped)
+                    plan_log_box.code("\n".join(plan_logs[-10:]))
+                    plan_status.text(f"Planning {idx} of {tot_p}: {ind} — {stripped[:65]}")
+
+            proc.wait()
             if proc.returncode != 0:
                 time.sleep(1)
-                proc_retry = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=make_env())
+                proc_retry = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=make_env())
                 st.session_state["current_process"] = proc_retry
-                proc_retry.communicate()
+                while True:
+                    line = proc_retry.stdout.readline()
+                    if not line and proc_retry.poll() is not None:
+                        break
+                    if line:
+                        stripped = line.strip()
+                        plan_logs.append(stripped)
+                        plan_log_box.code("\n".join(plan_logs[-10:]))
+                        plan_status.text(f"Planning {idx} of {tot_p} (retry): {ind} — {stripped[:65]}")
+                proc_retry.wait()
             plan_progress_bar.progress(idx / tot_p)
 
         st.session_state["current_process"] = None

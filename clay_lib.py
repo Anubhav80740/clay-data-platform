@@ -286,7 +286,9 @@ def count(filters, retries=6):
                     return c
                 # If rate limited (TooManyRequests), backoff longer
                 if parsed.get("type") == "TooManyRequests":
-                    time.sleep(2.0 * attempt + random.uniform(1.0, 3.0))
+                    backoff = 2.0 * attempt + random.uniform(1.0, 3.0)
+                    log(f"Clay rate limit encountered, pausing {round(backoff, 1)}s...")
+                    time.sleep(backoff)
                     continue
         except Exception:
             pass
