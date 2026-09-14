@@ -1171,25 +1171,27 @@ with tab_download:
             if curr_c_idx >= len(country_options):
                 curr_c_idx = 0
 
-            selected_country_raw = st.selectbox(
-                "Search and select country (218 countries available):",
-                options=country_options,
-                index=curr_c_idx,
-                key="country_select_widget",
-                on_change=on_country_change,
-                help="Select any country or choose Global to extract across all 17 supported countries."
-            )
+            col_country, _ = st.columns([1, 1])
+            with col_country:
+                selected_country_raw = st.selectbox(
+                    "Search and select country (218 countries available):",
+                    options=country_options,
+                    index=curr_c_idx,
+                    key="country_select_widget",
+                    on_change=on_country_change,
+                    help="Select any country or choose Global to extract across all 17 supported countries."
+                )
 
-            custom_country_toggle = st.checkbox("Enter custom country name manually", key="wf_custom_country")
-            if custom_country_toggle:
-                country_input = st.text_input("Manual Country Name", "", key="wf_manual_country")
-            else:
-                if selected_country_raw == "-- Select Target Country --":
-                    country_input = ""
-                elif selected_country_raw == "\U0001F30D All Supported Countries (Global)":
-                    country_input = "Global"
+                custom_country_toggle = st.checkbox("Enter custom country name manually", key="wf_custom_country")
+                if custom_country_toggle:
+                    country_input = st.text_input("Manual Country Name", "", key="wf_manual_country")
                 else:
-                    country_input = selected_country_raw
+                    if selected_country_raw == "-- Select Target Country --":
+                        country_input = ""
+                    elif selected_country_raw == "\U0001F30D All Supported Countries (Global)":
+                        country_input = "Global"
+                    else:
+                        country_input = selected_country_raw
 
             country_input = country_input.strip()
             if country_input:
