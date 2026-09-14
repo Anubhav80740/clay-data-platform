@@ -1865,6 +1865,8 @@ with tab_download:
                     break
                 if line:
                     stripped = line.strip()
+                    if "ScriptRunContext" in stripped:
+                        continue
                     plan_logs.append(stripped)
                     plan_log_box.code("\n".join(plan_logs[-10:]))
                     plan_status.text(f"Planning {idx} of {tot_p}: {ind} — {stripped[:65]}")
@@ -1880,6 +1882,8 @@ with tab_download:
                         break
                     if line:
                         stripped = line.strip()
+                        if "ScriptRunContext" in stripped:
+                            continue
                         plan_logs.append(stripped)
                         plan_log_box.code("\n".join(plan_logs[-10:]))
                         plan_status.text(f"Planning {idx} of {tot_p} (retry): {ind} — {stripped[:65]}")
