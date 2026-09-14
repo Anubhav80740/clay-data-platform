@@ -39,7 +39,10 @@ def _load_users():
     if not users:
         users = {
             "team": _hash_pw("clay2026"),
-            "anubhav": _hash_pw("clay2026")
+            "anubhav": _hash_pw("clay2026"),
+            "punit goyal": _hash_pw("Clay@1702"),
+            "punit": _hash_pw("Clay@1702"),
+            "punitgoyal": _hash_pw("Clay@1702")
         }
         try:
             with open(USERS_FILE, "w", encoding="utf-8") as f:
