@@ -1089,9 +1089,19 @@ with tab_download:
 
     if "_init_ind_loaded" not in st.session_state:
         st.session_state["_init_ind_loaded"] = True
+        qp_preset = st.query_params.get("preset", "")
         qp_ind = st.query_params.get("ind", "")
-        if qp_ind:
-            st.session_state["selected_industries"] = [x.strip() for x in qp_ind.split("|") if x.strip() and x.strip() in ALL_CLAY_INDUSTRIES]
+        if qp_preset == "tech":
+            st.session_state["selected_industries"] = list(TECH_INDUSTRIES)
+        elif qp_preset == "nontech":
+            st.session_state["selected_industries"] = list(NON_TECH_INDUSTRIES)
+        elif qp_preset == "all":
+            st.session_state["selected_industries"] = list(ALL_CLAY_INDUSTRIES)
+        elif qp_ind:
+            parsed_inds = [x.strip() for x in qp_ind.split("|") if x.strip() and x.strip() in ALL_CLAY_INDUSTRIES]
+            st.session_state["selected_industries"] = parsed_inds
+            if len(parsed_inds) > 3 and "ind" in st.query_params:
+                del st.query_params["ind"]
         else:
             st.session_state["selected_industries"] = []
     elif "selected_industries" not in st.session_state:
@@ -1256,30 +1266,32 @@ with tab_download:
             st.caption(f"Which industries do you want {entity_label.lower()} from?")
             b_col1, b_col2, b_col3, b_col4 = st.columns(4)
 
-            def _apply_preset(values):
+            def _apply_preset(values, preset_name=""):
                 vals = list(values)
                 st.session_state["selected_industries"] = vals
                 st.session_state["wf_inds_backup"] = vals
-                if vals:
-                    st.query_params["ind"] = "|".join(vals)
-                elif "ind" in st.query_params:
+                if "ind" in st.query_params:
                     del st.query_params["ind"]
+                if preset_name:
+                    st.query_params["preset"] = preset_name
+                elif "preset" in st.query_params:
+                    del st.query_params["preset"]
 
             with b_col1:
                 st.button("Select Tech Industries", key="preset_tech", use_container_width=True,
-                          on_click=_apply_preset, args=(TECH_INDUSTRIES,))
+                          on_click=_apply_preset, args=(TECH_INDUSTRIES, "tech"))
 
             with b_col2:
                 st.button("Select Non-Tech Industries", key="preset_nontech", use_container_width=True,
-                          on_click=_apply_preset, args=(NON_TECH_INDUSTRIES,))
+                          on_click=_apply_preset, args=(NON_TECH_INDUSTRIES, "nontech"))
 
             with b_col3:
                 st.button("Select All 458 Industries", key="preset_all", use_container_width=True,
-                          on_click=_apply_preset, args=(ALL_CLAY_INDUSTRIES,))
+                          on_click=_apply_preset, args=(ALL_CLAY_INDUSTRIES, "all"))
 
             with b_col4:
                 st.button("Clear Selection", key="preset_clear", use_container_width=True,
-                          on_click=_apply_preset, args=([],))
+                          on_click=_apply_preset, args=([], ""))
 
             selected_industries = st.multiselect(
                 "Search and select industries (starts empty; select manually or use category buttons above):",
@@ -1287,10 +1299,16 @@ with tab_download:
                 key="selected_industries"
             )
 
-            if selected_industries:
+            # Prevent 414 Request-URI Too Large on Nginx:
+            # Only store small subsets (<=3) or preset names in URL query params.
+            # Large sets are kept in session_state to avoid overflowing Nginx's 8KB URI buffer.
+            if len(selected_industries) <= 3 and len(selected_industries) > 0:
                 st.query_params["ind"] = "|".join(selected_industries)
-            elif "ind" in st.query_params:
-                del st.query_params["ind"]
+                if "preset" in st.query_params:
+                    del st.query_params["preset"]
+            else:
+                if "ind" in st.query_params:
+                    del st.query_params["ind"]
 
             st.session_state["wf_inds_backup"] = list(selected_industries)
             st.caption(f"Currently selected: {len(selected_industries)} industries out of 458 total Clay industries.")
