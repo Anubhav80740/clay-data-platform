@@ -62,7 +62,10 @@ def main():
         counts.append({"Industry": ind, "Count": val})
         
         # Log to permanent time-series count history
-        clay_logger.log_count_observation("People", country, ind, new_count=val, previous_count=prev_val, notes="Step 1 People Live Count")
+        try:
+            clay_logger.log_count_observation("People", country, ind, new_count=val, previous_count=prev_val, notes="Step 1 People Live Count")
+        except Exception:
+            pass
     counts.sort(key=lambda x: -x["Count"])
     with open(out_file, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.DictWriter(f, fieldnames=["Industry", "Count"])

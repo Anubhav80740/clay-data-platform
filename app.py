@@ -794,6 +794,7 @@ def login_screen():
                     st.rerun()
                 else:
                     st.error("Invalid Username or Password.")
+            st.caption("ℹ️ Teammates can sign in directly using their username with password `clay2026`.")
                     
         with tab_signup:
             new_user = st.text_input("Choose Username", key="signup_user_input")
@@ -821,6 +822,9 @@ current_user = st.session_state["user_id"].strip().lower()
 def make_env():
     env = os.environ.copy()
     env["CLAY_USER_ID"] = current_user
+    active_c_env = clay_users.get_user_cookie(current_user)
+    if active_c_env:
+        env["CLAY_COOKIE"] = active_c_env
     return env
 
 # Application Header (Brand, Clay status + setup, Theme, Account menu)
@@ -1748,12 +1752,14 @@ with tab_download:
         st.session_state["current_process"] = proc
 
         total_to_count = len(selected_industries)
+        count_logs = []
 
         while True:
             line = proc.stdout.readline()
             if not line and proc.poll() is not None:
                 break
             if line:
+                count_logs.append(line.strip())
                 m = re.search(r'\[(\d+)/(\d+)\]', line)
                 if m:
                     current_i = int(m.group(1))
@@ -1786,7 +1792,14 @@ with tab_download:
             st.session_state["wf_open"] = 3
             st.rerun()
         else:
-            st.error("Count failed or was stopped. The Clay session cookie may have expired — check the Clay status in the header.")
+            full_log_str = "\n".join(count_logs)
+            is_auth_err = ("401" in full_log_str or "unauthorized" in full_log_str.lower() or "claysession" in full_log_str.lower())
+            if is_auth_err:
+                st.error("Count failed: The Clay session cookie may have expired or is invalid. Please check or refresh your cookie in the header.")
+            else:
+                st.error("Count failed or was stopped before completion.")
+            with st.expander("Technical details (count process output)", expanded=not is_auth_err):
+                st.code("\n".join(count_logs[-20:]) if count_logs else "No output captured from count process.")
             track_event("count_failed", {
                 "entity": entity_label,
                 "country": country_input,

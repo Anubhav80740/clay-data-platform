@@ -171,13 +171,10 @@ def _cookie(*args, **kwargs):
         except Exception:
             pass
 
-    # 1. User specific cookie
-    if uid:
-        user_c = clay_users.get_user_cookie(uid)
-        if user_c:
-            return user_c
-        # Specific user has no cookie configured -> do NOT leak another user's cookie!
-        return ""
+    # 1. Multi-tier cookie resolution via clay_users (user cookie with shared fallback)
+    c = clay_users.get_user_cookie(uid)
+    if c:
+        return c
 
     # 2. Environment variable
     if os.environ.get("CLAY_COOKIE"):
@@ -186,12 +183,11 @@ def _cookie(*args, **kwargs):
     # 3. Streamlit secrets
     try:
         import streamlit as st
-        if "CLAY_COOKIE" in st.secrets:
+        if hasattr(st, "secrets") and "CLAY_COOKIE" in st.secrets:
             return str(st.secrets["CLAY_COOKIE"]).strip()
     except Exception:
         pass
 
-    # No fallback to other users
     return ""
 
 

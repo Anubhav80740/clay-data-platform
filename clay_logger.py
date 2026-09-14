@@ -141,3 +141,22 @@ def get_activity_logs(limit=500):
     except Exception:
         return pd.DataFrame(columns=LOG_HEADERS)
 
+
+def log_count_observation(entity, country, industry, new_count=None, previous_count=None, notes=""):
+    """
+    Time-series count observation logger to track inventory growth over time.
+    Safely records without interrupting live pipeline execution.
+    """
+    try:
+        obs_file = os.path.join(LOG_DIR, "count_history.csv")
+        headers = ["Timestamp", "Entity", "Country", "Industry", "Count", "Previous_Count", "Notes"]
+        write_header = not os.path.exists(obs_file) or os.path.getsize(obs_file) == 0
+        now_ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(obs_file, "a", newline="", encoding="utf-8-sig") as f:
+            w = csv.writer(f)
+            if write_header:
+                w.writerow(headers)
+            w.writerow([now_ts, str(entity), str(country), str(industry), new_count or 0, previous_count or "", str(notes)])
+    except Exception:
+        pass
+
