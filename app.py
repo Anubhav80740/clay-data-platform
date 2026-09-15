@@ -98,7 +98,12 @@ def get_delivery_path(country, industry, is_people=False):
 
 def create_country_zip(country_dir, category_filter=None):
     """Creates an in-memory ZIP archive of files in country_dir.
-    category_filter: None (all), 'Tech', or 'Non-Tech'"""
+    category_filter: None (all), 'Tech', or 'Non-Tech'.
+    When a category_filter is specified (e.g. 'Tech' or 'Non-Tech'), the files
+    are placed directly at the root of the ZIP archive so extraction is flat
+    and does not produce an unnecessary redundant nested folder.
+    When category_filter is None (Entire Portfolio), Tech/ and Non-Tech/ subfolders
+    are preserved so categories remain neatly grouped upon extraction."""
     buf = io.BytesIO()
     file_count = 0
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
@@ -108,11 +113,15 @@ def create_country_zip(country_dir, category_filter=None):
                     continue
                 full_path = os.path.join(root, file)
                 rel_path = os.path.relpath(full_path, country_dir)
+                norm_rel = rel_path.replace("\\", "/")
                 if category_filter:
-                    norm_rel = rel_path.replace("\\", "/")
-                    if not norm_rel.startswith(f"{category_filter}/"):
+                    if not (norm_rel.startswith(f"{category_filter}/") or norm_rel == category_filter):
                         continue
-                zf.write(full_path, arcname=rel_path)
+                    cat_dir = os.path.join(country_dir, category_filter)
+                    arcname = os.path.relpath(full_path, cat_dir)
+                else:
+                    arcname = rel_path
+                zf.write(full_path, arcname=arcname)
                 file_count += 1
     buf.seek(0)
     return buf.getvalue(), file_count
