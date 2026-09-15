@@ -104,8 +104,28 @@ def create_country_zip(country_dir, category_filter=None):
     and does not produce an unnecessary redundant nested folder.
     When category_filter is None (Entire Portfolio), Tech/ and Non-Tech/ subfolders
     are preserved so categories remain neatly grouped upon extraction."""
+    if not os.path.exists(country_dir):
+        return b"", 0
+
+    # Auto-organize any loose CSV files in country_dir into Tech/ and Non-Tech/
+    try:
+        for f in os.listdir(country_dir):
+            if f.endswith(".csv"):
+                src_f = os.path.join(country_dir, f)
+                if os.path.isfile(src_f):
+                    cat = get_industry_category(f)
+                    target_sub = os.path.join(country_dir, cat)
+                    os.makedirs(target_sub, exist_ok=True)
+                    try:
+                        shutil.move(src_f, os.path.join(target_sub, f))
+                    except Exception:
+                        pass
+    except Exception:
+        pass
+
     buf = io.BytesIO()
     file_count = 0
+    seen_files = set()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
         for root, dirs, files in os.walk(country_dir):
             for file in files:
@@ -114,13 +134,32 @@ def create_country_zip(country_dir, category_filter=None):
                 full_path = os.path.join(root, file)
                 rel_path = os.path.relpath(full_path, country_dir)
                 norm_rel = rel_path.replace("\\", "/")
-                if category_filter:
-                    if not (norm_rel.startswith(f"{category_filter}/") or norm_rel == category_filter):
-                        continue
-                    cat_dir = os.path.join(country_dir, category_filter)
-                    arcname = os.path.relpath(full_path, cat_dir)
+
+                # Resolve category by path first, then by taxonomy
+                if "/Tech/" in f"/{norm_rel}" or norm_rel.startswith("Tech/"):
+                    file_cat = "Tech"
+                elif "/Non-Tech/" in f"/{norm_rel}" or norm_rel.startswith("Non-Tech/"):
+                    file_cat = "Non-Tech"
                 else:
-                    arcname = rel_path
+                    file_cat = get_industry_category(file)
+
+                # Filter by category if requested
+                if category_filter and file_cat != category_filter:
+                    continue
+
+                # Ensure uniqueness in archive
+                if file in seen_files:
+                    continue
+                seen_files.add(file)
+
+                # Determine internal archive path
+                if category_filter:
+                    # Single-category zip extracts flat at root of archive
+                    arcname = file
+                else:
+                    # Entire portfolio zip preserves Tech/ and Non-Tech/ subfolders
+                    arcname = f"{file_cat}/{file}"
+
                 zf.write(full_path, arcname=arcname)
                 file_count += 1
     buf.seek(0)
@@ -2647,14 +2686,30 @@ with tab_portfolio:
             summary_data = []
             for c in sorted(countries):
                 cdir = os.path.join(delivery_dir, c)
+                
+                # Auto-organize any loose files in cdir to Tech/ or Non-Tech/
+                try:
+                    for f in os.listdir(cdir):
+                        if f.endswith(".csv"):
+                            src_f = os.path.join(cdir, f)
+                            if os.path.isfile(src_f):
+                                cat = get_industry_category(f)
+                                target_sub = os.path.join(cdir, cat)
+                                os.makedirs(target_sub, exist_ok=True)
+                                try:
+                                    shutil.move(src_f, os.path.join(target_sub, f))
+                                except Exception:
+                                    pass
+                except Exception:
+                    pass
+
                 tech_dir = os.path.join(cdir, "Tech")
                 nontech_dir = os.path.join(cdir, "Non-Tech")
                 
                 t_files = [f for f in os.listdir(tech_dir) if f.endswith(".csv")] if os.path.exists(tech_dir) else []
                 nt_files = [f for f in os.listdir(nontech_dir) if f.endswith(".csv")] if os.path.exists(nontech_dir) else []
-                loose_files = [f for f in os.listdir(cdir) if f.endswith(".csv")]
                 
-                tot_count = len(t_files) + len(nt_files) + len(loose_files)
+                tot_count = len(t_files) + len(nt_files)
                 tot_bytes = 0
                 for root, _, fs in os.walk(cdir):
                     for f in fs:
