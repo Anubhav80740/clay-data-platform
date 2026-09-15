@@ -170,30 +170,88 @@ FR_REGIONS = {
     ],
     "Auvergne-Rhône-Alpes": [
         "Lyon", "Grenoble", "Villeurbanne", "Clermont-Ferrand", "Saint-Étienne",
-        "Annecy", "Chambéry",
+        "Annecy", "Chambéry", "Valence", "Vénissieux", "Vaulx-en-Velin",
+        "Saint-Priest", "Caluire-et-Cuire", "Bourg-en-Bresse", "Bron", "Roanne",
+        "Saint-Chamond", "Échirolles", "Villefranche-sur-Saône", "Meyzieu",
+        "Rillieux-la-Pape", "Montélimar", "Vienne", "Thonon-les-Bains",
+        "Annemasse", "Romans-sur-Isère", "Aurillac", "Montluçon", "Le Puy-en-Velay", "Vichy",
     ],
     "Provence-Alpes-Côte d'Azur": [
         "Marseille", "Nice", "Aix-en-Provence", "Toulon", "Sophia Antipolis",
-        "Cannes", "Antibes",
+        "Cannes", "Antibes", "Avignon", "La Seyne-sur-Mer", "Hyères",
+        "Arles", "Fréjus", "Grasse", "Martigues", "Cagnes-sur-Mer",
+        "Aubagne", "Salon-de-Provence", "Gap", "Draguignan", "Le Cannet",
+        "Istres", "La Ciotat", "Manosque", "Menton", "Six-Fours-les-Plages", "Saint-Raphaël",
     ],
-    "Occitanie": ["Toulouse", "Montpellier", "Nîmes", "Perpignan"],
-    "Nouvelle-Aquitaine": ["Bordeaux", "Pau", "Limoges", "Poitiers"],
-    "Hauts-de-France": ["Lille", "Amiens", "Roubaix", "Villeneuve-d'Ascq"],
-    "Grand Est": ["Strasbourg", "Nancy", "Metz", "Reims"],
-    "Pays de la Loire": ["Nantes", "Angers", "Le Mans"],
-    "Bretagne": ["Rennes", "Brest", "Lorient", "Vannes"],
-    "Normandie": ["Rouen", "Caen", "Le Havre"],
-    "Bourgogne-Franche-Comté": ["Dijon", "Besançon"],
-    "Centre-Val de Loire": ["Tours", "Orléans"],
-    "Corse": ["Ajaccio", "Bastia"],
+    "Occitanie": [
+        "Toulouse", "Montpellier", "Nîmes", "Perpignan", "Béziers",
+        "Montauban", "Tarbes", "Albi", "Carcassonne", "Sète",
+        "Castres", "Colomiers", "Tournefeuille", "Narbonne", "Rodez",
+        "Lunel", "Agde", "Castelnau-le-Lez", "Blagnac", "Auch", "Cahors", "Millau",
+    ],
+    "Nouvelle-Aquitaine": [
+        "Bordeaux", "Pau", "Limoges", "Poitiers", "La Rochelle",
+        "Mérignac", "Pessac", "Bayonne", "Angoulême", "Talence",
+        "Anglet", "Agen", "Mont-de-Marsan", "Périgueux", "Villenave-d'Ornon",
+        "Brive-la-Gaillarde", "Biarritz", "Niort", "Châtellerault", "Saintes",
+        "Libourne", "Dax", "Bergerac", "Cognac",
+    ],
+    "Hauts-de-France": [
+        "Lille", "Amiens", "Roubaix", "Villeneuve-d'Ascq", "Tourcoing",
+        "Dunkerque", "Calais", "Beauvais", "Saint-Quentin", "Valenciennes",
+        "Boulogne-sur-Mer", "Douai", "Wattrelos", "Arras", "Compiègne",
+        "Creil", "Cambrai", "Liévin", "Lens", "Marcq-en-Barœul", "Maubeuge", "Soissons",
+    ],
+    "Grand Est": [
+        "Strasbourg", "Nancy", "Metz", "Reims", "Mulhouse",
+        "Colmar", "Troyes", "Thionville", "Châlons-en-Champagne", "Épinal",
+        "Schiltigheim", "Sedan", "Haguenau", "Charleville-Mézières", "Saint-Dizier",
+        "Illkirch-Graffenstaden", "Épernay", "Chaumont", "Verdun", "Bar-le-Duc",
+    ],
+    "Pays de la Loire": [
+        "Nantes", "Angers", "Le Mans", "Saint-Nazaire", "Cholet",
+        "La Roche-sur-Yon", "Laval", "Saint-Herblain", "Rezé", "Saumur",
+        "Vertou", "Fontenay-le-Comte", "Guérande", "Les Sables-d'Olonne", "Challans",
+    ],
+    "Bretagne": [
+        "Rennes", "Brest", "Lorient", "Vannes", "Saint-Malo",
+        "Saint-Brieuc", "Quimper", "Lanester", "Fougères", "Lannion",
+        "Concarneau", "Ploemeur", "Morlaix", "Pontivy", "Dinan",
+    ],
+    "Normandie": [
+        "Rouen", "Caen", "Le Havre", "Cherbourg-en-Cotentin", "Cherbourg",
+        "Évreux", "Dieppe", "Sotteville-lès-Rouen", "Saint-Étienne-du-Rouvray",
+        "Alençon", "Lisieux", "Vernon", "Fécamp", "Louviers", "Argentan", "Flers",
+    ],
+    "Bourgogne-Franche-Comté": [
+        "Dijon", "Besançon", "Belfort", "Chalon-sur-Saône", "Nevers",
+        "Auxerre", "Mâcon", "Montceau-les-Mines", "Sens", "Dole",
+        "Le Creusot", "Beaune", "Pontarlier", "Lons-le-Saunier", "Vesoul",
+    ],
+    "Centre-Val de Loire": [
+        "Tours", "Orléans", "Bourges", "Blois", "Châteauroux",
+        "Chartres", "Joué-lès-Tours", "Dreux", "Vierzon", "Olivet",
+        "Fleury-les-Aubrais", "Romorantin-Lanthenay", "Vendôme", "Montargis",
+    ],
+    "Corse": [
+        "Ajaccio", "Bastia", "Porto-Vecchio", "Borgo", "Corte",
+        "Biguglia", "Calvi", "Lucciana", "Furiani",
+    ],
 }
 
-# Paris arrondissement postal codes -- Paris is dense enough to need them.
+# Paris, Marseille, Lyon arrondissement postal codes
 FR_POSTAL = {
     "Paris": [
         "75001", "75002", "75003", "75004", "75005", "75006", "75007", "75008",
         "75009", "75010", "75011", "75012", "75013", "75014", "75015", "75016",
         "75017", "75018", "75019", "75020",
+    ],
+    "Marseille": [
+        "13001", "13002", "13003", "13004", "13005", "13006", "13007", "13008",
+        "13009", "13010", "13011", "13012", "13013", "13014", "13015", "13016",
+    ],
+    "Lyon": [
+        "69001", "69002", "69003", "69004", "69005", "69006", "69007", "69008", "69009",
     ],
 }
 

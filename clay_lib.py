@@ -273,7 +273,31 @@ def count_raw(filters):
     return _post(COUNT_URL, body, timeout=15)
 
 
+CACHE_DIR = os.path.join(os.path.dirname(__file__), "plans")
+CACHE_FILE = os.path.join(CACHE_DIR, ".count_cache.json")
 _COUNT_CACHE = {}
+
+
+def _load_count_cache():
+    global _COUNT_CACHE
+    if os.path.exists(CACHE_FILE):
+        try:
+            with open(CACHE_FILE, "r", encoding="utf-8") as f:
+                _COUNT_CACHE = json.load(f)
+        except Exception:
+            _COUNT_CACHE = {}
+
+
+def _save_count_cache():
+    try:
+        os.makedirs(CACHE_DIR, exist_ok=True)
+        with open(CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(_COUNT_CACHE, f)
+    except Exception:
+        pass
+
+
+_load_count_cache()
 
 
 def count(filters, retries=6):
@@ -282,6 +306,7 @@ def count(filters, retries=6):
     key = json.dumps(filters, sort_keys=True)
     if key in _COUNT_CACHE:
         return _COUNT_CACHE[key]
+    time.sleep(random.uniform(0.03, 0.08))
     for attempt in range(1, retries + 1):
         raw = count_raw({**filters, "limit": 1})
         try:
@@ -292,10 +317,12 @@ def count(filters, retries=6):
                     c = res.get("companyCount")
                     if c is None or isinstance(c, int):
                         _COUNT_CACHE[key] = c
+                        if len(_COUNT_CACHE) % 15 == 0:
+                            _save_count_cache()
                     return c
                 # If rate limited (TooManyRequests), backoff longer
                 if parsed.get("type") == "TooManyRequests":
-                    backoff = 2.0 * attempt + random.uniform(1.0, 3.0)
+                    backoff = 2.5 * attempt + random.uniform(1.0, 3.0)
                     log(f"Clay rate limit encountered, pausing {round(backoff, 1)}s...")
                     time.sleep(backoff)
                     continue
@@ -690,6 +717,23 @@ KEYWORD_ROUNDS = [
      "provide", "offer", "based", "established", "experience", "team"],
 ]
 
+# French description words -- used when country == "France" so dense French cells
+# can be split losslessly via description_keywords_exclude instead of leaking into blank size/revenue.
+FR_KEYWORD_ROUNDS = [
+    # Round 1: High-frequency French corporate, legal & agency terms
+    ["société", "entreprise", "france", "groupe", "conseil", "services",
+     "sarl", "sas", "sasu", "agence", "commerciale", "travaux"],
+    # Round 2: Core trade & industry terms (construction, real estate, commerce, crafts)
+    ["bâtiment", "construction", "rénovation", "immobilier", "vente", "gestion",
+     "maçonnerie", "artisan", "technique", "solutions", "projet", "habitat"],
+    # Round 3: Commercial descriptors & major regional terms
+    ["paris", "lyon", "marseille", "national", "international", "qualité",
+     "professionnel", "équipe", "client", "service", "développement", "durable"],
+    # Round 4: French filler / grammar words common in descriptions
+    ["pour", "avec", "dans", "nous", "notre", "nos",
+     "plus", "tous", "depuis", "vous", "faire", "votre"],
+]
+
 KEYWORD_DIMS = [ChainedDimension(f"kw{n}", "description_keywords", kws,
                                  exclude_key="description_keywords_exclude",
                                  stop_below=150)
@@ -759,7 +803,11 @@ def build_dims(country):
     # Keywords BEFORE size/revenue: plan() records a no-exclude dim's remainder as
     # uncovered without recursing, so anything after size never gets a chance to
     # rescue those blanks. Only fires on cells still oversized after geography.
-    dims += KEYWORD_DIMS
+    kw_rounds = FR_KEYWORD_ROUNDS if country == "France" else KEYWORD_ROUNDS
+    dims += [ChainedDimension(f"kw{n}", "description_keywords", kws,
+                              exclude_key="description_keywords_exclude",
+                              stop_below=150)
+             for n, kws in enumerate(kw_rounds, 1)]
     fb = {"size": SIZE, "revenue": REVENUE}
     for name in geo.get("fallback", ["size", "revenue"]):
         dims.append(fb[name])
@@ -833,7 +881,7 @@ def plan(base_filters, base_label, dims, count_fn, stats, depth=0, known_count=N
     buckets = dim.buckets_for(base_filters)
     b_filters = [_merge(base_filters, b.predicate) for b in buckets]
     if len(buckets) > 2:
-        with ThreadPoolExecutor(max_workers=8) as ex:
+        with ThreadPoolExecutor(max_workers=3) as ex:
             counts = list(ex.map(count_fn, b_filters))
     else:
         counts = [count_fn(f) for f in b_filters]
@@ -934,4 +982,5 @@ def run(industry, country, count_fn=None, merge=True):
         stats.merged_from = len(stats.leaves)
         stats.leaves = consolidate(stats.leaves)
         log(f"PLAN merged: {stats.merged_from} -> {len(stats.leaves)} slices")
+    _save_count_cache()
     return stats, base
