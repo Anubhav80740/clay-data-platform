@@ -1603,15 +1603,25 @@ with tab_download:
     # HEADER PLACEHOLDERS -- filled before the long-running operations so the
     # job chip and stage indicator stay on screen while a job is running
     # ==================================================================
+    is_dl_active = bool(
+        st.session_state.get("is_downloading")
+        or (st.session_state.get("current_process") and st.session_state["current_process"].poll() is None)
+    )
+    run_dl_trigger = bool(st.session_state.get("download_trigger"))
+    ledger_exists = bool(country_input and ledger_file and os.path.exists(ledger_file))
     _prov_approved = st.session_state.get(
-        f"plan_approved_check_{'ppl' if is_people_mode else 'cmp'}", False
+        f"plan_approved_check_{'ppl' if is_people_mode else 'cmp'}", True
     )
 
     if not country_input:
         active_stage = 1
     elif not selected_industries:
         active_stage = 2
-    elif not (counts_ready and all_planned):
+    elif forced in (3, 4, 5):
+        active_stage = forced
+    elif is_dl_active or run_dl_trigger:
+        active_stage = 5
+    elif not (counts_ready and all_planned) and not ledger_exists:
         active_stage = 3
     elif not _prov_approved:
         active_stage = 4
@@ -1680,7 +1690,7 @@ with tab_download:
                         f"We'll count matching {entity_label.lower()} and estimate how much Clay data can be downloaded."
                         if step3_open else "Count matching records and estimate reachable coverage.")
         with h3b:
-            if not step3_open and step3_done:
+            if not step3_open and (step3_done or bool(country_input and selected_industries)):
                 wf_edit_button(3, "View")
 
         with st.container(key="wf_step3"):
@@ -1699,7 +1709,7 @@ with tab_download:
                         st.caption(f"Free counting query for {len(missing_counts)} uncounted industries (out of {len(selected_industries)} selected) in {country_input}. No Clay credits are spent.")
                     else:
                         st.caption(f"Free counting query for all {len(selected_industries)} selected industries in {country_input}. No Clay credits are spent.")
-                    cc1, cc2 = st.columns([3, 1])
+                    cc1, cc2, cc3 = st.columns([2, 1, 2])
                     with cc1:
                         btn_count = st.button(f"Check matching {entity_label.lower()}", type="primary", use_container_width=True)
                     with cc2:
@@ -1711,6 +1721,10 @@ with tab_download:
                                 st.warning("Counting stopped.")
                             else:
                                 st.info("No active count process.")
+                    with cc3:
+                        if st.button("Skip to Review & Download ➔", type="secondary", use_container_width=True, key="btn_skip_to_rev1"):
+                            st.session_state["wf_open"] = 4
+                            st.rerun()
                 else:
                     _counted_total = sum(counts_lookup.get(i, 0) for i in selected_industries)
                     st.success(f"Count complete — {_counted_total:,} matching {entity_label.lower()} across {len(selected_industries)} industries.")
@@ -1742,7 +1756,7 @@ with tab_download:
                 if counts_ready and not all_planned:
                     _pending = sum(1 for r in planned_data if r["Status"] != "Planned")
                     st.caption(f"Next we calculate reachable coverage. {_pending} of {len(planned_data)} industries still need a partition plan. Free query.")
-                    pc1, pc2 = st.columns([3, 1])
+                    pc1, pc2, pc3 = st.columns([2, 1, 2])
                     with pc1:
                         btn_plan = st.button("Calculate coverage", type="primary", use_container_width=True)
                     with pc2:
@@ -1754,6 +1768,10 @@ with tab_download:
                                 st.warning("Planning stopped.")
                             else:
                                 st.info("No active plan process.")
+                    with pc3:
+                        if st.button("Skip to Review & Download ➔", type="secondary", use_container_width=True, key="btn_skip_to_rev2"):
+                            st.session_state["wf_open"] = 4
+                            st.rerun()
 
                 # ---------- 3c. RESULT ----------
                 if all_planned and planned_data and tot_target == 0:
@@ -1921,11 +1939,13 @@ with tab_download:
                                         render_download_complete_card(f"Download complete: {ind_name}!")
                                         st.success(f"Download complete for '{ind_name}'!")
 
-                    _r1, _r2 = st.columns([3, 1])
-                    with _r2:
-                        if st.button("Review download", type="primary", use_container_width=True, key="wf_continue_3"):
-                            st.session_state["wf_open"] = 4
-                            st.rerun()
+            if country_input and selected_industries:
+                st.markdown("---")
+                _r1, _r2 = st.columns([3, 1])
+                with _r2:
+                    if st.button("Review & Download ➔", type="primary", use_container_width=True, key="wf_continue_3"):
+                        st.session_state["wf_open"] = 4
+                        st.rerun()
 
         if not step3_open:
             wf_hide("wf_step3")
@@ -2110,22 +2130,22 @@ with tab_download:
     btn_download = False
     plan_approved = False
 
-    step4_open = (forced == 4) or (not forced and step3_done)
-    step4_state = "active" if step4_open else "todo"
+    step4_open = (forced == 4) or (not forced and (step3_done or ledger_exists))
+    step4_state = "active" if step4_open else ("done" if ledger_exists else "todo")
 
     with st.container(border=True):
-        wf_head(4, "Review download", step4_state,
-                "Confirm what will be downloaded before starting."
-                if not step4_open else "")
+        h4a, h4b = st.columns([6, 1])
+        with h4a:
+            wf_head(4, "Review download", step4_state,
+                    "Confirm what will be downloaded before starting."
+                    if not step4_open else "")
+        with h4b:
+            if not step4_open and bool(country_input and selected_industries):
+                wf_edit_button(4, "Open")
 
         with st.container(key="wf_step4"):
-            if not step3_done:
-                st.caption("Check coverage first.")
-                plan_approved = st.checkbox(
-                    "I approve the plan & estimated coverage",
-                    key=f"plan_approved_check_{'ppl' if is_people_mode else 'cmp'}",
-                    disabled=True,
-                )
+            if not country_input or not selected_industries:
+                st.caption("Complete steps 1 and 2 first.")
             else:
                 rv1, rv2 = st.columns(2)
                 with rv1:
@@ -2135,11 +2155,18 @@ with tab_download:
                         f"**Industries**  \n{len(selected_industries)} selected"
                     )
                 with rv2:
-                    st.markdown(
-                        f"**Matching {entity_label.lower()}**  \n{tot_target:,}\n\n"
-                        f"**Expected downloadable**  \n~{tot_reach:,}\n\n"
-                        f"**Estimated coverage**  \n{overall_cov}%"
-                    )
+                    if step3_done and tot_target > 0:
+                        st.markdown(
+                            f"**Matching {entity_label.lower()}**  \n{tot_target:,}\n\n"
+                            f"**Expected downloadable**  \n~{tot_reach:,}\n\n"
+                            f"**Estimated coverage**  \n{overall_cov}%"
+                        )
+                    else:
+                        st.markdown(
+                            f"**Matching {entity_label.lower()}**  \n{f'{tot_target:,}' if tot_target > 0 else 'Calculating on download'}\n\n"
+                            f"**Expected downloadable**  \n{f'~{tot_reach:,}' if tot_reach > 0 else 'Calculating on download'}\n\n"
+                            f"**Estimated coverage**  \n{f'{overall_cov}%' if all_planned else 'Auto-partitioned on download'}"
+                        )
 
                 st.caption(
                     f"Output: CSV master files per industry, merged incrementally into `{delivery_root}/` "
@@ -2151,9 +2178,15 @@ with tab_download:
                         f"Estimated coverage {overall_cov}% — approximately {unreachable:,} matching "
                         f"{entity_label.lower()} may not be included in the resulting download."
                     )
+                elif not step3_done:
+                    st.info(
+                        "ℹ️ **Direct Download Ready**: Industries without a pre-calculated plan will be "
+                        "counted and partitioned automatically on-the-fly as each industry downloads."
+                    )
 
                 plan_approved = st.checkbox(
-                    "I approve the plan & estimated coverage",
+                    "I approve the download plan & configuration",
+                    value=True,
                     key=f"plan_approved_check_{'ppl' if is_people_mode else 'cmp'}",
                 )
 
@@ -2175,7 +2208,7 @@ with tab_download:
                             "Start download",
                             type="primary",
                             use_container_width=True,
-                            disabled=not plan_approved or not country_input or not selected_industries,
+                            disabled=is_dl_active or not plan_approved or not country_input or not selected_industries,
                             key=f"btn_dl_start_{'ppl' if is_people_mode else 'cmp'}",
                             on_click=_cb_start_download,
                         )
@@ -2208,155 +2241,151 @@ with tab_download:
             # ---------- DOWNLOAD EXECUTION ----------
             if run_dl_trigger:
                 st.session_state["download_trigger"] = False
-                if not plan_approved:
-                    st.warning("Please approve the plan above before downloading.")
-                    st.session_state["is_downloading"] = False
-                else:
-                    st.session_state["is_downloading"] = True
-                    t0_dl = time.time()
-                    st.markdown(f"### Executing Live Download for {country_input} ({entity_label})...")
-                    track_event("download_started", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries), "industries": selected_industries})
+                st.session_state["is_downloading"] = True
+                t0_dl = time.time()
+                st.markdown(f"### Executing Live Download for {country_input} ({entity_label})...")
+                track_event("download_started", {"entity": entity_label, "country": country_input, "industries_count": len(selected_industries), "industries": selected_industries})
 
-                    with open(ind_file, "w", encoding="utf-8") as f:
-                        json.dump(selected_industries, f)
+                with open(ind_file, "w", encoding="utf-8") as f:
+                    json.dump(selected_industries, f)
 
-                    # Filter zero-record industries if count cache exists
-                    active_industries = []
-                    zero_count_industries = []
-                    if os.path.exists(counts_file):
-                        try:
-                            cdf = pd.read_csv(counts_file, encoding="utf-8-sig")
-                            col_ind = "Industry" if "Industry" in cdf.columns else cdf.columns[0]
-                            col_cnt = "Count" if "Count" in cdf.columns else cdf.columns[2]
-                            cnt_map = dict(zip(cdf[col_ind].astype(str), pd.to_numeric(cdf[col_cnt], errors="coerce").fillna(0).astype(int)))
-                            for ind in selected_industries:
-                                if cnt_map.get(ind, 1) > 0:
-                                    active_industries.append(ind)
-                                else:
-                                    zero_count_industries.append(ind)
-                        except Exception:
-                            active_industries = list(selected_industries)
-                    else:
-                        active_industries = list(selected_industries)
-
-                    # Mark zero-record industries directly in ledger so they appear completed
-                    if zero_count_industries and ledger_file:
-                        for z_ind in zero_count_industries:
-                            dst_zero = get_delivery_path(country_input, z_ind, is_people=is_people_mode)
-                            record_ledger_row(ledger_file, [z_ind, 0, 0, 0, 100.0, 0, 0, dst_zero], is_people=is_people_mode)
-
-                    dl_targets = active_industries if active_industries else selected_industries
-
-                    log_container = st.empty()
-                    dl_progress_bar = st.progress(0.0)
-                    dl_status_text = st.empty()
-                    render_download_card(0.02, f"Starting {entity_label} Download", f"Country: {country_input} ({len(dl_targets)} active industries)")
-
-                    cmd_run = [sys.executable, "-u", run_script, country_input]
-                    if len(dl_targets) <= 10:
-                        only_str = "|".join(dl_targets)
-                        cmd_run.extend(["--only", only_str])
-                    else:
-                        with open(ind_file, "w", encoding="utf-8") as _f_ind:
-                            json.dump(list(dl_targets), _f_ind)
-                        cmd_run.extend(["--only-file", ind_file])
-                    cmd_run.extend(["--user", current_user])
-
-                    process = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=make_env())
-                    st.session_state["current_process"] = process
-
-                    logs = []
-                    tot_ind = len(dl_targets)
-                    curr_ind_idx = 0
-                    curr_ind_name = ""
-
+                # Filter zero-record industries if count cache exists
+                active_industries = []
+                zero_count_industries = []
+                if os.path.exists(counts_file):
                     try:
-                        while True:
-                            line = process.stdout.readline()
-                            if not line and process.poll() is not None:
-                                break
-                            if line:
-                                stripped = line.strip()
-                                if is_ignorable_warning(stripped):
-                                    continue
-                                logs.append(stripped)
-                                log_container.code("\n".join(logs[-20:]))
+                        cdf = pd.read_csv(counts_file, encoding="utf-8-sig")
+                        col_ind = "Industry" if "Industry" in cdf.columns else cdf.columns[0]
+                        col_cnt = "Count" if "Count" in cdf.columns else cdf.columns[2]
+                        cnt_map = dict(zip(cdf[col_ind].astype(str), pd.to_numeric(cdf[col_cnt], errors="coerce").fillna(0).astype(int)))
+                        for ind in selected_industries:
+                            if cnt_map.get(ind, 1) > 0:
+                                active_industries.append(ind)
+                            else:
+                                zero_count_industries.append(ind)
+                    except Exception:
+                        active_industries = list(selected_industries)
+                else:
+                    active_industries = list(selected_industries)
 
-                                m_ind = re.search(r'\[(\d+)/(\d+)\]\s+([A-Za-z0-9\s,&-]+?)\s+\(~', stripped)
-                                if m_ind:
-                                    curr_ind_idx = int(m_ind.group(1))
-                                    curr_ind_name = m_ind.group(3).strip()
-                                    pct = max(0.01, min(0.99, (curr_ind_idx - 1) / max(1, tot_ind)))
-                                    dl_progress_bar.progress(pct)
-                                    status_msg = f"Downloading [{curr_ind_idx}/{tot_ind}]: {curr_ind_name}..."
-                                    dl_status_text.text(status_msg)
-                                    st.session_state["live_status"] = {"active": True, "title": f"Download: {country_input} ({entity_label})", "text": status_msg, "pct": pct}
-                                    render_download_card(pct, f"[{curr_ind_idx}/{tot_ind}] {curr_ind_name[:24]}", f"{country_input} • {int(pct*100)}% complete")
+                # Mark zero-record industries directly in ledger so they appear completed
+                if zero_count_industries and ledger_file:
+                    for z_ind in zero_count_industries:
+                        dst_zero = get_delivery_path(country_input, z_ind, is_people=is_people_mode)
+                        record_ledger_row(ledger_file, [z_ind, 0, 0, 0, 100.0, 0, 0, dst_zero], is_people=is_people_mode)
 
-                                m_slice = re.search(r'\[(\d+)/(\d+)\]\s+([A-Za-z0-9_]+)', stripped)
-                                if m_slice and not m_ind and curr_ind_idx > 0:
-                                    s_idx = int(m_slice.group(1))
-                                    s_tot = int(m_slice.group(2))
-                                    pct_ind = (s_idx - 1) / max(1, s_tot)
-                                    pct = min(0.99, ((curr_ind_idx - 1) + pct_ind) / max(1, tot_ind))
-                                    dl_progress_bar.progress(pct)
-                                    status_msg = f"Downloading [{curr_ind_idx}/{tot_ind}] {curr_ind_name} — Slice {s_idx}/{s_tot}..."
-                                    dl_status_text.text(status_msg)
-                                    st.session_state["live_status"] = {"active": True, "title": f"Download: {country_input} ({entity_label})", "text": status_msg, "pct": pct}
-                                    render_download_card(pct, f"[{curr_ind_idx}/{tot_ind}] {curr_ind_name[:20]}", f"Slice {s_idx}/{s_tot} • {int(pct*100)}%")
+                dl_targets = active_industries if active_industries else selected_industries
 
-                        process.wait()
-                    finally:
-                        st.session_state["current_process"] = None
-                        st.session_state["is_downloading"] = False
-                        st.session_state["live_status"] = {"active": False}
-                    dur_dl = round(time.time() - t0_dl, 1)
-                    if process.returncode == 0:
-                        dl_progress_bar.progress(1.0)
-                        dl_status_text.text(f"Download complete. All {tot_ind} industries downloaded & merged.")
-                        render_download_complete_card(f"Download complete: All {tot_ind} industries merged for {country_input}!")
-                        st.success(f"Download and centralized merge complete for {country_input} ({entity_label}).")
+                log_container = st.empty()
+                dl_progress_bar = st.progress(0.0)
+                dl_status_text = st.empty()
+                render_download_card(0.02, f"Starting {entity_label} Download", f"Country: {country_input} ({len(dl_targets)} active industries)")
 
-                        sum_total = 0
-                        sum_new = 0
-                        if country_input and os.path.exists(ledger_file):
-                            try:
-                                ldf = load_ledger_dataframe(ledger_file)
-                                col_ind = "industry" if "industry" in ldf.columns else ("Industry" if "Industry" in ldf.columns else None)
-                                col_u = "unique_companies" if "unique_companies" in ldf.columns else ("unique_people" if "unique_people" in ldf.columns else None)
-                                col_n = "new_added" if "new_added" in ldf.columns else None
-                                if col_ind and col_u:
-                                    ldf_last = ldf.drop_duplicates(subset=[col_ind], keep="last")
-                                    if selected_industries:
-                                        ldf_last = ldf_last[ldf_last[col_ind].isin(selected_industries)]
-                                    sum_total = int(pd.to_numeric(ldf_last[col_u], errors="coerce").sum())
-                                    if col_n:
-                                        sum_new = int(pd.to_numeric(ldf_last[col_n], errors="coerce").sum())
-                            except Exception:
-                                pass
+                cmd_run = [sys.executable, "-u", run_script, country_input]
+                if len(dl_targets) <= 10:
+                    only_str = "|".join(dl_targets)
+                    cmd_run.extend(["--only", only_str])
+                else:
+                    with open(ind_file, "w", encoding="utf-8") as _f_ind:
+                        json.dump(list(dl_targets), _f_ind)
+                    cmd_run.extend(["--only-file", ind_file])
+                cmd_run.extend(["--user", current_user])
 
-                        track_event("download_completed", {
-                            "entity": entity_label,
-                            "country": country_input,
-                            "industries_count": tot_ind,
-                            "industries": selected_industries,
-                            "total_master_records": sum_total,
-                            "new_records_added": sum_new,
-                            "duration_seconds": dur_dl,
-                            "status": "SUCCESS"
-                        })
-                    else:
-                        render_download_complete_card("Download stopped or completed.")
-                        st.error("Download finished with errors or was stopped. Anything already downloaded is kept and listed below.")
-                        with st.expander("Technical details (raw process output)"):
-                            st.code("\n".join(logs[-60:]) or "No output captured.")
-                        track_event("batch_download_failed", {
-                            "entity": entity_label,
-                            "country": country_input,
-                            "industries_count": tot_ind,
-                            "duration_seconds": dur_dl,
-                            "status": "FAILED"
-                        })
+                process = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=make_env())
+                st.session_state["current_process"] = process
+
+                logs = []
+                tot_ind = len(dl_targets)
+                curr_ind_idx = 0
+                curr_ind_name = ""
+
+                try:
+                    while True:
+                        line = process.stdout.readline()
+                        if not line and process.poll() is not None:
+                            break
+                        if line:
+                            stripped = line.strip()
+                            if is_ignorable_warning(stripped):
+                                continue
+                            logs.append(stripped)
+                            log_container.code("\n".join(logs[-20:]))
+
+                            m_ind = re.search(r'\[(\d+)/(\d+)\]\s+([A-Za-z0-9\s,&-]+?)\s+\(~', stripped)
+                            if m_ind:
+                                curr_ind_idx = int(m_ind.group(1))
+                                curr_ind_name = m_ind.group(3).strip()
+                                pct = max(0.01, min(0.99, (curr_ind_idx - 1) / max(1, tot_ind)))
+                                dl_progress_bar.progress(pct)
+                                status_msg = f"Downloading [{curr_ind_idx}/{tot_ind}]: {curr_ind_name}..."
+                                dl_status_text.text(status_msg)
+                                st.session_state["live_status"] = {"active": True, "title": f"Download: {country_input} ({entity_label})", "text": status_msg, "pct": pct}
+                                render_download_card(pct, f"[{curr_ind_idx}/{tot_ind}] {curr_ind_name[:24]}", f"{country_input} • {int(pct*100)}% complete")
+
+                            m_slice = re.search(r'\[(\d+)/(\d+)\]\s+([A-Za-z0-9_]+)', stripped)
+                            if m_slice and not m_ind and curr_ind_idx > 0:
+                                s_idx = int(m_slice.group(1))
+                                s_tot = int(m_slice.group(2))
+                                pct_ind = (s_idx - 1) / max(1, s_tot)
+                                pct = min(0.99, ((curr_ind_idx - 1) + pct_ind) / max(1, tot_ind))
+                                dl_progress_bar.progress(pct)
+                                status_msg = f"Downloading [{curr_ind_idx}/{tot_ind}] {curr_ind_name} — Slice {s_idx}/{s_tot}..."
+                                dl_status_text.text(status_msg)
+                                st.session_state["live_status"] = {"active": True, "title": f"Download: {country_input} ({entity_label})", "text": status_msg, "pct": pct}
+                                render_download_card(pct, f"[{curr_ind_idx}/{tot_ind}] {curr_ind_name[:20]}", f"Slice {s_idx}/{s_tot} • {int(pct*100)}%")
+
+                    process.wait()
+                finally:
+                    st.session_state["current_process"] = None
+                    st.session_state["is_downloading"] = False
+                    st.session_state["live_status"] = {"active": False}
+                dur_dl = round(time.time() - t0_dl, 1)
+                if process.returncode == 0:
+                    dl_progress_bar.progress(1.0)
+                    dl_status_text.text(f"Download complete. All {tot_ind} industries downloaded & merged.")
+                    render_download_complete_card(f"Download complete: All {tot_ind} industries merged for {country_input}!")
+                    st.success(f"Download and centralized merge complete for {country_input} ({entity_label}).")
+
+                    sum_total = 0
+                    sum_new = 0
+                    if country_input and os.path.exists(ledger_file):
+                        try:
+                            ldf = load_ledger_dataframe(ledger_file)
+                            col_ind = "industry" if "industry" in ldf.columns else ("Industry" if "Industry" in ldf.columns else None)
+                            col_u = "unique_companies" if "unique_companies" in ldf.columns else ("unique_people" if "unique_people" in ldf.columns else None)
+                            col_n = "new_added" if "new_added" in ldf.columns else None
+                            if col_ind and col_u:
+                                ldf_last = ldf.drop_duplicates(subset=[col_ind], keep="last")
+                                if selected_industries:
+                                    ldf_last = ldf_last[ldf_last[col_ind].isin(selected_industries)]
+                                sum_total = int(pd.to_numeric(ldf_last[col_u], errors="coerce").sum())
+                                if col_n:
+                                    sum_new = int(pd.to_numeric(ldf_last[col_n], errors="coerce").sum())
+                        except Exception:
+                            pass
+
+                    track_event("download_completed", {
+                        "entity": entity_label,
+                        "country": country_input,
+                        "industries_count": tot_ind,
+                        "industries": selected_industries,
+                        "total_master_records": sum_total,
+                        "new_records_added": sum_new,
+                        "duration_seconds": dur_dl,
+                        "status": "SUCCESS"
+                    })
+                else:
+                    render_download_complete_card("Download stopped or completed.")
+                    st.error("Download finished with errors or was stopped. Anything already downloaded is kept and listed below.")
+                    with st.expander("Technical details (raw process output)"):
+                        st.code("\n".join(logs[-60:]) or "No output captured.")
+                    track_event("batch_download_failed", {
+                        "entity": entity_label,
+                        "country": country_input,
+                        "industries_count": tot_ind,
+                        "duration_seconds": dur_dl,
+                        "status": "FAILED"
+                    })
 
             # ---------- DELIVERED MASTER DATASETS (unchanged) ----------
             if ledger_exists:
@@ -2457,11 +2486,20 @@ with tab_download:
                         sel_nontech = [i for i in selected_industries if get_industry_category(i) == "Non-Tech"]
                         deliv_nontech = len(nontech_files)
                         if len(sel_nontech) > deliv_nontech:
+                            rem_count = len(sel_nontech) - deliv_nontech
                             st.info(
                                 f"ℹ️ **Selected {len(sel_nontech)} Non-Tech industries — {deliv_nontech} downloaded and delivered to disk so far.** "
-                                f"The remaining {len(sel_nontech) - deliv_nontech} industries have not been downloaded yet. "
-                                f"To download them, return to **Step 4: Download** and click **Start Download**."
+                                f"The remaining {rem_count} industries have not been downloaded yet. "
+                                f"You can start or resume the download below or in **Step 4: Review download**."
                             )
+                            if not is_dl_active:
+                                r_c1, _ = st.columns([2, 2])
+                                with r_c1:
+                                    if st.button(f"▶️ Start / Resume Download ({rem_count} remaining industries)", type="primary", use_container_width=True, key=f"resume_dl_btn_step5_{'ppl' if is_people_mode else 'cmp'}"):
+                                        st.session_state["is_downloading"] = True
+                                        st.session_state["download_trigger"] = True
+                                        st.session_state["wf_open"] = 5
+                                        st.rerun()
 
                     # 2. Multi-File ZIP Downloads Bar
                     if delivered_files_info and os.path.exists(country_delivery_dir):
@@ -2556,8 +2594,8 @@ with tab_download:
                         render_file_list(delivered_files_info, "all")
                 except Exception as ex:
                     st.warning(f"Unable to display ledger metrics: {ex}")
-            elif not btn_download:
-                st.caption("Approve the plan in step 4 to start the download.")
+            elif not is_dl_active and not run_dl_trigger:
+                st.caption("Configure and start your download in Step 4 above.")
 
         if not step5_open:
             wf_hide("wf_step5")
