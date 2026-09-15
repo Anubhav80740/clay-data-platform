@@ -1481,7 +1481,8 @@ with tab_download:
                     counts_present.add(_ind)
         except Exception:
             pass
-    counts_ready = bool(selected_industries) and any(i in counts_present for i in selected_industries)
+    missing_counts = [i for i in selected_industries if i not in counts_present]
+    counts_ready = bool(selected_industries) and (len(missing_counts) == 0)
     counts_blank = counts_rows > 0 and not counts_present
 
     # ---- plan status + coverage, derived exactly as before
@@ -1655,7 +1656,10 @@ with tab_download:
                             "This usually means the Clay session has expired — open **Clay session** "
                             "in the header to refresh it, then run the count again."
                         )
-                    st.caption(f"Free counting query for {len(selected_industries)} industries in {country_input}. No Clay credits are spent.")
+                    if len(missing_counts) < len(selected_industries):
+                        st.caption(f"Free counting query for {len(missing_counts)} uncounted industries (out of {len(selected_industries)} selected) in {country_input}. No Clay credits are spent.")
+                    else:
+                        st.caption(f"Free counting query for all {len(selected_industries)} selected industries in {country_input}. No Clay credits are spent.")
                     cc1, cc2 = st.columns([3, 1])
                     with cc1:
                         btn_count = st.button(f"Check matching {entity_label.lower()}", type="primary", use_container_width=True)
@@ -2210,8 +2214,14 @@ with tab_download:
                     render_download_card(0.02, f"Starting {entity_label} Download", f"Country: {country_input} ({len(dl_targets)} active industries)")
 
                     cmd_run = [sys.executable, "-u", run_script, country_input]
-                    only_str = "|".join(dl_targets)
-                    cmd_run.extend(["--only", only_str, "--user", current_user])
+                    if len(dl_targets) <= 10:
+                        only_str = "|".join(dl_targets)
+                        cmd_run.extend(["--only", only_str])
+                    else:
+                        with open(ind_file, "w", encoding="utf-8") as _f_ind:
+                            json.dump(list(dl_targets), _f_ind)
+                        cmd_run.extend(["--only-file", ind_file])
+                    cmd_run.extend(["--user", current_user])
 
                     process = subprocess.Popen(cmd_run, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=make_env())
                     st.session_state["current_process"] = process
@@ -2403,6 +2413,17 @@ with tab_download:
                     tech_files = [f for f in delivered_files_info if f["category"] == "Tech"]
                     nontech_files = [f for f in delivered_files_info if f["category"] == "Non-Tech"]
                     
+                    if selected_industries:
+                        deliv_inds = {f["industry"].lower().replace("-", " ") for f in delivered_files_info}
+                        sel_nontech = [i for i in selected_industries if get_industry_category(i) == "Non-Tech"]
+                        deliv_nontech = len(nontech_files)
+                        if len(sel_nontech) > deliv_nontech:
+                            st.info(
+                                f"ℹ️ **Selected {len(sel_nontech)} Non-Tech industries — {deliv_nontech} downloaded and delivered to disk so far.** "
+                                f"The remaining {len(sel_nontech) - deliv_nontech} industries have not been downloaded yet. "
+                                f"To download them, return to **Step 4: Download** and click **Start Download**."
+                            )
+
                     # 2. Multi-File ZIP Downloads Bar
                     if delivered_files_info and os.path.exists(country_delivery_dir):
                         st.markdown("**📦 Bulk Download Complete Folder / Category Archives:**")

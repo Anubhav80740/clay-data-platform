@@ -209,7 +209,14 @@ def main():
     l_fn = f"{cl.slugify(country)}_people_progress.csv"
     ledger = os.path.join("data", l_fn) if (os.path.exists(os.path.join("data", l_fn)) or not os.path.exists(l_fn)) else l_fn
     a = sys.argv[2:]
-    only = set(a[a.index("--only") + 1].split("|")) if "--only" in a else None
+    only = None
+    if "--only" in a:
+        only = set(a[a.index("--only") + 1].split("|"))
+    elif "--only-file" in a:
+        of_path = a[a.index("--only-file") + 1]
+        if os.path.exists(of_path):
+            with open(of_path, "r", encoding="utf-8") as f:
+                only = set(json.load(f))
     
     rows = []
     zero_ind = set()
