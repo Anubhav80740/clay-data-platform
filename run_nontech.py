@@ -26,9 +26,29 @@ import clay_lib as cl
 SHORT = {"United States": "USA", "United Arab Emirates": "UAE", "United Kingdom": "UK"}
 
 
+def get_industry_category(industry):
+    try:
+        from clay_taxonomy import TECH_INDUSTRIES
+        name = str(industry).strip()
+        if " [Clay] -" in name:
+            name = name.split(" [Clay] -")[-1].replace(".csv", "")
+        clean_slug = cl.slugify(name)
+        tech_slugs = {cl.slugify(i) for i in TECH_INDUSTRIES}
+        if clean_slug in tech_slugs:
+            return "Tech"
+        for ti in TECH_INDUSTRIES:
+            if cl.slugify(ti) == clean_slug or ti.lower() == name.lower():
+                return "Tech"
+        return "Non-Tech"
+    except Exception:
+        return "Non-Tech"
+
+
 def delivery_name(country, industry):
     label = SHORT.get(country, country)
-    return os.path.join(label, f"{label} Data [Clay] -{re.sub(r'[^A-Za-z0-9]+', '-', industry).strip('-')}.csv")
+    cat = get_industry_category(industry)
+    clean_ind = re.sub(r'[^A-Za-z0-9]+', '-', industry).strip('-')
+    return os.path.join(label, cat, f"{label} Data [Clay] -{clean_ind}.csv")
 
 
 def dedupe_file(in_csv, out_csv):
@@ -36,6 +56,15 @@ def dedupe_file(in_csv, out_csv):
     deduped_rows = []
     header = None
     
+    # Auto-migrate legacy flat file if present
+    legacy_out = out_csv.replace("\\Tech\\", "\\").replace("\\Non-Tech\\", "\\").replace("/Tech/", "/").replace("/Non-Tech/", "/")
+    if not os.path.exists(out_csv) and os.path.exists(legacy_out):
+        try:
+            os.makedirs(os.path.dirname(out_csv), exist_ok=True)
+            shutil.move(legacy_out, out_csv)
+        except Exception:
+            pass
+
     # 1. Read existing delivered dataset if present (Centralized Data Store)
     if os.path.exists(out_csv) and os.path.getsize(out_csv) > 0:
         with open(out_csv, newline="", encoding="utf-8", errors="replace") as f:
@@ -278,9 +307,17 @@ def main():
 
     force_rerun = "--force" in a or "--only" in a
     rows.sort(key=lambda r: -int(r["Count"]))                # largest first
+
+    def file_delivered(ind):
+        p_new = os.path.join("delivery", delivery_name(country, ind))
+        label = SHORT.get(country, country)
+        clean_ind = re.sub(r'[^A-Za-z0-9]+', '-', ind).strip('-')
+        p_old = os.path.join("delivery", label, f"{label} Data [Clay] -{clean_ind}.csv")
+        return os.path.exists(p_new) or os.path.exists(p_old)
+
     rows = [r for r in rows if lo <= int(r["Count"]) < hi
             and (only is None or r["Industry"] in only)
-            and (force_rerun or not os.path.exists(os.path.join("delivery", delivery_name(country, r["Industry"]))))]
+            and (force_rerun or not file_delivered(r["Industry"]))]
     rows = rows[si::sn]
     print(f"{country}: {len(rows)} industries selected in [{lo:,}, {hi:,}), "
           f"~{sum(int(r['Count']) for r in rows):,} target rows", flush=True)

@@ -25,10 +25,30 @@ SHORT = {"United States": "USA", "United Arab Emirates": "UAE", "United Kingdom"
 BASE_DIR = "downloads_people"
 DELIVERY_DIR = "delivery_people"
 
+
+def get_industry_category(industry):
+    try:
+        from clay_taxonomy import TECH_INDUSTRIES
+        name = str(industry).strip()
+        if " [Clay] -" in name:
+            name = name.split(" [Clay] -")[-1].replace(".csv", "").replace(" (People)", "")
+        clean_slug = cl.slugify(name)
+        tech_slugs = {cl.slugify(i) for i in TECH_INDUSTRIES}
+        if clean_slug in tech_slugs:
+            return "Tech"
+        for ti in TECH_INDUSTRIES:
+            if cl.slugify(ti) == clean_slug or ti.lower() == name.lower():
+                return "Tech"
+        return "Non-Tech"
+    except Exception:
+        return "Non-Tech"
+
+
 def delivery_name(country, industry):
     label = SHORT.get(country, country)
+    cat = get_industry_category(industry)
     clean = re.sub(r'[^A-Za-z0-9]+', '-', industry).strip('-')
-    return os.path.join(label, f"{label} Data [Clay] -{clean} (People).csv")
+    return os.path.join(label, cat, f"{label} Data [Clay] -{clean} (People).csv")
 
 
 def sh(*args):

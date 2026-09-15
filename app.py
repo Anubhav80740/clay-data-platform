@@ -55,17 +55,67 @@ def load_ledger_dataframe(filepath):
         except Exception:
             return pd.DataFrame()
 
+import zipfile
+import io
+
 SHORT_COUNTRY_DELIVERY = {"United States": "USA", "United Arab Emirates": "UAE", "United Kingdom": "UK"}
+
+def get_industry_category(industry_or_filename):
+    try:
+        from clay_taxonomy import TECH_INDUSTRIES
+        name_str = str(industry_or_filename).strip()
+        if " [Clay] -" in name_str:
+            name_str = name_str.split(" [Clay] -")[-1].replace(".csv", "").replace(" (People)", "")
+        clean_slug = cl.slugify(name_str)
+        tech_slugs = {cl.slugify(i) for i in TECH_INDUSTRIES}
+        if clean_slug in tech_slugs:
+            return "Tech"
+        for ti in TECH_INDUSTRIES:
+            if cl.slugify(ti) == clean_slug or ti.lower() == name_str.lower():
+                return "Tech"
+        return "Non-Tech"
+    except Exception:
+        return "Non-Tech"
 
 def get_delivery_path(country, industry, is_people=False):
     label = SHORT_COUNTRY_DELIVERY.get(country, country)
     base_dir = "delivery_people" if is_people else "delivery"
+    cat = get_industry_category(industry)
     if is_people:
         fn = f"{label} People [Clay] -{cl.slugify(industry)}.csv"
     else:
         clean_ind = re.sub(r'[^A-Za-z0-9]+', '-', industry).strip('-')
         fn = f"{label} Data [Clay] -{clean_ind}.csv"
-    return os.path.join(base_dir, label, fn)
+    new_p = os.path.join(base_dir, label, cat, fn)
+    old_p = os.path.join(base_dir, label, fn)
+    if not os.path.exists(new_p) and os.path.exists(old_p):
+        try:
+            os.makedirs(os.path.dirname(new_p), exist_ok=True)
+            shutil.move(old_p, new_p)
+        except Exception:
+            return old_p
+    return new_p
+
+def create_country_zip(country_dir, category_filter=None):
+    """Creates an in-memory ZIP archive of files in country_dir.
+    category_filter: None (all), 'Tech', or 'Non-Tech'"""
+    buf = io.BytesIO()
+    file_count = 0
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for root, dirs, files in os.walk(country_dir):
+            for file in files:
+                if not file.endswith(".csv"):
+                    continue
+                full_path = os.path.join(root, file)
+                rel_path = os.path.relpath(full_path, country_dir)
+                if category_filter:
+                    norm_rel = rel_path.replace("\\", "/")
+                    if not norm_rel.startswith(f"{category_filter}/"):
+                        continue
+                zf.write(full_path, arcname=rel_path)
+                file_count += 1
+    buf.seek(0)
+    return buf.getvalue(), file_count
 
 def record_ledger_row(ledger_path, row_data, is_people=False):
     if not ledger_path:
@@ -1984,6 +2034,27 @@ with tab_download:
     # ==================================================================
     # STEP 4 -- REVIEW
     # ==================================================================
+    def _cb_start_download():
+        st.session_state["is_downloading"] = True
+        st.session_state["download_trigger"] = True
+
+    def _cb_stop_download():
+        proc = st.session_state.get("current_process")
+        if proc and proc.poll() is None:
+            try:
+                proc.terminate()
+            except Exception:
+                pass
+        st.session_state["current_process"] = None
+        st.session_state["is_downloading"] = False
+        st.session_state["download_trigger"] = False
+        st.session_state["live_status"] = {"active": False}
+
+    is_dl_active = bool(
+        st.session_state.get("is_downloading")
+        or (st.session_state.get("current_process") and st.session_state["current_process"].poll() is None)
+    )
+    run_dl_trigger = bool(st.session_state.get("download_trigger"))
     btn_download = False
     plan_approved = False
 
@@ -2032,27 +2103,6 @@ with tab_download:
                 plan_approved = st.checkbox(
                     "I approve the plan & estimated coverage",
                     key=f"plan_approved_check_{'ppl' if is_people_mode else 'cmp'}",
-                )
-
-                def _cb_start_download():
-                    st.session_state["is_downloading"] = True
-                    st.session_state["download_trigger"] = True
-
-                def _cb_stop_download():
-                    proc = st.session_state.get("current_process")
-                    if proc and proc.poll() is None:
-                        try:
-                            proc.terminate()
-                        except Exception:
-                            pass
-                    st.session_state["current_process"] = None
-                    st.session_state["is_downloading"] = False
-                    st.session_state["download_trigger"] = False
-                    st.session_state["live_status"] = {"active": False}
-
-                is_dl_active = bool(
-                    st.session_state.get("is_downloading")
-                    or (st.session_state.get("current_process") and st.session_state["current_process"].poll() is None)
                 )
 
                 if is_dl_active:
@@ -2281,35 +2331,160 @@ with tab_download:
                     ledger_df_disp.index = range(1, len(ledger_df_disp) + 1)
                     st.dataframe(ledger_df_disp, use_container_width=True)
 
-                    st.markdown(f'#### {ic("download", 18)} Download &amp; inspect delivered {entity_label} master files', unsafe_allow_html=True)
+                    st.markdown(f'#### {ic("download", 18)} Download &amp; export delivered {entity_label} master files ({country_input})', unsafe_allow_html=True)
+                    
+                    # 1. Resolve Country Delivery Directory & Gather Delivered Files
+                    c_short = SHORT_COUNTRY_DELIVERY.get(country_input, country_input)
+                    base_delivery_dir = "delivery_people" if is_people_mode else "delivery"
+                    country_delivery_dir = os.path.join(base_delivery_dir, c_short)
+                    
+                    delivered_files_info = []
                     col_fpath = "file" if "file" in ledger_df.columns else ("File" if "File" in ledger_df.columns else None)
+                    
                     if col_fpath:
                         for _, lrow in ledger_df.iterrows():
-                            fpath = str(lrow[col_fpath]).replace("\\", "/")
-                            ind_lbl = lrow.get(col_ind, os.path.basename(fpath))
-                            if os.path.exists(fpath):
-                                with st.expander(f"{ind_lbl} ({os.path.basename(fpath)})"):
-                                    try:
-                                        f_preview = pd.read_csv(fpath, nrows=20)
-                                        st.caption(f"Previewing first {len(f_preview)} rows from `{fpath}`:")
-                                        f_preview_disp = f_preview.copy()
-                                        f_preview_disp.index = range(1, len(f_preview_disp) + 1)
-                                        st.dataframe(f_preview_disp, use_container_width=True)
-
-                                        with open(fpath, "rb") as dl_f:
-                                            raw_csv_data = dl_f.read()
-                                            if not raw_csv_data.startswith(b"\xef\xbb\xbf"):
-                                                raw_csv_data = b"\xef\xbb\xbf" + raw_csv_data
-                                            st.download_button(
-                                                label=f"Download full dataset: {os.path.basename(fpath)}",
-                                                data=raw_csv_data,
-                                                file_name=os.path.basename(fpath),
-                                                mime="text/csv; charset=utf-8",
-                                                type="primary",
-                                                key=f"dl_btn_{cl.slugify(ind_lbl)}_{'ppl' if is_people_mode else 'cmp'}"
-                                            )
-                                    except Exception as pe:
-                                        st.warning(f"Preview error: {pe}")
+                            orig_fpath = str(lrow[col_fpath]).replace("\\", "/")
+                            ind_lbl = lrow.get(col_ind, os.path.basename(orig_fpath))
+                            cat = get_industry_category(ind_lbl)
+                            
+                            # Check multiple candidate locations (categorized and legacy)
+                            fpath = orig_fpath
+                            if not os.path.exists(fpath):
+                                b_name = os.path.basename(orig_fpath)
+                                p_dir = os.path.dirname(orig_fpath)
+                                for cand in [
+                                    os.path.join(p_dir, cat, b_name),
+                                    os.path.join(country_delivery_dir, cat, b_name),
+                                    os.path.join(country_delivery_dir, b_name),
+                                    os.path.join(country_delivery_dir, "Tech", b_name),
+                                    os.path.join(country_delivery_dir, "Non-Tech", b_name),
+                                ]:
+                                    if os.path.exists(cand):
+                                        fpath = cand.replace("\\", "/")
+                                        break
+                                        
+                            if os.path.exists(fpath) and os.path.getsize(fpath) > 0:
+                                delivered_files_info.append({
+                                    "industry": ind_lbl,
+                                    "category": cat,
+                                    "path": fpath,
+                                    "filename": os.path.basename(fpath),
+                                    "size_kb": os.path.getsize(fpath) / 1024
+                                })
+                    
+                    # If ledger didn't list all, scan the country_delivery_dir directly
+                    if os.path.exists(country_delivery_dir):
+                        known_paths = {item["path"] for item in delivered_files_info}
+                        for root, dirs, files in os.walk(country_delivery_dir):
+                            for file in files:
+                                if file.endswith(".csv"):
+                                    fp = os.path.join(root, file).replace("\\", "/")
+                                    if fp not in known_paths and os.path.getsize(fp) > 0:
+                                        cat = "Tech" if "/Tech" in fp or "\\Tech" in fp else ("Non-Tech" if "/Non-Tech" in fp or "\\Non-Tech" in fp else get_industry_category(file))
+                                        ind_name = file.split(" [Clay] -")[-1].replace(".csv", "").replace(" (People)", "").replace("-", " ")
+                                        delivered_files_info.append({
+                                            "industry": ind_name,
+                                            "category": cat,
+                                            "path": fp,
+                                            "filename": file,
+                                            "size_kb": os.path.getsize(fp) / 1024
+                                        })
+                                        known_paths.add(fp)
+                    
+                    tech_files = [f for f in delivered_files_info if f["category"] == "Tech"]
+                    nontech_files = [f for f in delivered_files_info if f["category"] == "Non-Tech"]
+                    
+                    # 2. Multi-File ZIP Downloads Bar
+                    if delivered_files_info and os.path.exists(country_delivery_dir):
+                        st.markdown("**📦 Bulk Download Complete Folder / Category Archives:**")
+                        z_all, c_all = create_country_zip(country_delivery_dir)
+                        z_tech, c_tech = create_country_zip(country_delivery_dir, category_filter="Tech")
+                        z_nontech, c_nontech = create_country_zip(country_delivery_dir, category_filter="Non-Tech")
+                        
+                        zb1, zb2, zb3 = st.columns(3)
+                        with zb1:
+                            if c_all > 0:
+                                st.download_button(
+                                    label=f"📦 Download Entire Portfolio ({c_all} files .zip)",
+                                    data=z_all,
+                                    file_name=f"{cl.slugify(country_input)}_{'people' if is_people_mode else 'companies'}_portfolio.zip",
+                                    mime="application/zip",
+                                    type="primary",
+                                    use_container_width=True,
+                                    key=f"zip_all_btn_step5_{'ppl' if is_people_mode else 'cmp'}"
+                                )
+                        with zb2:
+                            if c_tech > 0:
+                                st.download_button(
+                                    label=f"💻 Download Tech ({c_tech} files .zip)",
+                                    data=z_tech,
+                                    file_name=f"{cl.slugify(country_input)}_tech_{'people' if is_people_mode else 'companies'}.zip",
+                                    mime="application/zip",
+                                    type="secondary",
+                                    use_container_width=True,
+                                    key=f"zip_tech_btn_step5_{'ppl' if is_people_mode else 'cmp'}"
+                                )
+                        with zb3:
+                            if c_nontech > 0:
+                                st.download_button(
+                                    label=f"🏢 Download Non-Tech ({c_nontech} files .zip)",
+                                    data=z_nontech,
+                                    file_name=f"{cl.slugify(country_input)}_nontech_{'people' if is_people_mode else 'companies'}.zip",
+                                    mime="application/zip",
+                                    type="secondary",
+                                    use_container_width=True,
+                                    key=f"zip_nontech_btn_step5_{'ppl' if is_people_mode else 'cmp'}"
+                                )
+                        st.caption(f"📁 Files on disk are neatly organized inside `{country_delivery_dir}/Tech/` and `{country_delivery_dir}/Non-Tech/`.")
+                    
+                    # 3. Individual Inspection & Single File Download Section
+                    st.markdown("**Individual Dataset Previews & Single Downloads:**")
+                    subtab_tech, subtab_nontech, subtab_all = st.tabs([
+                        f"💻 Tech Datasets ({len(tech_files)})",
+                        f"🏢 Non-Tech Datasets ({len(nontech_files)})",
+                        f"📁 All Delivered Files ({len(delivered_files_info)})"
+                    ])
+                    
+                    def render_file_list(file_list, tab_key_prefix):
+                        if not file_list:
+                            st.info("No files in this category yet.")
+                            return
+                        for f_info in file_list:
+                            fpath = f_info["path"]
+                            ind_lbl = f_info["industry"]
+                            fn = f_info["filename"]
+                            sz = f_info["size_kb"]
+                            cat_tag = f"[{f_info['category']}]"
+                            
+                            with st.expander(f"{cat_tag} {ind_lbl} ({fn} - {sz:.1f} KB)"):
+                                try:
+                                    f_preview = pd.read_csv(fpath, nrows=20)
+                                    st.caption(f"Previewing first {len(f_preview)} rows from `{fpath}`:")
+                                    f_preview_disp = f_preview.copy()
+                                    f_preview_disp.index = range(1, len(f_preview_disp) + 1)
+                                    st.dataframe(f_preview_disp, use_container_width=True)
+                                    
+                                    with open(fpath, "rb") as dl_f:
+                                        raw_csv_data = dl_f.read()
+                                        if not raw_csv_data.startswith(b"\xef\xbb\xbf"):
+                                            raw_csv_data = b"\xef\xbb\xbf" + raw_csv_data
+                                        st.download_button(
+                                            label=f"📥 Download CSV: {fn}",
+                                            data=raw_csv_data,
+                                            file_name=fn,
+                                            mime="text/csv; charset=utf-8",
+                                            type="primary",
+                                            key=f"dl_btn_{tab_key_prefix}_{cl.slugify(fn)}_{'ppl' if is_people_mode else 'cmp'}"
+                                        )
+                                except Exception as pe:
+                                    st.warning(f"Preview error: {pe}")
+                                    
+                    with subtab_tech:
+                        render_file_list(tech_files, "tech")
+                    with subtab_nontech:
+                        render_file_list(nontech_files, "nontech")
+                    with subtab_all:
+                        render_file_list(delivered_files_info, "all")
                 except Exception as ex:
                     st.warning(f"Unable to display ledger metrics: {ex}")
             elif not btn_download:
@@ -2429,74 +2604,167 @@ with tab_geo:
 
 with tab_portfolio:
     st.subheader("Delivered Country Portfolio")
+    st.caption("Browse, inspect, and bulk-download delivered dataset portfolios organized by Country and Tech / Non-Tech categories.")
     
     portfolio_choice = st.radio("Select Portfolio View:", ["🏢 Delivered Companies Master Portfolio", "👤 Delivered People Master Portfolio"], horizontal=True)
     delivery_dir = "delivery_people" if "People" in portfolio_choice else "delivery"
     
     if os.path.exists(delivery_dir):
-        countries = [d for d in os.listdir(delivery_dir) if os.path.isdir(os.path.join(delivery_dir, d))]
+        countries = [d for d in os.listdir(delivery_dir) if os.path.isdir(os.path.join(delivery_dir, d)) and d not in ("Tech", "Non-Tech")]
         if countries:
             st.write(f"Found {len(countries)} completed country folders in `{delivery_dir}/`:")
             
             summary_data = []
             for c in sorted(countries):
                 cdir = os.path.join(delivery_dir, c)
-                files = [f for f in os.listdir(cdir) if f.endswith(".csv")]
+                tech_dir = os.path.join(cdir, "Tech")
+                nontech_dir = os.path.join(cdir, "Non-Tech")
+                
+                t_files = [f for f in os.listdir(tech_dir) if f.endswith(".csv")] if os.path.exists(tech_dir) else []
+                nt_files = [f for f in os.listdir(nontech_dir) if f.endswith(".csv")] if os.path.exists(nontech_dir) else []
+                loose_files = [f for f in os.listdir(cdir) if f.endswith(".csv")]
+                
+                tot_count = len(t_files) + len(nt_files) + len(loose_files)
                 tot_bytes = 0
-                for f in files:
-                    fp = os.path.join(cdir, f)
-                    tot_bytes += os.path.getsize(fp)
+                for root, _, fs in os.walk(cdir):
+                    for f in fs:
+                        if f.endswith(".csv"):
+                            tot_bytes += os.path.getsize(os.path.join(root, f))
                 
                 summary_data.append({
                     "Country": c,
-                    "Delivered CSV Files": len(files),
+                    "Tech Files": len(t_files),
+                    "Non-Tech Files": len(nt_files),
+                    "Total CSV Files": tot_count,
                     "Total Folder Size": f"{tot_bytes / (1024*1024):.1f} MB",
                     "Folder Path": cdir
                 })
                 
             st.dataframe(pd.DataFrame(summary_data), use_container_width=True)
             
-            selected_country_view = st.selectbox(f"Select a country to view individual delivered files ({portfolio_choice}):", sorted(countries))
+            selected_country_view = st.selectbox(f"Select a country to view and export portfolio ({portfolio_choice}):", sorted(countries))
             if selected_country_view:
-                st.markdown(f"#### Delivered Files in `{delivery_dir}/{selected_country_view}/`")
                 cpath = os.path.join(delivery_dir, selected_country_view)
-                cfiles = sorted([f for f in os.listdir(cpath) if f.endswith(".csv")])
                 
-                search_query = st.text_input(
-                    "🔍 Search / filter files by industry name:",
-                    placeholder="e.g. Transportation, Retail, Software, Manufacturing...",
-                    key=f"search_port_{selected_country_view}_{'ppl' if 'People' in portfolio_choice else 'cmp'}"
-                )
-                if search_query.strip():
-                    cfiles = [f for f in cfiles if search_query.strip().lower() in f.lower().replace("-", " ")]
-                    st.caption(f"Showing {len(cfiles)} file(s) matching '{search_query}':")
+                # Scan all delivered files inside country folder
+                c_all_files = []
+                for root, _, fs in os.walk(cpath):
+                    for f in fs:
+                        if f.endswith(".csv") and os.path.getsize(os.path.join(root, f)) > 0:
+                            fp = os.path.join(root, f).replace("\\", "/")
+                            norm_cat = "Tech" if "/Tech" in fp or "\\Tech" in fp else ("Non-Tech" if "/Non-Tech" in fp or "\\Non-Tech" in fp else get_industry_category(f))
+                            ind_clean = f.split(" [Clay] -")[-1].replace(".csv", "").replace(" (People)", "").replace("-", " ")
+                            c_all_files.append({
+                                "industry": ind_clean,
+                                "category": norm_cat,
+                                "path": fp,
+                                "filename": f,
+                                "size_kb": os.path.getsize(fp) / 1024
+                            })
                 
-                for cf in cfiles:
-                    full_p = os.path.join(cpath, cf)
-                    f_size_kb = os.path.getsize(full_p) / 1024
-                    
-                    with st.expander(f"📁 {cf} ({f_size_kb:.1f} KB)"):
-                        try:
-                            df_prev = pd.read_csv(full_p, nrows=20)
-                            st.caption(f"Previewing first {len(df_prev)} rows from `{full_p}`:")
-                            df_prev_disp = df_prev.copy()
-                            df_prev_disp.index = range(1, len(df_prev_disp) + 1)
-                            st.dataframe(df_prev_disp, use_container_width=True)
-                            
-                            with open(full_p, "rb") as pf_f:
-                                raw_port_data = pf_f.read()
-                                if not raw_port_data.startswith(b"\xef\xbb\xbf"):
-                                    raw_port_data = b"\xef\xbb\xbf" + raw_port_data
-                                st.download_button(
-                                    label=f"📥 Download Full Master Dataset: {cf}",
-                                    data=raw_port_data,
-                                    file_name=cf,
-                                    mime="text/csv; charset=utf-8",
-                                    type="primary",
-                                    key=f"port_dl_{cl.slugify(cf)}_{'ppl' if 'People' in portfolio_choice else 'cmp'}"
-                                )
-                        except Exception as pfe:
-                            st.warning(f"Could not preview file: {pfe}")
+                c_tech = [f for f in c_all_files if f["category"] == "Tech"]
+                c_nontech = [f for f in c_all_files if f["category"] == "Non-Tech"]
+                
+                # Bulk ZIP Download Action Bar
+                st.markdown(f"#### 📦 Bulk Export / Download Country Portfolio ({selected_country_view})")
+                st.caption(f"Download all delivered datasets for **{selected_country_view}** as an organized ZIP archive containing `Tech/` and `Non-Tech/` subfolders:")
+                
+                z_all, count_all = create_country_zip(cpath)
+                z_tech, count_tech = create_country_zip(cpath, category_filter="Tech")
+                z_nontech, count_nontech = create_country_zip(cpath, category_filter="Non-Tech")
+                
+                z_c1, z_c2, z_c3 = st.columns(3)
+                with z_c1:
+                    if count_all > 0:
+                        st.download_button(
+                            label=f"📦 Download Entire Portfolio ({count_all} files .zip)",
+                            data=z_all,
+                            file_name=f"{cl.slugify(selected_country_view)}_{'people' if 'People' in portfolio_choice else 'companies'}_portfolio.zip",
+                            mime="application/zip",
+                            type="primary",
+                            use_container_width=True,
+                            key=f"zip_all_port_{selected_country_view}_{'ppl' if 'People' in portfolio_choice else 'cmp'}"
+                        )
+                with z_c2:
+                    if count_tech > 0:
+                        st.download_button(
+                            label=f"💻 Download Tech ({count_tech} files .zip)",
+                            data=z_tech,
+                            file_name=f"{cl.slugify(selected_country_view)}_tech_{'people' if 'People' in portfolio_choice else 'companies'}.zip",
+                            mime="application/zip",
+                            type="secondary",
+                            use_container_width=True,
+                            key=f"zip_tech_port_{selected_country_view}_{'ppl' if 'People' in portfolio_choice else 'cmp'}"
+                        )
+                with z_c3:
+                    if count_nontech > 0:
+                        st.download_button(
+                            label=f"🏢 Download Non-Tech ({count_nontech} files .zip)",
+                            data=z_nontech,
+                            file_name=f"{cl.slugify(selected_country_view)}_nontech_{'people' if 'People' in portfolio_choice else 'companies'}.zip",
+                            mime="application/zip",
+                            type="secondary",
+                            use_container_width=True,
+                            key=f"zip_nontech_port_{selected_country_view}_{'ppl' if 'People' in portfolio_choice else 'cmp'}"
+                        )
+                
+                # Category Tabs for Inspection and Single Downloads
+                st.markdown(f"**Individual Dataset Previews in `{cpath}`:**")
+                port_tab_tech, port_tab_nontech, port_tab_all = st.tabs([
+                    f"💻 Tech Datasets ({len(c_tech)})",
+                    f"🏢 Non-Tech Datasets ({len(c_nontech)})",
+                    f"📁 All Files ({len(c_all_files)})"
+                ])
+                
+                def render_port_file_list(f_list, key_pfx):
+                    if not f_list:
+                        st.info("No files in this category yet.")
+                        return
+                    sq = st.text_input(
+                        "🔍 Filter by industry name:",
+                        placeholder="e.g. Retail, Transportation, Software...",
+                        key=f"port_filter_{key_pfx}_{selected_country_view}_{'ppl' if 'People' in portfolio_choice else 'cmp'}"
+                    )
+                    filtered = [f for f in f_list if not sq.strip() or sq.strip().lower() in f["filename"].lower().replace("-", " ")]
+                    if sq.strip():
+                        st.caption(f"Showing {len(filtered)} of {len(f_list)} files matching '{sq}':")
+                        
+                    for f_info in filtered:
+                        fp = f_info["path"]
+                        ind = f_info["industry"]
+                        fn = f_info["filename"]
+                        sz = f_info["size_kb"]
+                        cat_tag = f"[{f_info['category']}]"
+                        
+                        with st.expander(f"{cat_tag} {ind} ({fn} - {sz:.1f} KB)"):
+                            try:
+                                df_prev = pd.read_csv(fp, nrows=20)
+                                st.caption(f"Previewing first {len(df_prev)} rows from `{fp}`:")
+                                df_prev_disp = df_prev.copy()
+                                df_prev_disp.index = range(1, len(df_prev_disp) + 1)
+                                st.dataframe(df_prev_disp, use_container_width=True)
+                                
+                                with open(fp, "rb") as pf_f:
+                                    raw_port_data = pf_f.read()
+                                    if not raw_port_data.startswith(b"\xef\xbb\xbf"):
+                                        raw_port_data = b"\xef\xbb\xbf" + raw_port_data
+                                    st.download_button(
+                                        label=f"📥 Download CSV: {fn}",
+                                        data=raw_port_data,
+                                        file_name=fn,
+                                        mime="text/csv; charset=utf-8",
+                                        type="primary",
+                                        key=f"port_dl_{key_pfx}_{cl.slugify(fn)}_{'ppl' if 'People' in portfolio_choice else 'cmp'}"
+                                    )
+                            except Exception as pfe:
+                                st.warning(f"Could not preview file: {pfe}")
+                                
+                with port_tab_tech:
+                    render_port_file_list(c_tech, "port_tech")
+                with port_tab_nontech:
+                    render_port_file_list(c_nontech, "port_nontech")
+                with port_tab_all:
+                    render_port_file_list(c_all_files, "port_all")
         else:
             st.info(f"No country folders found in `{delivery_dir}/` yet.")
     else:
