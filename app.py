@@ -1211,6 +1211,9 @@ with tab_download:
         m_val = st.session_state.get("search_mode_widget")
         st.session_state["search_mode_idx"] = 1 if "People" in str(m_val) else 0
         st.query_params["mode"] = "people" if "People" in str(m_val) else "companies"
+        st.session_state["wf_open"] = 2
+        st.session_state["plan_approved_check_cmp"] = False
+        st.session_state["plan_approved_check_ppl"] = False
 
     country_options = ["-- Select Target Country --", "\U0001F30D All Supported Countries (Global)"] + ALL_CLAY_COUNTRIES
 
@@ -1234,6 +1237,9 @@ with tab_download:
                 st.query_params["c"] = chosen
             elif "c" in st.query_params:
                 del st.query_params["c"]
+            st.session_state["wf_open"] = 2
+            st.session_state["plan_approved_check_cmp"] = False
+            st.session_state["plan_approved_check_ppl"] = False
 
     if "_init_ind_loaded" not in st.session_state:
         st.session_state["_init_ind_loaded"] = True
@@ -1461,11 +1467,22 @@ with tab_download:
             st.session_state["wf_inds_backup"] = list(selected_industries)
             st.caption(f"Currently selected: {len(selected_industries)} industries out of 458 total Clay industries.")
 
+            # Detect change in selected industries to reset downstream review/approval
+            _cur_inds_key = f"last_confirmed_industries_{'ppl' if is_people_mode else 'cmp'}"
+            _last_inds = st.session_state.get(_cur_inds_key)
+            if _last_inds is not None and set(_last_inds) != set(selected_industries):
+                st.session_state[f"plan_approved_check_{'ppl' if is_people_mode else 'cmp'}"] = False
+                if st.session_state.get("wf_open") in (4, 5):
+                    st.session_state["wf_open"] = 3
+            st.session_state[_cur_inds_key] = list(selected_industries)
+
             _i1, _i2 = st.columns([3, 1])
             with _i2:
                 if st.button("Continue", type="primary", use_container_width=True,
                              disabled=not selected_industries or not country_input, key="wf_continue_2"):
                     st.session_state["wf_open"] = 3
+                    st.session_state[f"plan_approved_check_{'ppl' if is_people_mode else 'cmp'}"] = False
+                    st.session_state[_cur_inds_key] = list(selected_industries)
                     st.rerun()
 
         if not step2_open:
@@ -1610,23 +1627,41 @@ with tab_download:
     run_dl_trigger = bool(st.session_state.get("download_trigger"))
     ledger_exists = bool(country_input and ledger_file and os.path.exists(ledger_file))
     _prov_approved = st.session_state.get(
-        f"plan_approved_check_{'ppl' if is_people_mode else 'cmp'}", True
+        f"plan_approved_check_{'ppl' if is_people_mode else 'cmp'}", False
+    )
+
+    # Check which of the CURRENT selected industries are actually downloaded into the progress/ledger file
+    downloaded_inds = set()
+    if country_input and ledger_file and os.path.exists(ledger_file):
+        try:
+            with open(ledger_file, encoding="utf-8-sig", errors="replace") as lf:
+                for row in csv.DictReader(lf):
+                    ind_val = (row.get("industry") or row.get("Industry") or "").strip()
+                    if ind_val:
+                        downloaded_inds.add(ind_val.lower().replace("-", " "))
+        except Exception:
+            pass
+
+    all_selected_downloaded = bool(selected_industries) and all(
+        ind.lower().replace("-", " ").strip() in downloaded_inds for ind in selected_industries
     )
 
     if not country_input:
         active_stage = 1
     elif not selected_industries:
         active_stage = 2
-    elif forced in (3, 4, 5):
+    elif forced in (1, 2, 3, 4, 5):
         active_stage = forced
     elif is_dl_active or run_dl_trigger:
         active_stage = 5
-    elif not (counts_ready and all_planned) and not ledger_exists:
+    elif not (counts_ready and all_planned) and not all_selected_downloaded:
         active_stage = 3
-    elif not _prov_approved:
+    elif not _prov_approved and not all_selected_downloaded:
         active_stage = 4
-    else:
+    elif all_selected_downloaded:
         active_stage = 5
+    else:
+        active_stage = 4
 
     if country_input and selected_industries:
         _ind_word = "industry" if len(selected_industries) == 1 else "industries"
@@ -1672,7 +1707,7 @@ with tab_download:
     btn_plan = False
 
     step3_open = (forced == 3) or (not forced and bool(_prov_country) and bool(_prov_inds)
-                                   and not (counts_ready and all_planned))
+                                   and not (counts_ready and all_planned) and not all_selected_downloaded)
     step3_done = counts_ready and all_planned
     step3_state = "active" if step3_open else ("done" if step3_done else "todo")
 
@@ -1728,6 +1763,10 @@ with tab_download:
                 else:
                     _counted_total = sum(counts_lookup.get(i, 0) for i in selected_industries)
                     st.success(f"Count complete — {_counted_total:,} matching {entity_label.lower()} across {len(selected_industries)} industries.")
+                    c_rc1, _ = st.columns([2, 4])
+                    with c_rc1:
+                        if st.button(f"🔄 Re-count from Clay", key=f"recount_btn_top_{'ppl' if is_people_mode else 'cmp'}", type="secondary", use_container_width=True):
+                            btn_count = True
                     if country_input and os.path.exists(counts_file):
                         try:
                             cdf_raw = pd.read_csv(counts_file)
@@ -1797,6 +1836,27 @@ with tab_download:
                         """,
                         unsafe_allow_html=True,
                     )
+
+                    pl_c1, pl_c2, pl_c3 = st.columns([2, 2, 2])
+                    with pl_c1:
+                        if st.button("🔄 Re-calculate coverage", key=f"replan_all_btn_{'ppl' if is_people_mode else 'cmp'}", type="secondary", use_container_width=True):
+                            for ind_item in selected_industries:
+                                pfx = slugify(f"{ind_item}_{country_input}{plan_suffix}")
+                                for ext in [".json", ".csv", "_uncovered.csv"]:
+                                    pj_f = f"plans/clicklist_{pfx}{ext}"
+                                    if os.path.exists(pj_f):
+                                        try:
+                                            os.remove(pj_f)
+                                        except Exception:
+                                            pass
+                            btn_plan = True
+                    with pl_c2:
+                        if st.button(f"🔄 Re-count {entity_label.lower()}", key=f"recount_from_clay_btn_{'ppl' if is_people_mode else 'cmp'}", type="secondary", use_container_width=True):
+                            btn_count = True
+                    with pl_c3:
+                        if st.button("Review & Download ➔", type="primary", use_container_width=True, key=f"btn_proceed_to_rev_3c"):
+                            st.session_state["wf_open"] = 4
+                            st.rerun()
 
                     if unreachable > 0:
                         st.warning(
@@ -2130,8 +2190,8 @@ with tab_download:
     btn_download = False
     plan_approved = False
 
-    step4_open = (forced == 4) or (not forced and (step3_done or ledger_exists))
-    step4_state = "active" if step4_open else ("done" if ledger_exists else "todo")
+    step4_open = (forced == 4) or (not forced and not all_selected_downloaded and (step3_done or counts_ready))
+    step4_state = "active" if step4_open else ("done" if all_selected_downloaded else ("ready" if step3_done else "todo"))
 
     with st.container(border=True):
         h4a, h4b = st.columns([6, 1])
@@ -2229,8 +2289,8 @@ with tab_download:
     # ==================================================================
     ledger_exists = bool(country_input and ledger_file and os.path.exists(ledger_file))
     run_dl_trigger = bool(st.session_state.get("download_trigger"))
-    step5_open = (forced == 5) or is_dl_active or run_dl_trigger or ledger_exists
-    step5_state = "active" if (step5_open and not ledger_exists) else ("done" if ledger_exists else "todo")
+    step5_open = (forced == 5) or is_dl_active or run_dl_trigger or (not forced and all_selected_downloaded)
+    step5_state = "active" if (is_dl_active or run_dl_trigger or (step5_open and not all_selected_downloaded)) else ("done" if all_selected_downloaded else "todo")
 
     with st.container(border=True):
         wf_head(5, "Download data", step5_state,
@@ -2482,14 +2542,14 @@ with tab_download:
                     nontech_files = [f for f in delivered_files_info if f["category"] == "Non-Tech"]
                     
                     if selected_industries:
-                        deliv_inds = {f["industry"].lower().replace("-", " ") for f in delivered_files_info}
-                        sel_nontech = [i for i in selected_industries if get_industry_category(i) == "Non-Tech"]
-                        deliv_nontech = len(nontech_files)
-                        if len(sel_nontech) > deliv_nontech:
-                            rem_count = len(sel_nontech) - deliv_nontech
+                        deliv_inds = {f["industry"].lower().replace("-", " ").strip() for f in delivered_files_info}
+                        downloaded_selected = [i for i in selected_industries if i.lower().replace("-", " ").strip() in deliv_inds]
+                        remaining_selected = [i for i in selected_industries if i.lower().replace("-", " ").strip() not in deliv_inds]
+                        if remaining_selected:
+                            rem_count = len(remaining_selected)
                             st.info(
-                                f"ℹ️ **Selected {len(sel_nontech)} Non-Tech industries — {deliv_nontech} downloaded and delivered to disk so far.** "
-                                f"The remaining {rem_count} industries have not been downloaded yet. "
+                                f"ℹ️ **Selected {len(selected_industries)} industries — {len(downloaded_selected)} downloaded and delivered to disk so far.** "
+                                f"The remaining {rem_count} industries ({', '.join(remaining_selected[:3])}{'...' if len(remaining_selected) > 3 else ''}) have not been downloaded yet. "
                                 f"You can start or resume the download below or in **Step 4: Review download**."
                             )
                             if not is_dl_active:
@@ -2500,6 +2560,10 @@ with tab_download:
                                         st.session_state["download_trigger"] = True
                                         st.session_state["wf_open"] = 5
                                         st.rerun()
+                        elif downloaded_selected:
+                            st.success(
+                                f"✅ **All {len(selected_industries)} selected industries have been fully downloaded and delivered to disk!**"
+                            )
 
                     # 2. Multi-File ZIP Downloads Bar
                     if delivered_files_info and os.path.exists(country_delivery_dir):
