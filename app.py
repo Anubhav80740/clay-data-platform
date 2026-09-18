@@ -188,6 +188,47 @@ def get_dir_signature(country_dir):
         pass
     return (count, latest_mtime, total_size)
 
+def get_files_signature(file_paths):
+    """Fast signature (file count, latest mtime, total size) for a specific list of files."""
+    count = 0
+    latest_mtime = 0.0
+    total_size = 0
+    for fp in file_paths:
+        if fp and os.path.exists(fp) and os.path.isfile(fp):
+            count += 1
+            try:
+                st_obj = os.stat(fp)
+                if st_obj.st_mtime > latest_mtime:
+                    latest_mtime = st_obj.st_mtime
+                total_size += st_obj.st_size
+            except OSError:
+                pass
+    return (count, latest_mtime, total_size)
+
+def create_files_zip(file_paths):
+    """Creates an in-memory ZIP archive containing only the specified list of file paths."""
+    if not file_paths:
+        return b"", 0
+    buf = io.BytesIO()
+    file_count = 0
+    seen_files = set()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for fp in file_paths:
+            if fp and os.path.exists(fp) and os.path.isfile(fp):
+                fname = os.path.basename(fp)
+                if fname in seen_files:
+                    continue
+                seen_files.add(fname)
+                zf.write(fp, arcname=fname)
+                file_count += 1
+    buf.seek(0)
+    return buf.getvalue(), file_count
+
+@st.cache_data(show_spinner=False)
+def create_files_zip_cached(file_paths_tuple, dir_signature=None):
+    """Cached wrapper around create_files_zip."""
+    return create_files_zip(list(file_paths_tuple))
+
 @st.cache_data(show_spinner=False)
 def create_country_zip_cached(country_dir, category_filter=None, dir_signature=None):
     """Cached wrapper around create_country_zip that only rebuilds when directory contents change."""
@@ -1306,6 +1347,7 @@ with tab_download:
         st.session_state["wf_open"] = 2
         st.session_state["plan_approved_check_cmp"] = False
         st.session_state["plan_approved_check_ppl"] = False
+        st.session_state["has_downloaded"] = False
 
     country_options = ["-- Select Target Country --", "\U0001F30D All Supported Countries (Global)"] + ALL_CLAY_COUNTRIES
 
@@ -1332,6 +1374,7 @@ with tab_download:
             st.session_state["wf_open"] = 2
             st.session_state["plan_approved_check_cmp"] = False
             st.session_state["plan_approved_check_ppl"] = False
+            st.session_state["has_downloaded"] = False
 
     if "_init_ind_loaded" not in st.session_state:
         st.session_state["_init_ind_loaded"] = True
@@ -1559,6 +1602,7 @@ with tab_download:
                 st.session_state[f"plan_approved_check_{'ppl' if is_people_mode else 'cmp'}"] = False
                 if st.session_state.get("wf_open") in (4, 5):
                     st.session_state["wf_open"] = 3
+                st.session_state["has_downloaded"] = False
             st.session_state[_cur_inds_key] = list(selected_industries)
 
             def _cb_continue_2():
@@ -1716,7 +1760,7 @@ with tab_download:
         f"plan_approved_check_{'ppl' if is_people_mode else 'cmp'}", False
     )
 
-    # Check which of the CURRENT selected industries are actually downloaded into the progress/ledger file
+    # Check which of the CURRENT selected industries are actually downloaded into ledger or on disk
     downloaded_inds = set()
     if country_input and ledger_file and os.path.exists(ledger_file):
         try:
@@ -1728,6 +1772,22 @@ with tab_download:
         except Exception:
             pass
 
+    # Also check delivery directory on disk
+    if country_input:
+        c_short = SHORT_COUNTRY_DELIVERY.get(country_input, country_input)
+        b_deliv = "delivery_people" if is_people_mode else "delivery"
+        c_deliv_dir = os.path.join(b_deliv, c_short)
+        if os.path.exists(c_deliv_dir):
+            try:
+                for root, _, files in os.walk(c_deliv_dir):
+                    for file in files:
+                        if file.endswith(".csv") and " [Clay] -" in file and os.path.getsize(os.path.join(root, file)) > 0:
+                            ind_name = file.split(" [Clay] -")[-1].replace(".csv", "").replace(" (People)", "").replace("-", " ").strip()
+                            downloaded_inds.add(ind_name.lower())
+            except Exception:
+                pass
+
+    has_dl = bool(st.session_state.get("has_downloaded"))
     all_selected_downloaded = bool(selected_industries) and all(
         ind.lower().replace("-", " ").strip() in downloaded_inds for ind in selected_industries
     )
@@ -1738,14 +1798,12 @@ with tab_download:
         active_stage = 2
     elif forced in (1, 2, 3, 4, 5):
         active_stage = forced
-    elif is_dl_active or run_dl_trigger:
+    elif is_dl_active or run_dl_trigger or has_dl or all_selected_downloaded:
         active_stage = 5
     elif not (counts_ready and all_planned) and not all_selected_downloaded:
         active_stage = 3
     elif not _prov_approved and not all_selected_downloaded:
         active_stage = 4
-    elif all_selected_downloaded:
-        active_stage = 5
     else:
         active_stage = 4
 
@@ -2255,6 +2313,8 @@ with tab_download:
     def _cb_start_download():
         st.session_state["is_downloading"] = True
         st.session_state["download_trigger"] = True
+        st.session_state["wf_open"] = 5
+        st.session_state["has_downloaded"] = True
 
     def _cb_stop_download():
         proc = st.session_state.get("current_process")
@@ -2276,7 +2336,7 @@ with tab_download:
     btn_download = False
     plan_approved = False
 
-    step4_open = (forced == 4) or (not forced and not all_selected_downloaded and (step3_done or counts_ready))
+    step4_open = (forced == 4) or (not forced and not has_dl and not all_selected_downloaded and (step3_done or counts_ready))
     step4_state = "active" if step4_open else ("done" if all_selected_downloaded else ("ready" if step3_done else "todo"))
 
     with st.container(border=True):
@@ -2375,13 +2435,22 @@ with tab_download:
     # ==================================================================
     ledger_exists = bool(country_input and ledger_file and os.path.exists(ledger_file))
     run_dl_trigger = bool(st.session_state.get("download_trigger"))
-    step5_open = (forced == 5) or is_dl_active or run_dl_trigger or (not forced and all_selected_downloaded)
+    step5_open = (forced == 5) or is_dl_active or run_dl_trigger or has_dl or (not forced and all_selected_downloaded)
     step5_state = "active" if (is_dl_active or run_dl_trigger or (step5_open and not all_selected_downloaded)) else ("done" if all_selected_downloaded else "todo")
 
+    def _cb_keep_step5():
+        st.session_state["wf_open"] = 5
+        st.session_state["has_downloaded"] = True
+
     with st.container(border=True):
-        wf_head(5, "Download data", step5_state,
-                "Execute the download, incremental merge and deduplication."
-                if not step5_open else "")
+        h5a, h5b = st.columns([6, 1])
+        with h5a:
+            wf_head(5, "Download data", step5_state,
+                    "Execute the download, incremental merge and deduplication."
+                    if not step5_open else "")
+        with h5b:
+            if not step5_open and bool(country_input and selected_industries):
+                wf_edit_button(5, "Open")
 
         with st.container(key="wf_step5"):
             # ---------- DOWNLOAD EXECUTION ----------
@@ -2485,6 +2554,8 @@ with tab_download:
                     st.session_state["current_process"] = None
                     st.session_state["is_downloading"] = False
                     st.session_state["live_status"] = {"active": False}
+                    st.session_state["wf_open"] = 5
+                    st.session_state["has_downloaded"] = True
                 dur_dl = round(time.time() - t0_dl, 1)
                 if process.returncode == 0:
                     dl_progress_bar.progress(1.0)
@@ -2667,6 +2738,45 @@ with tab_download:
                                 f"✅ **All {len(selected_industries)} selected industries have been fully downloaded and delivered to disk!**"
                             )
 
+                    # 1.5 Multi-File ZIP for Currently Selected Industries
+                    selected_delivered_files = []
+                    if selected_industries and delivered_files_info:
+                        deliv_lookup = {}
+                        for f in delivered_files_info:
+                            deliv_lookup[f["industry"].lower().replace("-", " ").strip()] = f
+                            deliv_lookup[f["filename"].lower().replace("-", " ").strip()] = f
+                        
+                        for sel_ind in selected_industries:
+                            s_clean = sel_ind.lower().replace("-", " ").strip()
+                            if s_clean in deliv_lookup:
+                                if deliv_lookup[s_clean] not in selected_delivered_files:
+                                    selected_delivered_files.append(deliv_lookup[s_clean])
+                            else:
+                                for f in delivered_files_info:
+                                    if s_clean in f["filename"].lower().replace("-", " "):
+                                        if f not in selected_delivered_files:
+                                            selected_delivered_files.append(f)
+                                        break
+
+                    if len(selected_delivered_files) > 1:
+                        st.markdown(f"#### 📦 Download All {len(selected_delivered_files)} Selected Industries Together:")
+                        st.info(f"💡 You have selected **{len(selected_industries)} industries** ({len(selected_delivered_files)} ready on disk). Click below to download all of them together in a single ZIP file:")
+                        sel_fps = [f["path"] for f in selected_delivered_files]
+                        sel_sig = get_files_signature(sel_fps)
+                        z_sel, count_sel = create_files_zip_cached(tuple(sel_fps), sel_sig)
+                        if count_sel > 0:
+                            st.download_button(
+                                label=f"📦 Download Selected {count_sel} Industries (.zip)",
+                                data=z_sel,
+                                file_name=f"{cl.slugify(country_input)}_selected_{count_sel}_industries_{'people' if is_people_mode else 'companies'}.zip",
+                                mime="application/zip",
+                                type="primary",
+                                use_container_width=True,
+                                key=f"zip_selected_btn_step5_{'ppl' if is_people_mode else 'cmp'}",
+                                on_click=_cb_keep_step5
+                            )
+                        st.markdown("---")
+
                     # 2. Multi-File ZIP Downloads Bar
                     if delivered_files_info and os.path.exists(country_delivery_dir):
                         st.markdown("**📦 Bulk Download Complete Folder / Category Archives:**")
@@ -2685,7 +2795,8 @@ with tab_download:
                                     mime="application/zip",
                                     type="primary",
                                     use_container_width=True,
-                                    key=f"zip_all_btn_step5_{'ppl' if is_people_mode else 'cmp'}"
+                                    key=f"zip_all_btn_step5_{'ppl' if is_people_mode else 'cmp'}",
+                                    on_click=_cb_keep_step5
                                 )
                         with zb2:
                             if c_tech > 0:
@@ -2696,7 +2807,8 @@ with tab_download:
                                     mime="application/zip",
                                     type="secondary",
                                     use_container_width=True,
-                                    key=f"zip_tech_btn_step5_{'ppl' if is_people_mode else 'cmp'}"
+                                    key=f"zip_tech_btn_step5_{'ppl' if is_people_mode else 'cmp'}",
+                                    on_click=_cb_keep_step5
                                 )
                         with zb3:
                             if c_nontech > 0:
@@ -2707,7 +2819,8 @@ with tab_download:
                                     mime="application/zip",
                                     type="secondary",
                                     use_container_width=True,
-                                    key=f"zip_nontech_btn_step5_{'ppl' if is_people_mode else 'cmp'}"
+                                    key=f"zip_nontech_btn_step5_{'ppl' if is_people_mode else 'cmp'}",
+                                    on_click=_cb_keep_step5
                                 )
                         st.caption(f"📁 Files on disk are neatly organized inside `{country_delivery_dir}/Tech/` and `{country_delivery_dir}/Non-Tech/`.")
                     
@@ -2745,7 +2858,8 @@ with tab_download:
                                             file_name=fn,
                                             mime="text/csv; charset=utf-8",
                                             type="primary",
-                                            key=f"dl_btn_{tab_key_prefix}_{cl.slugify(fn)}_{'ppl' if is_people_mode else 'cmp'}"
+                                            key=f"dl_btn_{tab_key_prefix}_{cl.slugify(fn)}_{'ppl' if is_people_mode else 'cmp'}",
+                                            on_click=_cb_keep_step5
                                         )
                                 except Exception as pe:
                                     st.warning(f"Preview error: {pe}")
