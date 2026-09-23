@@ -2249,7 +2249,7 @@ with tab_download:
     btn_download = False
     plan_approved = False
 
-    step4_open = (forced == 4) or (not forced and not has_dl and not all_selected_downloaded and (step3_done or counts_ready))
+    step4_open = not is_dl_active and not run_dl_trigger and ((forced == 4) or (not forced and not has_dl and not all_selected_downloaded and (step3_done or counts_ready)))
     step4_state = "active" if step4_open else ("done" if all_selected_downloaded else ("ready" if step3_done else "todo"))
 
     with st.container(border=True):
@@ -2439,7 +2439,7 @@ with tab_download:
                             logs.append(stripped)
                             log_container.code("\n".join(logs[-20:]))
 
-                            m_ind = re.search(r'\[(\d+)/(\d+)\]\s+([A-Za-z0-9\s,&-]+?)\s+\(~', stripped)
+                            m_ind = re.search(r'\[(\d+)/(\d+)\]\s+([A-Za-z0-9\s,&-]+?)(?:\s+\(People\))?\s+\(~', stripped)
                             if m_ind:
                                 curr_ind_idx = int(m_ind.group(1))
                                 curr_ind_name = m_ind.group(3).strip()
@@ -2450,8 +2450,17 @@ with tab_download:
                                 st.session_state["live_status"] = {"active": True, "title": f"Download: {country_input} ({entity_label})", "text": status_msg, "pct": pct}
                                 render_download_card(pct, f"[{curr_ind_idx}/{tot_ind}] {curr_ind_name[:24]}", f"{country_input} • {int(pct*100)}% complete")
 
+                            elif "generate_people_clicklist.py" in stripped or "PLAN start:" in stripped or "counts |" in stripped or "-> split" in stripped:
+                                p_ind = curr_ind_name or (dl_targets[0] if dl_targets else "People")
+                                status_msg = f"Planning: Partitioning {p_ind} in Clay (calculating slices)..."
+                                dl_status_text.text(status_msg)
+                                render_download_card(0.04, f"Planning: {p_ind[:20]}", f"Partitioning in Clay • Live")
+
                             m_slice = re.search(r'\[(\d+)/(\d+)\]\s+([A-Za-z0-9_]+)', stripped)
-                            if m_slice and not m_ind and curr_ind_idx > 0:
+                            if m_slice and not m_ind:
+                                if curr_ind_idx == 0:
+                                    curr_ind_idx = 1
+                                    curr_ind_name = dl_targets[0] if dl_targets else "Extracting"
                                 s_idx = int(m_slice.group(1))
                                 s_tot = int(m_slice.group(2))
                                 pct_ind = (s_idx - 1) / max(1, s_tot)

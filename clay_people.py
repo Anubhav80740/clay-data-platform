@@ -237,7 +237,7 @@ def run_people(industry, country, merge=True):
 
     def wrapped(f):
         r = count_people(f)
-        if stats.count_calls % 250 == 0:
+        if stats.count_calls % 20 == 0:
             cl.log(f"  ...{stats.count_calls} counts | {len(stats.leaves)} leaves "
                    f"| {len(stats.uncovered)} uncovered")
         return r

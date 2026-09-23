@@ -387,6 +387,22 @@ def delete_table(table_id):
     row ceiling; leaving tables behind eventually makes every NEW view materialise
     empty (source populates, totalRecordsInViewCount stays 0) -- which reads as
     'EXPORT FAILED' with no hint of the real cause. Best-effort, never fatal."""
+    try:
+        import requests
+        c = _cookie()
+        clean_c = c.replace("cookie: ", "").strip() if c else ""
+        headers_dict = {
+            "accept": "application/json, text/plain, */*",
+            "cookie": clean_c,
+            "origin": "https://app.clay.com",
+            "referer": "https://app.clay.com/",
+            "x-clay-frontend-version": FRONTEND_VERSION,
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+        }
+        requests.delete(f"https://api.clay.com/v3/tables/{table_id}", headers=headers_dict, timeout=20)
+        return
+    except Exception:
+        pass
     cmd = ["curl", "-s", "--max-time", "45", "-X", "DELETE",
            f"https://api.clay.com/v3/tables/{table_id}", "-b", _cookie()]
     for h in HEADERS:
@@ -417,6 +433,7 @@ def wait_populated(source_id, expected, timeout=600):
         return 0
     last, stable, zero = -1, 0, 0
     t0_pop = time.time()
+    sleep_interval = 0.8 if (expected and expected <= 100) else 1.8
     for poll_idx in range(timeout // 2):
         _, n = source_records(source_id)
         if expected and n >= expected:
@@ -437,7 +454,7 @@ def wait_populated(source_id, expected, timeout=600):
             el = int(time.time() - t0_pop)
             exp_str = f"{expected:,}" if expected else "target"
             print(f"   [populating] {n:,}/{exp_str} records in Clay table... ({el}s)", flush=True)
-        time.sleep(1.8)
+        time.sleep(sleep_interval)
     return last
 
 
@@ -494,7 +511,7 @@ def export_download(table_id, view_id, slug, base_dir="downloads", poll_timeout=
             if poll_idx > 0 and poll_idx % 3 == 0:
                 el = int(time.time() - t0)
                 print(f"   [exporting] waiting for Clay export job... ({el}s)", flush=True)
-            time.sleep(1.5)
+            time.sleep(0.7 if poll_idx < 3 else 1.5)
         if dl:
             break
         if attempt < 1:
@@ -722,14 +739,17 @@ KEYWORD_ROUNDS = [
 FR_KEYWORD_ROUNDS = [
     # Round 1: High-frequency French corporate, legal & agency terms
     ["société", "entreprise", "france", "groupe", "conseil", "services",
-     "sarl", "sas", "sasu", "agence", "commerciale", "travaux"],
+     "sarl", "sas", "sasu", "agence", "commerciale", "travaux", "solutions"],
     # Round 2: Core trade & industry terms (construction, real estate, commerce, crafts)
     ["bâtiment", "construction", "rénovation", "immobilier", "vente", "gestion",
-     "maçonnerie", "artisan", "technique", "solutions", "projet", "habitat"],
-    # Round 3: Commercial descriptors & major regional terms
+     "maçonnerie", "artisan", "technique", "projet", "habitat", "magasin", "produits"],
+    # Round 3: Finance, catering, transport, healthcare & professional domains
+    ["finance", "patrimoine", "capital", "restaurant", "cuisine", "formation",
+     "soins", "transport", "distribution", "communication", "commerce", "logistique"],
+    # Round 4: Commercial descriptors & major regional terms
     ["paris", "lyon", "marseille", "national", "international", "qualité",
      "professionnel", "équipe", "client", "service", "développement", "durable"],
-    # Round 4: French filler / grammar words common in descriptions
+    # Round 5: French filler / grammar words common in descriptions
     ["pour", "avec", "dans", "nous", "notre", "nos",
      "plus", "tous", "depuis", "vous", "faire", "votre"],
 ]
@@ -806,7 +826,7 @@ def build_dims(country):
     kw_rounds = FR_KEYWORD_ROUNDS if country == "France" else KEYWORD_ROUNDS
     dims += [ChainedDimension(f"kw{n}", "description_keywords", kws,
                               exclude_key="description_keywords_exclude",
-                              stop_below=150)
+                              stop_below=0 if country == "France" else 150)
              for n, kws in enumerate(kw_rounds, 1)]
     fb = {"size": SIZE, "revenue": REVENUE}
     for name in geo.get("fallback", ["size", "revenue"]):

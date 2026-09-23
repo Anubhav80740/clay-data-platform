@@ -281,6 +281,7 @@ def main():
         # 1. Plan if not planned
         plan_path = f"{cl.PLAN_DIR}/clicklist_{prefix}.json"
         if not os.path.exists(plan_path):
+            print(f"   [Planning] No pre-computed plan found for '{ind}'. Partitioning {expected:,} people into <5k slices via Clay MixRank...", flush=True)
             sh("generate_people_clicklist.py", ind, country)
             
         # 2. Download slices

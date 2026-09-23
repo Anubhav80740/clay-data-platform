@@ -47,7 +47,8 @@ def download(prefix, limit=5000, max_slices=None, order="desc"):
             got, path = cl.export_download(tid, vid, slug)
             if tid:
                 try:
-                    cl.delete_table(tid)
+                    import threading
+                    threading.Thread(target=cl.delete_table, args=(tid,), daemon=True).start()
                 except Exception:
                     pass
             if not path:

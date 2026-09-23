@@ -313,7 +313,10 @@ def main():
     si, sn = (int(x) for x in a[a.index("--shard") + 1].split("/")) if "--shard" in a else (0, 1)
 
     force_rerun = "--force" in a or "--only" in a
-    rows.sort(key=lambda r: -int(r["Count"]))                # largest first
+    if "--asc" in a:
+        rows.sort(key=lambda r: int(r["Count"]))                 # smallest first
+    else:
+        rows.sort(key=lambda r: -int(r["Count"]))                # largest first
 
     def file_delivered(ind):
         p_new = os.path.join("delivery", delivery_name(country, ind))
